@@ -269,5 +269,47 @@
     },
     "notableFindings": "All findings legitimate. Small well-maintained Dockerfiles.",
     "improvements": []
+  },
+  {
+    "repo": "mastodon/mastodon",
+    "scannedAt": "2026-02-09T01:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 41,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 24,
+      "style": 6
+    },
+    "notableFindings": "All findings legitimate. DEBIAN_FRONTEND as ENV (DV4007), apt-get cache issues, DV4012 consecutive COPY in multi-stage builds.",
+    "improvements": []
+  },
+  {
+    "repo": "outline/outline",
+    "scannedAt": "2026-02-09T01:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 27,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 15,
+      "style": 6
+    },
+    "notableFindings": "All findings legitimate. Base image uses ARG var (DL3006). Dockerfile.base is single-stage with build tools (DV1004).",
+    "improvements": []
+  },
+  {
+    "repo": "jupyterhub/jupyterhub",
+    "scannedAt": "2026-02-09T01:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 16,
+      "style": 2
+    },
+    "notableFindings": "All findings legitimate. Example Dockerfiles with deprecated MAINTAINER, unpinned pip packages, missing --no-cache-dir.",
+    "improvements": []
   }
 ]

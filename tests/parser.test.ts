@@ -222,4 +222,50 @@ describe('Parser', () => {
     expect(ast.stages.length).toBe(0);
     expect(ast.comments.length).toBe(1);
   });
+
+  it('skips heredoc content in COPY instruction', () => {
+    const ast = parse([
+      'FROM python:3.12',
+      'COPY <<"EOF" /app/script.py',
+      '#!/usr/bin/env python',
+      'from __future__ import annotations',
+      'from pathlib import Path',
+      'print("hello")',
+      'EOF',
+      'RUN python /app/script.py',
+    ].join('\n'));
+    expect(ast.stages.length).toBe(1);
+    // Should only have COPY and RUN, not FROM __future__ or FROM pathlib
+    const fromInstructions = ast.stages.filter(s => s.from.image !== 'python');
+    expect(fromInstructions.length).toBe(0);
+    expect(ast.stages[0].instructions.length).toBe(2); // COPY + RUN
+  });
+
+  it('skips heredoc content in RUN instruction', () => {
+    const ast = parse([
+      'FROM alpine:3.18',
+      'RUN cat <<EOF > /etc/config',
+      'server {',
+      '  listen 80;',
+      '}',
+      'EOF',
+      'EXPOSE 80',
+    ].join('\n'));
+    expect(ast.stages.length).toBe(1);
+    expect(ast.stages[0].instructions.length).toBe(2); // RUN + EXPOSE
+  });
+
+  it('handles multiple heredocs in one instruction', () => {
+    const ast = parse([
+      'FROM alpine:3.18',
+      'COPY <<file1 <<file2 /dst/',
+      'content of file1',
+      'file1',
+      'content of file2',
+      'file2',
+      'RUN echo done',
+    ].join('\n'));
+    expect(ast.stages.length).toBe(1);
+    expect(ast.stages[0].instructions.length).toBe(2); // COPY + RUN
+  });
 });
