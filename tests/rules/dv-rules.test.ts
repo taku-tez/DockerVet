@@ -31,6 +31,15 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('passes normal ENV', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV NODE_ENV=production'), 'DV1001')).toBe(false);
   });
+  it('passes _FILE suffix ENV (Docker secrets file path convention)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV MINIO_ACCESS_KEY_FILE=access_key'), 'DV1001')).toBe(false);
+  });
+  it('passes _FILE suffix with multiple secret path ENVs', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV MINIO_SECRET_KEY_FILE=secret_key MINIO_ROOT_PASSWORD_FILE=secret_key'), 'DV1001')).toBe(false);
+  });
+  it('passes ARG with _FILE suffix', () => {
+    expect(hasRule(lintDockerfile('ARG DB_PASSWORD_FILE=password\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {
