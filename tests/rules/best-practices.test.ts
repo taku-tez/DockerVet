@@ -145,6 +145,12 @@ describe('DV4011 - WORKDIR relative path', () => {
   it('passes variable reference', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nARG APP_DIR=/app\nWORKDIR $APP_DIR'), 'DV4011')).toBe(false);
   });
+  it('passes quoted absolute path (double quotes)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR "/app"'), 'DV4011')).toBe(false);
+  });
+  it('passes quoted absolute path (single quotes)', () => {
+    expect(hasRule(lintDockerfile("FROM ubuntu\nWORKDIR '/app'"), 'DV4011')).toBe(false);
+  });
 });
 
 describe('DV4012 - consecutive COPY instructions', () => {

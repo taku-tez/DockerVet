@@ -355,5 +355,89 @@
     },
     "notableFindings": "Heavy DV4012 consecutive COPY (17x). DV1009 digest pinning (15x). All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "gitlabhq/gitlabhq",
+    "scannedAt": "2026-02-09T04:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 97,
+    "severities": {
+      "error": 3,
+      "warning": 40,
+      "info": 54,
+      "style": 0
+    },
+    "notableFindings": "DV1001 correctly flags GITLAB_ROOT_PASSWORD in ENV. DL3001 flags kill command in RUN. Heavy DL3045 COPY without WORKDIR. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "docker/compose",
+    "scannedAt": "2026-02-09T04:00:00+09:00",
+    "dockerfiles": 35,
+    "totalIssues": 237,
+    "severities": {
+      "error": 34,
+      "warning": 79,
+      "info": 124,
+      "style": 0
+    },
+    "notableFindings": "DV1001 correctly flags 34 intentional ARG AWS_SECRET_ACCESS_KEY=FAKE in test fixture. Heavy DV4012 consecutive COPY. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "PostHog/posthog",
+    "scannedAt": "2026-02-09T04:00:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 339,
+    "severities": {
+      "error": 7,
+      "warning": 162,
+      "info": 170,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh in installer scripts. Heavy DL3008 apt version pinning. DL3045 COPY without WORKDIR (20x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "netdata/netdata",
+    "scannedAt": "2026-02-09T04:57:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 34,
+    "severities": {
+      "error": 0,
+      "warning": 12,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate. Build/test Dockerfiles with expected issues (no USER, unpinned apt, COPY .).",
+    "improvements": []
+  },
+  {
+    "repo": "dagger/dagger",
+    "scannedAt": "2026-02-09T04:57:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 40,
+    "severities": {
+      "error": 1,
+      "warning": 11,
+      "info": 24,
+      "style": 0
+    },
+    "notableFindings": "SDK runtime Dockerfiles are minimal stubs (expected). PHP dev.Dockerfile has curl|sh and multi-stage issues. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "getsentry/sentry",
+    "scannedAt": "2026-02-09T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 1,
+      "warning": 5,
+      "info": 8,
+      "style": 1
+    },
+    "notableFindings": "DL3021 correctly flags COPY with 3 args where dest lacks trailing /. All findings legitimate.",
+    "improvements": []
   }
 ]

@@ -209,7 +209,11 @@ export const DV4011: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'WORKDIR') continue;
-        const dir = inst.arguments.trim();
+        let dir = inst.arguments.trim();
+        // Strip surrounding quotes (single or double)
+        if ((dir.startsWith('"') && dir.endsWith('"')) || (dir.startsWith("'") && dir.endsWith("'"))) {
+          dir = dir.slice(1, -1);
+        }
         // Allow variable references like $HOME or ${APP_DIR}
         if (dir.startsWith('$') || dir.startsWith('/')) continue;
         violations.push({ rule: 'DV4011', severity: 'warning', message: `WORKDIR "${dir}" is a relative path. Use an absolute path for predictable behavior.`, line: inst.line });
