@@ -179,5 +179,49 @@
     },
     "notableFindings": "Heavy DL3029 platform mismatch warnings (cross-compilation). All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "envoyproxy/envoy",
+    "scannedAt": "2026-02-08T23:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 12,
+      "style": 2
+    },
+    "notableFindings": "DL3001 false positive: BuildKit --mount=type=cache flagged as mount command",
+    "improvements": [
+      "Fixed DL3001 to strip --mount= flags before command detection"
+    ]
+  },
+  {
+    "repo": "hashicorp/vault",
+    "scannedAt": "2026-02-08T23:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 66,
+    "severities": {
+      "error": 2,
+      "warning": 37,
+      "info": 24,
+      "style": 3
+    },
+    "notableFindings": "Heavy dnf/apk version pinning. DV1003 curl|sh in cross-compile Dockerfile. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/superset",
+    "scannedAt": "2026-02-08T23:57:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 95,
+    "severities": {
+      "error": 3,
+      "warning": 42,
+      "info": 42,
+      "style": 8
+    },
+    "notableFindings": "DL3001 false positive on --mount (same issue as envoy). DV2001/DV2008 apt-get update separation in RELEASING Dockerfiles. DV3008 git clone credential warning.",
+    "improvements": []
   }
 ]

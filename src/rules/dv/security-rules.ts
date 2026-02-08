@@ -211,12 +211,20 @@ export const DV1009: Rule = {
   description: 'Consider pinning base image with digest for reproducible builds',
   check(ctx) {
     const violations: Violation[] = [];
+    // Collect stage aliases to skip (can't pin stage references with digests)
+    const stageAliases = new Set<string>();
+    for (const stage of ctx.ast.stages) {
+      if (stage.from.alias) stageAliases.add(stage.from.alias.toLowerCase());
+    }
     for (const stage of ctx.ast.stages) {
       const f = stage.from;
       if (f.image === 'scratch') continue;
-      if (!f.digest) {
-        violations.push({ rule: 'DV1009', severity: 'info', message: `Consider pinning "${f.image}" with a digest (e.g., image@sha256:...) for reproducible builds.`, line: f.line });
-      }
+      if (f.digest) continue;
+      // Skip stage aliases (e.g., FROM builder, FROM docs-base)
+      if (stageAliases.has(f.image.toLowerCase())) continue;
+      // Skip ARG variable references (e.g., ${GOLANG_IMAGE}, $BASE_IMAGE)
+      if (/\$\{?[A-Za-z_]/.test(f.image)) continue;
+      violations.push({ rule: 'DV1009', severity: 'info', message: `Consider pinning "${f.image}" with a digest (e.g., image@sha256:...) for reproducible builds.`, line: f.line });
     }
     return violations;
   },

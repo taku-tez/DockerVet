@@ -149,4 +149,21 @@ describe('DV1009 - Unpinned digest', () => {
   it('skips scratch', () => {
     expect(hasRule(lintDockerfile('FROM scratch'), 'DV1009')).toBe(false);
   });
+  it('skips stage aliases', () => {
+    expect(hasRule(lintDockerfile('FROM node:20 AS builder\nRUN npm ci\nFROM alpine:3.19\nCOPY --from=builder /app /app'), 'DV1009')).toBe(true);
+    // The 'builder' stage reference should not trigger DV1009
+    const df = 'FROM node:20 AS builder\nRUN npm ci\nFROM builder';
+    const results = lintDockerfile(df);
+    const dv1009 = results.filter(r => r.rule === 'DV1009');
+    expect(dv1009.length).toBe(1); // only node:20, not builder
+    expect(dv1009[0].message).toContain('node');
+  });
+  it('skips ARG variable references', () => {
+    const df = 'ARG BASE_IMAGE=ubuntu:20.04\nFROM ${BASE_IMAGE}';
+    expect(hasRule(lintDockerfile(df), 'DV1009')).toBe(false);
+  });
+  it('skips $VAR without braces', () => {
+    const df = 'ARG IMG=node:20\nFROM $IMG';
+    expect(hasRule(lintDockerfile(df), 'DV1009')).toBe(false);
+  });
 });
