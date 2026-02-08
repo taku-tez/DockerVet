@@ -1,0 +1,8 @@
+FROM ubuntu
+RUN sudo apt install -y curl
+RUN curl https://example.com/setup.sh | bash
+WORKDIR tmp
+ENV DB_PASSWORD=supersecret
+EXPOSE 70000
+COPY . .
+CMD node app.js

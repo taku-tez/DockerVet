@@ -1,0 +1,23 @@
+{
+  "name": "dockervet",
+  "version": "0.1.0",
+  "description": "Dockerfile security linter - Hadolint-compatible + security-focused rules",
+  "main": "dist/index.js",
+  "bin": {
+    "dockervet": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["dockerfile", "linter", "security", "hadolint", "docker"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "@types/node": "^22.0.0"
+  }
+}
