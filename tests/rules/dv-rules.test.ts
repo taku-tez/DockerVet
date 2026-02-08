@@ -103,6 +103,13 @@ describe('DV1006 - Non-root user', () => {
   it('skips nonroot tag variants', () => {
     expect(hasRule(lintDockerfile('FROM gcr.io/distroless/base-debian12:nonroot-amd64\nCOPY app /app'), 'DV1006')).toBe(false);
   });
+  it('skips chainguard static base images', () => {
+    expect(hasRule(lintDockerfile('FROM cgr.dev/chainguard/static@sha256:abc123\nCOPY app /app'), 'DV1006')).toBe(false);
+  });
+  it('resolves stage alias to original base image', () => {
+    const df = 'FROM cgr.dev/chainguard/static@sha256:abc AS distroless_source\nFROM ubuntu AS builder\nRUN make\nFROM distroless_source\nCOPY --from=builder /app /app';
+    expect(hasRule(lintDockerfile(df), 'DV1006')).toBe(false);
+  });
 });
 
 describe('DV1007 - Package manager cache not cleaned', () => {

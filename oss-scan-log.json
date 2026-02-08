@@ -91,5 +91,49 @@
     },
     "notableFindings": "DL3001 flags 'mount' keyword in comments about BuildKit --mount. Heavy DL3018 apk version pinning warnings.",
     "improvements": []
+  },
+  {
+    "repo": "prometheus/prometheus",
+    "scannedAt": "2026-02-08T22:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 13,
+      "style": 8
+    },
+    "notableFindings": "DV1006 false positive on distroless nonroot base images",
+    "improvements": [
+      "Fixed DV1006 to skip nonroot distroless base images"
+    ]
+  },
+  {
+    "repo": "argoproj/argo-cd",
+    "scannedAt": "2026-02-08T22:00:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 187,
+    "severities": {
+      "error": 7,
+      "warning": 99,
+      "info": 57,
+      "style": 24
+    },
+    "notableFindings": "Heavy DL3008 apt version pinning (68 findings). DL3004 sudo usage in builder stages. All findings appear legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "goharbor/harbor",
+    "scannedAt": "2026-02-08T22:00:00+09:00",
+    "dockerfiles": 36,
+    "totalIssues": 403,
+    "severities": {
+      "error": 4,
+      "warning": 196,
+      "info": 170,
+      "style": 33
+    },
+    "notableFindings": "DL3041 (77x) dnf version pinning. DV1001 correctly detected hardcoded COSIGN_PASSWORD=Harbor12345 in test Dockerfiles. Large repo with many Dockerfiles.",
+    "improvements": []
   }
 ]

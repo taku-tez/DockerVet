@@ -133,13 +133,22 @@ export const DV1006: Rule = {
     if (!lastStage) return violations;
     const hasUser = lastStage.instructions.some(i => i.type === 'USER');
     if (!hasUser) {
-      // Skip if base image is known to run as non-root (e.g., distroless nonroot variants)
-      const fromImage = lastStage.from.image.toLowerCase();
-      const fromTag = (lastStage.from.tag || '').toLowerCase();
+      // Skip if base image is known to run as non-root (e.g., distroless nonroot variants, chainguard static)
+      let fromImage = lastStage.from.image.toLowerCase();
+      let fromTag = (lastStage.from.tag || '').toLowerCase();
+      // Resolve stage alias to original base image
+      if (!fromImage.includes('/') && !fromImage.includes('.')) {
+        const aliasStage = ctx.ast.stages.find(s => s.from.alias?.toLowerCase() === fromImage);
+        if (aliasStage) {
+          fromImage = aliasStage.from.image.toLowerCase();
+          fromTag = (aliasStage.from.tag || '').toLowerCase();
+        }
+      }
       const isNonRootBase =
         /nonroot/.test(fromTag) ||
         /nonroot/.test(fromImage) ||
-        (/distroless/.test(fromImage) && /nonroot/.test(fromTag));
+        (/distroless/.test(fromImage) && /nonroot/.test(fromTag)) ||
+        /cgr\.dev\/chainguard\/static/.test(fromImage);
       if (!isNonRootBase) {
         violations.push({ rule: 'DV1006', severity: 'warning', message: 'No USER instruction found. Container will run as root by default.', line: lastStage.from.line });
       }
