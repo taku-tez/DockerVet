@@ -224,6 +224,8 @@ export const DV1009: Rule = {
       if (stageAliases.has(f.image.toLowerCase())) continue;
       // Skip ARG variable references (e.g., ${GOLANG_IMAGE}, $BASE_IMAGE)
       if (/\$\{?[A-Za-z_]/.test(f.image)) continue;
+      // Skip Jinja2/template variables (e.g., {{ base_image }})
+      if (/\{\{/.test(f.image)) continue;
       violations.push({ rule: 'DV1009', severity: 'info', message: `Consider pinning "${f.image}" with a digest (e.g., image@sha256:...) for reproducible builds.`, line: f.line });
     }
     return violations;

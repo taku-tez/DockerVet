@@ -166,4 +166,8 @@ describe('DV1009 - Unpinned digest', () => {
     const df = 'ARG IMG=node:20\nFROM $IMG';
     expect(hasRule(lintDockerfile(df), 'DV1009')).toBe(false);
   });
+  it('skips Jinja2 template variables', () => {
+    const df = 'FROM {{ base_image }}:{{ version }}';
+    expect(hasRule(lintDockerfile(df), 'DV1009')).toBe(false);
+  });
 });

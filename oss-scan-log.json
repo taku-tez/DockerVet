@@ -439,5 +439,91 @@
     },
     "notableFindings": "DL3021 correctly flags COPY with 3 args where dest lacks trailing /. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "opentofu/opentofu",
+    "scannedAt": "2026-02-09T05:58:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 35,
+    "severities": {
+      "error": 1,
+      "warning": 14,
+      "info": 17,
+      "style": 0
+    },
+    "notableFindings": "DV4011 false positive on quoted absolute WORKDIR (\"/app\"). DL3000 also triggered (same root cause in DL3000 uses w.path which is OK).",
+    "improvements": [
+      "Fixed DV4011 to strip surrounding quotes before checking absolute/relative paths"
+    ]
+  },
+  {
+    "repo": "woodpecker-ci/woodpecker",
+    "scannedAt": "2026-02-09T05:58:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 51,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 20,
+      "style": 15
+    },
+    "notableFindings": "Heavy DL3029 --platform warnings (cross-compilation CI). DV4012 consecutive COPY. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "calcom/cal.com",
+    "scannedAt": "2026-02-09T05:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 22,
+    "severities": {
+      "error": 4,
+      "warning": 4,
+      "info": 7,
+      "style": 7
+    },
+    "notableFindings": "DV1001 correctly flags NEXTAUTH_SECRET in ARG. DL3044 correctly flags self-referencing ENV vars. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "hasura/graphql-engine",
+    "scannedAt": "2026-02-09T06:57:00+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 266,
+    "severities": {
+      "error": 4,
+      "warning": 120,
+      "info": 121,
+      "style": 21
+    },
+    "notableFindings": "DV1001 correctly flags POSTGRES_PASSWORD in test Dockerfile. Heavy DL3008 apt version pinning. Community boilerplates have DL3000/DL3020 issues. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cockroachdb/cockroach",
+    "scannedAt": "2026-02-09T06:57:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 172,
+    "severities": {
+      "error": 10,
+      "warning": 88,
+      "info": 69,
+      "style": 5
+    },
+    "notableFindings": "Heavy DV1003 curl|sh in build scripts (9 findings, all legitimate). DV1001 correctly flags GF_SECURITY_ADMIN_PASSWORD. Heavy DL3008 apt pinning.",
+    "improvements": []
+  },
+  {
+    "repo": "mattermost/mattermost",
+    "scannedAt": "2026-02-09T06:57:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 133,
+    "severities": {
+      "error": 5,
+      "warning": 60,
+      "info": 37,
+      "style": 31
+    },
+    "notableFindings": "Heavy DV4012 consecutive COPY (31x). DV1001 correctly flags POSTGRES_PASSWORD. DL3020 ADD usage in preview Dockerfile. All findings legitimate.",
+    "improvements": []
   }
 ]
