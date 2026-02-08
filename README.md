@@ -103,6 +103,50 @@ DockerVet implements all major Hadolint rules:
 | DV1008 | warning | COPY . . too broad |
 | DV1009 | info | Base image not pinned by digest |
 
+### CIS Docker Benchmark Rules (DV2xxx)
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| DV2001 | warning | apt-get update used alone without install |
+| DV2002 | warning | apt-get dist-upgrade should be avoided |
+| DV2003 | error | Sensitive system directories as VOLUME |
+| DV2004 | info | Missing --no-install-recommends |
+| DV2005 | warning | MAINTAINER is deprecated |
+| DV2006 | warning | Multiple ENTRYPOINT instructions |
+| DV2007 | warning | Multiple CMD instructions |
+| DV2008 | warning | apt-get update/install in separate RUNs |
+| DV2009 | warning | Unsafe shell in SHELL instruction |
+
+### Security Advanced Rules (DV3xxx)
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| DV3001 | error | Cloud credential patterns (AWS/GCP) |
+| DV3002 | error | SSH private key COPY/ADD |
+| DV3003 | warning | .env file COPY/ADD |
+| DV3004 | warning | Certificate/private key COPY |
+| DV3005 | error | GPG private key COPY |
+| DV3006 | error | Unauthenticated package install |
+| DV3007 | warning | TLS verification disabled |
+| DV3008 | warning | git clone with possible credentials |
+| DV3009 | warning | EXPOSE 22 (SSH) |
+| DV3010 | warning | VOLUME on sensitive paths |
+
+### Best Practices Rules (DV4xxx)
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| DV4001 | info | Multiple package install RUNs |
+| DV4002 | info | Consecutive RUN instructions (3+) |
+| DV4003 | info | No WORKDIR before RUN |
+| DV4004 | info | ARG defined after ENV |
+| DV4005 | info | No CMD or ENTRYPOINT in final stage |
+| DV4006 | warning | Large EXPOSE port range |
+| DV4007 | info | DEBIAN_FRONTEND as global ENV |
+| DV4008 | info | TODO/FIXME/HACK comments |
+| DV4009 | warning | chmod 777 excessive permissions |
+| DV4010 | info | Recursive chown -R increases layer size |
+
 ## Configuration
 
 Create `.dockervetrc.yaml`:
