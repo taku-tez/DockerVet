@@ -97,6 +97,12 @@ describe('DV1006 - Non-root user', () => {
   it('passes with USER', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nUSER nobody'), 'DV1006')).toBe(false);
   });
+  it('skips distroless nonroot base images', () => {
+    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/static-debian13:nonroot\nCOPY app /app'), 'DV1006')).toBe(false);
+  });
+  it('skips nonroot tag variants', () => {
+    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/base-debian12:nonroot-amd64\nCOPY app /app'), 'DV1006')).toBe(false);
+  });
 });
 
 describe('DV1007 - Package manager cache not cleaned', () => {

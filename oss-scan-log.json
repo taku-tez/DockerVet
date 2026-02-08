@@ -4,26 +4,92 @@
     "scannedAt": "2026-02-08T18:00:00+09:00",
     "dockerfiles": 4,
     "totalIssues": 27,
-    "severities": {"error": 0, "warning": 13, "info": 10, "style": 4},
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 10,
+      "style": 4
+    },
     "notableFindings": "DL3028 false positive on gem install -v version values",
-    "improvements": ["Fixed DL3028 gem version flag parsing"]
+    "improvements": [
+      "Fixed DL3028 gem version flag parsing"
+    ]
   },
   {
     "repo": "grafana/grafana",
     "scannedAt": "2026-02-08T18:00:00+09:00",
     "dockerfiles": 30,
     "totalIssues": 200,
-    "severities": {"error": 20, "warning": 80, "info": 60, "style": 40},
+    "severities": {
+      "error": 20,
+      "warning": 80,
+      "info": 60,
+      "style": 40
+    },
     "notableFindings": "DL3018 false positive: inline comments in continuations parsed as package names; DL3006 false positive on stage aliases with ARG vars",
-    "improvements": ["Fixed lexer to strip comments in continuations", "Fixed DL3006 to skip stage aliases"]
+    "improvements": [
+      "Fixed lexer to strip comments in continuations",
+      "Fixed DL3006 to skip stage aliases"
+    ]
   },
   {
     "repo": "gohugoio/hugo",
     "scannedAt": "2026-02-08T18:00:00+09:00",
     "dockerfiles": 1,
     "totalIssues": 29,
-    "severities": {"error": 0, "warning": 12, "info": 16, "style": 1},
+    "severities": {
+      "error": 0,
+      "warning": 12,
+      "info": 16,
+      "style": 1
+    },
     "notableFindings": "DL3006 false positive on internal stage names (gobuild, gorun)",
-    "improvements": ["Fixed DL3006 stage alias detection"]
+    "improvements": [
+      "Fixed DL3006 stage alias detection"
+    ]
+  },
+  {
+    "repo": "nextcloud/server",
+    "scannedAt": "2026-02-08T18:51:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 47,
+    "severities": {
+      "error": 3,
+      "warning": 28,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3001 flags vim/nano in devcontainer (expected for dev images). DV1003 pipe to shell detected. Many DL3008 version pinning warnings.",
+    "improvements": []
+  },
+  {
+    "repo": "minio/minio",
+    "scannedAt": "2026-02-08T18:51:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 67,
+    "severities": {
+      "error": 12,
+      "warning": 14,
+      "info": 22,
+      "style": 19
+    },
+    "notableFindings": "DV1001 false positive: _FILE suffix ENV vars (Docker secrets file path convention) flagged as hardcoded secrets",
+    "improvements": [
+      "Fixed DV1001 to skip _FILE suffix ENV vars (Docker secrets convention)"
+    ]
+  },
+  {
+    "repo": "go-gitea/gitea",
+    "scannedAt": "2026-02-08T18:51:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 49,
+    "severities": {
+      "error": 0,
+      "warning": 31,
+      "info": 16,
+      "style": 2
+    },
+    "notableFindings": "DL3001 flags 'mount' keyword in comments about BuildKit --mount. Heavy DL3018 apk version pinning warnings.",
+    "improvements": []
   }
 ]

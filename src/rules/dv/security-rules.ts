@@ -133,7 +133,16 @@ export const DV1006: Rule = {
     if (!lastStage) return violations;
     const hasUser = lastStage.instructions.some(i => i.type === 'USER');
     if (!hasUser) {
-      violations.push({ rule: 'DV1006', severity: 'warning', message: 'No USER instruction found. Container will run as root by default.', line: lastStage.from.line });
+      // Skip if base image is known to run as non-root (e.g., distroless nonroot variants)
+      const fromImage = lastStage.from.image.toLowerCase();
+      const fromTag = (lastStage.from.tag || '').toLowerCase();
+      const isNonRootBase =
+        /nonroot/.test(fromTag) ||
+        /nonroot/.test(fromImage) ||
+        (/distroless/.test(fromImage) && /nonroot/.test(fromTag));
+      if (!isNonRootBase) {
+        violations.push({ rule: 'DV1006', severity: 'warning', message: 'No USER instruction found. Container will run as root by default.', line: lastStage.from.line });
+      }
     }
     return violations;
   },
