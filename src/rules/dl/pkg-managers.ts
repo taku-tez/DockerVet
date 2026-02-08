@@ -165,14 +165,16 @@ export const DL3028: Rule = {
         if (inst.type !== 'RUN') continue;
         const m = inst.arguments.match(/gem\s+install\s+(.+?)(?:[;&|]|$)/s);
         if (!m) continue;
-        const parts = m[1].split(/\s+/).filter(p => p && !p.startsWith('-'));
-        for (let i = 0; i < parts.length; i++) {
-          const pkg = parts[i];
-          const nextIsVersion = parts[i + 1] === '-v' || parts[i + 1] === '--version';
-          if (!nextIsVersion && !pkg.startsWith('$') && !pkg.includes(':')) {
+        const allParts = m[1].split(/\s+/).filter(p => p);
+        for (let i = 0; i < allParts.length; i++) {
+          const part = allParts[i];
+          // Skip flags and their values
+          if (part === '-v' || part === '--version') { i++; continue; }
+          if (part.startsWith('-')) continue;
+          const pkg = part;
+          if (!pkg.startsWith('$') && !pkg.includes(':')) {
             violations.push({ rule: 'DL3028', severity: 'warning', message: `Pin versions in gem install. Instead of \`gem install ${pkg}\` use \`gem install ${pkg}:<version>\``, line: inst.line });
           }
-          if (nextIsVersion) i += 2;
         }
       }
     }

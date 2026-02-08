@@ -31,7 +31,13 @@ export function tokenize(content: string): Token[] {
     const startLine = i + 1;
     while (fullLine.trimEnd().endsWith('\\') && i + 1 < lines.length) {
       i++;
-      fullLine = fullLine.trimEnd().slice(0, -1) + ' ' + lines[i].trim();
+      const nextTrimmed = lines[i].trim();
+      // Skip comment lines within continuations (e.g., `apk add --no-cache \ \n # comment \n pkg`)
+      if (nextTrimmed.startsWith('#')) {
+        fullLine = fullLine.trimEnd().slice(0, -1) + ' \\';
+        continue;
+      }
+      fullLine = fullLine.trimEnd().slice(0, -1) + ' ' + nextTrimmed;
     }
 
     tokens.push({ type: 'INSTRUCTION', line: startLine, value: fullLine.trim(), raw: fullLine });

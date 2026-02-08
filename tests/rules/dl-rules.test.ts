@@ -79,6 +79,9 @@ describe('DL3006 - Tag version explicitly', () => {
   it('skips scratch', () => {
     expect(hasRule(lintDockerfile('FROM scratch'), 'DL3006')).toBe(false);
   });
+  it('skips internal stage aliases', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.21 AS gobuild\nRUN go build\nFROM gobuild\nRUN echo hi'), 'DL3006')).toBe(false);
+  });
 });
 
 describe('DL3007 - No latest tag', () => {
@@ -266,6 +269,12 @@ describe('DL3027 - Use apt-get not apt', () => {
 describe('DL3028 - Pin gem versions', () => {
   it('flags unpinned gem', () => {
     expect(hasRule(lintDockerfile('FROM ruby:3\nRUN gem install rails'), 'DL3028')).toBe(true);
+  });
+  it('does not flag gem with -v version', () => {
+    const result = lintDockerfile('FROM ruby:3\nRUN gem install nokogiri -v 1.18.6');
+    const dl3028 = result.filter(v => v.rule === 'DL3028');
+    // Should flag nokogiri (unpinned name) but NOT 1.18.6
+    expect(dl3028.some(v => v.message.includes('1.18.6'))).toBe(false);
   });
 });
 

@@ -26,6 +26,14 @@ describe('Lexer', () => {
     expect(tokens[0].value).toContain('apt-get update');
     expect(tokens[0].value).toContain('apt-get install');
   });
+
+  it('strips comments within line continuations', () => {
+    const tokens = tokenize('RUN apk add --no-cache \\\n  # This is a comment\n  bash \\\n  curl');
+    expect(tokens[0].type).toBe('INSTRUCTION');
+    expect(tokens[0].value).not.toContain('comment');
+    expect(tokens[0].value).toContain('bash');
+    expect(tokens[0].value).toContain('curl');
+  });
 });
 
 describe('Parser', () => {
