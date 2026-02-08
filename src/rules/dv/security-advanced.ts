@@ -256,6 +256,54 @@ export const DV3013: Rule = {
   },
 };
 
+// DV3014: Hardcoded database connection strings
+export const DV3014: Rule = {
+  id: 'DV3014', severity: 'error',
+  description: 'Hardcoded database connection string detected.',
+  check(ctx) {
+    const dbPatterns = [
+      /(?:mysql|mariadb|postgres(?:ql)?|mongodb(?:\+srv)?|redis|amqp|mssql):\/\/[^${\s]+@[^\s]+/i,
+      /jdbc:(?:mysql|postgresql|oracle|sqlserver|mariadb):\/\/[^\s]+/i,
+      /Server\s*=\s*[^;]+;\s*(?:Database|Initial Catalog)\s*=\s*[^;]+;\s*(?:User\s*Id|Uid)\s*=\s*[^;]+;\s*(?:Password|Pwd)\s*=\s*[^${\s;]+/i,
+    ];
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (!['ENV', 'ARG', 'RUN', 'LABEL'].includes(inst.type)) continue;
+        const text = inst.arguments || inst.raw;
+        for (const pat of dbPatterns) {
+          if (pat.test(text)) {
+            violations.push({ rule: 'DV3014', severity: 'error', message: 'Hardcoded database connection string detected. Use runtime environment variables or secrets.', line: inst.line });
+            break;
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3015: Downloading scripts and piping to shell without checksum verification
+export const DV3015: Rule = {
+  id: 'DV3015', severity: 'warning',
+  description: 'Avoid piping curl/wget output to shell without checksum verification.',
+  check(ctx) {
+    const pipeToShell = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|dash|ash)/;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (pipeToShell.test(inst.arguments)) {
+          if (!/sha256sum|sha512sum|shasum|gpg\s+--verify|md5sum/.test(inst.arguments)) {
+            violations.push({ rule: 'DV3015', severity: 'warning', message: 'Piping curl/wget to shell without checksum verification. Download first, verify, then execute.', line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3010: VOLUME with sensitive paths
 export const DV3010: Rule = {
   id: 'DV3010', severity: 'warning',

@@ -131,3 +131,30 @@ describe('DV4010 - chown -R', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi'), 'DV4010')).toBe(false);
   });
 });
+
+describe('DV4011 - WORKDIR relative path', () => {
+  it('flags relative WORKDIR', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR src'), 'DV4011')).toBe(true);
+  });
+  it('flags relative path with subdirectory', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR app/src'), 'DV4011')).toBe(true);
+  });
+  it('passes absolute path', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR /app'), 'DV4011')).toBe(false);
+  });
+  it('passes variable reference', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG APP_DIR=/app\nWORKDIR $APP_DIR'), 'DV4011')).toBe(false);
+  });
+});
+
+describe('DV4012 - consecutive COPY instructions', () => {
+  it('flags consecutive COPY without --from', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY package.json .\nCOPY tsconfig.json .'), 'DV4012')).toBe(true);
+  });
+  it('passes COPY separated by RUN', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY package.json .\nRUN npm install\nCOPY . .'), 'DV4012')).toBe(false);
+  });
+  it('passes single COPY', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY . .'), 'DV4012')).toBe(false);
+  });
+});

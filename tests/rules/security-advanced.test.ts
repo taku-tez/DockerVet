@@ -183,3 +183,42 @@ describe('DV3013 - setuid/setgid bits', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 755 /app'), 'DV3013')).toBe(false);
   });
 });
+
+describe('DV3014 - hardcoded database connection strings', () => {
+  it('flags mysql connection string in ENV', () => {
+    expect(hasRule(lintDockerfile('FROM node\nENV DATABASE_URL=mysql://user:password@db.example.com:3306/mydb'), 'DV3014')).toBe(true);
+  });
+  it('flags postgresql connection string in ENV', () => {
+    expect(hasRule(lintDockerfile('FROM node\nENV DB_URL=postgresql://admin:secret@localhost:5432/app'), 'DV3014')).toBe(true);
+  });
+  it('flags mongodb connection string in ARG', () => {
+    expect(hasRule(lintDockerfile('FROM node\nARG MONGO_URI=mongodb://root:pass123@mongo.host:27017/db'), 'DV3014')).toBe(true);
+  });
+  it('flags redis connection string', () => {
+    expect(hasRule(lintDockerfile('FROM node\nENV REDIS_URL=redis://user:pw@redis.host:6379'), 'DV3014')).toBe(true);
+  });
+  it('flags JDBC connection string', () => {
+    expect(hasRule(lintDockerfile('FROM openjdk\nENV JDBC_URL=jdbc:postgresql://db:5432/myapp'), 'DV3014')).toBe(true);
+  });
+  it('passes variable reference', () => {
+    expect(hasRule(lintDockerfile('FROM node\nENV DATABASE_URL=${DB_URL}'), 'DV3014')).toBe(false);
+  });
+  it('passes no connection string', () => {
+    expect(hasRule(lintDockerfile('FROM node\nENV NODE_ENV=production'), 'DV3014')).toBe(false);
+  });
+});
+
+describe('DV3015 - curl/wget pipe to shell', () => {
+  it('flags curl piped to bash', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/install.sh | bash'), 'DV3015')).toBe(true);
+  });
+  it('flags wget piped to sh', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN wget -qO- https://example.com/setup.sh | sh'), 'DV3015')).toBe(true);
+  });
+  it('passes when checksum is verified', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/install.sh -o install.sh && sha256sum -c checksums && bash install.sh'), 'DV3015')).toBe(false);
+  });
+  it('passes normal curl without pipe', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/file.tar.gz -o file.tar.gz'), 'DV3015')).toBe(false);
+  });
+});

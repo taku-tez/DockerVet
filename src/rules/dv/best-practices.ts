@@ -1,5 +1,5 @@
 import { Rule, Violation } from '../types';
-import { EnvInstruction, ExposeInstruction } from '../../parser/types';
+import { CopyInstruction, EnvInstruction, ExposeInstruction } from '../../parser/types';
 
 // DV4001: Multiple package install in separate RUNs
 export const DV4001: Rule = {
@@ -193,6 +193,50 @@ export const DV4010: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type === 'RUN' && /chown\s+-R/.test(inst.arguments)) {
           violations.push({ rule: 'DV4010', severity: 'info', message: 'Recursive chown -R increases layer size. Consider using COPY --chown instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4011: WORKDIR should use absolute paths
+export const DV4011: Rule = {
+  id: 'DV4011', severity: 'warning',
+  description: 'WORKDIR should use an absolute path.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'WORKDIR') continue;
+        const dir = inst.arguments.trim();
+        // Allow variable references like $HOME or ${APP_DIR}
+        if (dir.startsWith('$') || dir.startsWith('/')) continue;
+        violations.push({ rule: 'DV4011', severity: 'warning', message: `WORKDIR "${dir}" is a relative path. Use an absolute path for predictable behavior.`, line: inst.line });
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4012: Multiple consecutive COPY instructions that could be combined
+export const DV4012: Rule = {
+  id: 'DV4012', severity: 'style',
+  description: 'Multiple consecutive COPY instructions with same --from could be combined.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      let prevCopy: { from?: string; line: number } | null = null;
+      for (const inst of stage.instructions) {
+        if (inst.type === 'COPY') {
+          const c = inst as CopyInstruction;
+          const curFrom = c.from || '';
+          if (prevCopy && prevCopy.from === curFrom) {
+            violations.push({ rule: 'DV4012', severity: 'style', message: 'Multiple consecutive COPY instructions with same source could potentially be combined.', line: inst.line });
+          }
+          prevCopy = { from: curFrom, line: inst.line };
+        } else {
+          prevCopy = null;
         }
       }
     }
