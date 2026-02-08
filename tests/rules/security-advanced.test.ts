@@ -141,3 +141,45 @@ describe('DV3010 - VOLUME sensitive paths', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /data'), 'DV3010')).toBe(false);
   });
 });
+
+describe('DV3011 - sudo usage', () => {
+  it('flags sudo in RUN', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN sudo apt-get update'), 'DV3011')).toBe(true);
+  });
+  it('flags sudo after &&', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi && sudo rm -rf /tmp'), 'DV3011')).toBe(true);
+  });
+  it('passes RUN without sudo', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get update'), 'DV3011')).toBe(false);
+  });
+  it('passes installing sudo package', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y sudo'), 'DV3011')).toBe(false);
+  });
+});
+
+describe('DV3012 - hardcoded tokens in RUN', () => {
+  it('flags GitHub PAT', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git clone https://ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789@github.com/repo'), 'DV3012')).toBe(true);
+  });
+  it('flags npm token', () => {
+    expect(hasRule(lintDockerfile('FROM node\nRUN npm config set //registry.npmjs.org/:_authToken npm_abcdefghijklmnopqrstuvwxyz0123456789'), 'DV3012')).toBe(true);
+  });
+  it('flags GitLab PAT', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git clone https://glpat-xxxxxxxxxxxxxxxxxxxx@gitlab.com/repo'), 'DV3012')).toBe(true);
+  });
+  it('passes normal RUN', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get update'), 'DV3012')).toBe(false);
+  });
+});
+
+describe('DV3013 - setuid/setgid bits', () => {
+  it('flags chmod +s', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod +s /usr/bin/something'), 'DV3013')).toBe(true);
+  });
+  it('flags chmod u+s', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod u+s /usr/bin/something'), 'DV3013')).toBe(true);
+  });
+  it('passes normal chmod', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 755 /app'), 'DV3013')).toBe(false);
+  });
+});

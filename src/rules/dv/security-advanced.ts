@@ -182,6 +182,80 @@ export const DV3009: Rule = {
   },
 };
 
+// DV3011: sudo usage in RUN
+export const DV3011: Rule = {
+  id: 'DV3011', severity: 'warning',
+  description: 'Avoid using sudo in Dockerfiles. RUN instructions already execute as root.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        // Match sudo but not "apt-get install sudo" or "apk add sudo"
+        if (/(?:^|&&|\|\||;)\s*sudo\s/.test(inst.arguments) || /^\s*sudo\s/.test(inst.arguments)) {
+          violations.push({ rule: 'DV3011', severity: 'warning', message: 'Avoid using sudo in Dockerfiles. RUN instructions run as root by default. sudo adds unnecessary attack surface.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3012: Hardcoded tokens/passwords in RUN
+export const DV3012: Rule = {
+  id: 'DV3012', severity: 'error',
+  description: 'Possible hardcoded token or password detected in RUN instruction.',
+  check(ctx) {
+    const patterns = [
+      /npm\s+.*(?:_authToken|\/\/[^/]+\/:_auth)\s*=\s*\S+/,        // npm token
+      /pip\s+install\s+.*--extra-index-url\s+https?:\/\/[^@]+@/,    // pip with credentials
+      /(?:BUNDLE_|GEM_)(?:GITHUB__COM|RUBYGEMS__PKG__GITHUB__COM)\s*=\s*\S+/, // bundler credentials
+      /\bnuget\s+.*-k(?:ey)?\s+[A-Za-z0-9]{20,}/,                  // NuGet API key
+      /composer\s+config\s+.*(?:http-basic|bearer)\s+\S+\s+\S+/,    // Composer auth
+      /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,}/,                // GitHub token
+      /\bglpat-[A-Za-z0-9_-]{20,}/,                                  // GitLab PAT
+      /\bnpm_[A-Za-z0-9]{36}/,                                       // npm automation token
+      /\bpypi-[A-Za-z0-9_-]{50,}/,                                   // PyPI API token
+    ];
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        for (const pat of patterns) {
+          if (pat.test(inst.arguments)) {
+            violations.push({ rule: 'DV3012', severity: 'error', message: 'Possible hardcoded token or password in RUN instruction. Use --mount=type=secret or build args.', line: inst.line });
+            break;
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3013: setuid/setgid binaries not stripped
+export const DV3013: Rule = {
+  id: 'DV3013', severity: 'info',
+  description: 'Consider stripping setuid/setgid bits to reduce privilege escalation risk.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      // Only check final stage
+      if (stage !== ctx.ast.stages[ctx.ast.stages.length - 1]) continue;
+      const hasChmodSuid = stage.instructions.some(i =>
+        i.type === 'RUN' && /chmod\s+[ugo]*\+s/.test(i.arguments)
+      );
+      if (hasChmodSuid) {
+        const inst = stage.instructions.find(i =>
+          i.type === 'RUN' && /chmod\s+[ugo]*\+s/.test(i.arguments)
+        )!;
+        violations.push({ rule: 'DV3013', severity: 'info', message: 'Setting setuid/setgid bit detected. This can enable privilege escalation. Consider if this is necessary.', line: inst.line });
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3010: VOLUME with sensitive paths
 export const DV3010: Rule = {
   id: 'DV3010', severity: 'warning',
