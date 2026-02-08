@@ -223,5 +223,51 @@
     },
     "notableFindings": "DL3001 false positive on --mount (same issue as envoy). DV2001/DV2008 apt-get update separation in RELEASING Dockerfiles. DV3008 git clone credential warning.",
     "improvements": []
+  },
+  {
+    "repo": "keycloak/keycloak",
+    "scannedAt": "2026-02-09T01:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 32,
+    "severities": {
+      "error": 6,
+      "warning": 11,
+      "info": 14,
+      "style": 1
+    },
+    "notableFindings": "DV1001 correctly flags PGPASSWORD=password in test Dockerfile. DV1009 false positives on stage aliases and ARG vars.",
+    "improvements": [
+      "Fixed DV1009 to skip stage aliases and ARG variable references"
+    ]
+  },
+  {
+    "repo": "cilium/cilium",
+    "scannedAt": "2026-02-09T01:00:00+09:00",
+    "dockerfiles": 17,
+    "totalIssues": 244,
+    "severities": {
+      "error": 4,
+      "warning": 112,
+      "info": 116,
+      "style": 12
+    },
+    "notableFindings": "DV1009 reduced from 47 to 9 after fix (38 false positives on stage aliases/ARG vars eliminated). Heavy DL3008/DL3006/DL3018 version pinning.",
+    "improvements": [
+      "Fixed DV1009 to skip stage aliases and ARG variable references"
+    ]
+  },
+  {
+    "repo": "etcd-io/etcd",
+    "scannedAt": "2026-02-09T01:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 27,
+    "severities": {
+      "error": 3,
+      "warning": 6,
+      "info": 17,
+      "style": 1
+    },
+    "notableFindings": "All findings legitimate. Small well-maintained Dockerfiles.",
+    "improvements": []
   }
 ]
