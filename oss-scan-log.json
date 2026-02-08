@@ -311,5 +311,49 @@
     },
     "notableFindings": "All findings legitimate. Example Dockerfiles with deprecated MAINTAINER, unpinned pip packages, missing --no-cache-dir.",
     "improvements": []
+  },
+  {
+    "repo": "supabase/supabase",
+    "scannedAt": "2026-02-09T03:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 34,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 12,
+      "style": 4
+    },
+    "notableFindings": "All findings legitimate. DL3045 COPY without WORKDIR, DV4012 consecutive COPY, DV1009 digest pinning recommendations.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/airflow",
+    "scannedAt": "2026-02-09T03:00:00+09:00",
+    "dockerfiles": 24,
+    "totalIssues": 406,
+    "severities": {
+      "error": 8,
+      "warning": 202,
+      "info": 183,
+      "style": 13
+    },
+    "notableFindings": "DV1009 false positive: heredoc COPY <<EOF embedding Python code (from __future__, pathlib, packaging.utils) parsed as FROM instructions",
+    "improvements": [
+      "Added heredoc syntax support to lexer - skips <<DELIM body content to prevent false FROM detection"
+    ]
+  },
+  {
+    "repo": "n8n-io/n8n",
+    "scannedAt": "2026-02-09T03:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 91,
+    "severities": {
+      "error": 1,
+      "warning": 29,
+      "info": 44,
+      "style": 17
+    },
+    "notableFindings": "Heavy DV4012 consecutive COPY (17x). DV1009 digest pinning (15x). All findings legitimate.",
+    "improvements": []
   }
 ]
