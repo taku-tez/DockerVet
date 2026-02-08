@@ -135,5 +135,49 @@
     },
     "notableFindings": "DL3041 (77x) dnf version pinning. DV1001 correctly detected hardcoded COSIGN_PASSWORD=Harbor12345 in test Dockerfiles. Large repo with many Dockerfiles.",
     "improvements": []
+  },
+  {
+    "repo": "istio/istio",
+    "scannedAt": "2026-02-08T22:57:00+09:00",
+    "dockerfiles": 30,
+    "totalIssues": 163,
+    "severities": {
+      "error": 3,
+      "warning": 39,
+      "info": 93,
+      "style": 28
+    },
+    "notableFindings": "DV1006 false positive on chainguard/static base via stage alias (Dockerfile.distroless)",
+    "improvements": [
+      "Fixed DV1006 to resolve stage aliases and recognize cgr.dev/chainguard/static"
+    ]
+  },
+  {
+    "repo": "containerd/containerd",
+    "scannedAt": "2026-02-08T22:57:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 114,
+    "severities": {
+      "error": 2,
+      "warning": 42,
+      "info": 64,
+      "style": 6
+    },
+    "notableFindings": "All findings appear legitimate. Heavy DL3008/DL3015 in contrib Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "linkerd/linkerd2",
+    "scannedAt": "2026-02-08T22:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 112,
+    "severities": {
+      "error": 2,
+      "warning": 21,
+      "info": 45,
+      "style": 44
+    },
+    "notableFindings": "Heavy DL3029 platform mismatch warnings (cross-compilation). All findings legitimate.",
+    "improvements": []
   }
 ]

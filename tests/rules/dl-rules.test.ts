@@ -31,6 +31,15 @@ describe('DL3001 - Inappropriate commands', () => {
   it('passes normal commands', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hello'), 'DL3001')).toBe(false);
   });
+  it('does not flag BuildKit --mount syntax', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN --mount=type=cache,target=/root/.cache pip install -r requirements.txt'), 'DL3001')).toBe(false);
+  });
+  it('does not flag BuildKit --mount=type=bind', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN --mount=type=bind,source=.,target=/app make build'), 'DL3001')).toBe(false);
+  });
+  it('still flags mount command alongside --mount', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN --mount=type=cache,target=/tmp mount /dev/sda1 /mnt'), 'DL3001')).toBe(true);
+  });
 });
 
 describe('DL3002 - Last USER not root', () => {

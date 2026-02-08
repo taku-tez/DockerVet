@@ -11,9 +11,11 @@ export const DL3001: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'RUN') {
+          // Strip BuildKit --mount flags before checking for inappropriate commands
+          const argsWithoutMount = inst.arguments.replace(/--mount=\S+/g, '');
           for (const cmd of INAPPROPRIATE_COMMANDS) {
             const regex = new RegExp(`(?:^|[;&|]|\\b)${cmd}\\b`);
-            if (regex.test(inst.arguments)) {
+            if (regex.test(argsWithoutMount)) {
               violations.push({ rule: 'DL3001', severity: 'info', message: `Avoid using ${cmd} in RUN. It does not make sense in a Docker container`, line: inst.line });
             }
           }
