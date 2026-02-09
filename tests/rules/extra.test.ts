@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { lintDockerfile, hasRule, defaultConfig } from '../helpers';
 import { parse } from '../../src/parser/parser';
-import { lint } from '../../src/engine/linter';
-
-const defaultConfig = { ignore: [], trustedRegistries: [], requiredLabels: [], override: {} };
-const lintDockerfile = (content: string, config = defaultConfig) => lint(parse(content), { config });
-const hasRule = (v: any[], rule: string) => v.some((x: any) => x.rule === rule);
 
 describe('DL3033 - yum version pinning', () => {
   it('flags unpinned yum package', () => {

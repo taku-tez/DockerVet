@@ -1,7 +1,13 @@
+/**
+ * General Dockerfile DL rules (DL3010-DL3057).
+ *
+ * Uses shared utilities from ../utils.ts for common iteration patterns.
+ */
 import { Rule, Violation } from '../types';
+import { forEachInstruction, ARCHIVE_PATTERN, isUrl } from '../utils';
 import {
-  FromInstruction, CopyInstruction, ExposeInstruction, HealthcheckInstruction,
-  EnvInstruction, LabelInstruction, WorkdirInstruction,
+  CopyInstruction, ExposeInstruction,
+  EnvInstruction, LabelInstruction,
 } from '../../parser/types';
 
 // DL3010: Use ADD for extracting archives
@@ -10,16 +16,12 @@ export const DL3010: Rule = {
   description: 'Use ADD for extracting archives into an image',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'COPY') {
-          const c = inst as CopyInstruction;
-          if (c.sources.some(s => /\.(tar|tar\.gz|tgz|tar\.bz2|tar\.xz|zip)$/i.test(s))) {
-            violations.push({ rule: 'DL3010', severity: 'info', message: 'Use ADD for extracting archives into an image', line: inst.line });
-          }
-        }
+    forEachInstruction(ctx, 'COPY', (inst) => {
+      const c = inst as CopyInstruction;
+      if (c.sources.some(s => ARCHIVE_PATTERN.test(s))) {
+        violations.push({ rule: 'DL3010', severity: 'info', message: 'Use ADD for extracting archives into an image', line: inst.line });
       }
-    }
+    });
     return violations;
   },
 };
@@ -30,18 +32,14 @@ export const DL3011: Rule = {
   description: 'Valid UNIX ports range from 0 to 65535',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'EXPOSE') {
-          const e = inst as ExposeInstruction;
-          for (const p of e.ports) {
-            if (p.port < 0 || p.port > 65535) {
-              violations.push({ rule: 'DL3011', severity: 'error', message: `Valid UNIX ports range from 0 to 65535. Port ${p.port} is invalid.`, line: inst.line });
-            }
-          }
+    forEachInstruction(ctx, 'EXPOSE', (inst) => {
+      const e = inst as ExposeInstruction;
+      for (const p of e.ports) {
+        if (p.port < 0 || p.port > 65535) {
+          violations.push({ rule: 'DL3011', severity: 'error', message: `Valid UNIX ports range from 0 to 65535. Port ${p.port} is invalid.`, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -70,18 +68,14 @@ export const DL3020: Rule = {
   description: 'Use COPY instead of ADD for files and folders',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'ADD') {
-          const a = inst as CopyInstruction;
-          const hasUrl = a.sources.some(s => s.startsWith('http://') || s.startsWith('https://'));
-          const hasArchive = a.sources.some(s => /\.(tar|tar\.gz|tgz|tar\.bz2|tar\.xz|zip)$/i.test(s));
-          if (!hasUrl && !hasArchive) {
-            violations.push({ rule: 'DL3020', severity: 'error', message: 'Use COPY instead of ADD for files and folders', line: inst.line });
-          }
-        }
+    forEachInstruction(ctx, 'ADD', (inst) => {
+      const a = inst as CopyInstruction;
+      const hasUrlSrc = a.sources.some(s => isUrl(s));
+      const hasArchive = a.sources.some(s => ARCHIVE_PATTERN.test(s));
+      if (!hasUrlSrc && !hasArchive) {
+        violations.push({ rule: 'DL3020', severity: 'error', message: 'Use COPY instead of ADD for files and folders', line: inst.line });
       }
-    }
+    });
     return violations;
   },
 };
@@ -92,15 +86,13 @@ export const DL3021: Rule = {
   description: 'COPY with more than 2 arguments requires the last argument to end with /',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'COPY' || inst.type === 'ADD') {
-          const c = inst as CopyInstruction;
-          if (c.sources.length > 1 && !c.destination.endsWith('/')) {
-            violations.push({ rule: 'DL3021', severity: 'error', message: 'COPY with more than 2 arguments requires the last argument to end with /', line: inst.line });
-          }
+    for (const type of ['COPY', 'ADD'] as const) {
+      forEachInstruction(ctx, type, (inst) => {
+        const c = inst as CopyInstruction;
+        if (c.sources.length > 1 && !c.destination.endsWith('/')) {
+          violations.push({ rule: 'DL3021', severity: 'error', message: 'COPY with more than 2 arguments requires the last argument to end with /', line: inst.line });
         }
-      }
+      });
     }
     return violations;
   },
@@ -226,16 +218,14 @@ export const DL3043: Rule = {
   description: 'ONBUILD should not contain FROM or MAINTAINER',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'ONBUILD' && inst.innerInstruction) {
-          const inner = inst.innerInstruction.type;
-          if (inner === 'FROM' || inner === 'MAINTAINER') {
-            violations.push({ rule: 'DL3043', severity: 'error', message: `ONBUILD should not contain ${inner}`, line: inst.line });
-          }
+    forEachInstruction(ctx, 'ONBUILD', (inst) => {
+      if (inst.innerInstruction) {
+        const inner = inst.innerInstruction.type;
+        if (inner === 'FROM' || inner === 'MAINTAINER') {
+          violations.push({ rule: 'DL3043', severity: 'error', message: `ONBUILD should not contain ${inner}`, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -246,25 +236,20 @@ export const DL3044: Rule = {
   description: 'Do not refer to an environment variable within the same ENV statement where it is defined',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'ENV') {
-          const env = inst as EnvInstruction;
-          if (env.pairs.length > 1) {
-            const definedKeys = new Set<string>();
-            for (const pair of env.pairs) {
-              // Check if value references a key defined in this same statement
-              for (const k of definedKeys) {
-                if (pair.value.includes(`$${k}`) || pair.value.includes(`\${${k}}`)) {
-                  violations.push({ rule: 'DL3044', severity: 'error', message: `Do not refer to an environment variable within the same ENV statement where it is defined (${k})`, line: inst.line });
-                }
-              }
-              definedKeys.add(pair.key);
+    forEachInstruction(ctx, 'ENV', (inst) => {
+      const env = inst as EnvInstruction;
+      if (env.pairs.length > 1) {
+        const definedKeys = new Set<string>();
+        for (const pair of env.pairs) {
+          for (const k of definedKeys) {
+            if (pair.value.includes(`$${k}`) || pair.value.includes(`\${${k}}`)) {
+              violations.push({ rule: 'DL3044', severity: 'error', message: `Do not refer to an environment variable within the same ENV statement where it is defined (${k})`, line: inst.line });
             }
           }
+          definedKeys.add(pair.key);
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -297,20 +282,18 @@ export const DL3046: Rule = {
   description: 'useradd without flag -l and target UID set to high value may cause performance issues',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'RUN' && /useradd\b/.test(inst.arguments)) {
-          const hasL = /-l\b/.test(inst.arguments);
-          const uidMatch = inst.arguments.match(/--uid\s+(\d+)|-u\s+(\d+)/);
-          if (!hasL && uidMatch) {
-            const uid = parseInt(uidMatch[1] ?? uidMatch[2], 10);
-            if (uid > 65534) {
-              violations.push({ rule: 'DL3046', severity: 'warning', message: 'useradd without flag -l and target UID set to high value causes performance issues with large lastlog files', line: inst.line });
-            }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      if (/useradd\b/.test(inst.arguments)) {
+        const hasL = /-l\b/.test(inst.arguments);
+        const uidMatch = inst.arguments.match(/--uid\s+(\d+)|-u\s+(\d+)/);
+        if (!hasL && uidMatch) {
+          const uid = parseInt(uidMatch[1] ?? uidMatch[2], 10);
+          if (uid > 65534) {
+            violations.push({ rule: 'DL3046', severity: 'warning', message: 'useradd without flag -l and target UID set to high value causes performance issues with large lastlog files', line: inst.line });
           }
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -321,36 +304,31 @@ export const DL3047: Rule = {
   description: 'Avoid use of wget without progress bar. Use wget --progress=dot:giga <url>',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'RUN' && /\bwget\b/.test(inst.arguments) && !/--progress/.test(inst.arguments)) {
-          violations.push({ rule: 'DL3047', severity: 'info', message: 'Avoid use of wget without progress bar. Use `wget --progress=dot:giga <url>`', line: inst.line });
-        }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      if (/\bwget\b/.test(inst.arguments) && !/--progress/.test(inst.arguments)) {
+        violations.push({ rule: 'DL3047', severity: 'info', message: 'Avoid use of wget without progress bar. Use `wget --progress=dot:giga <url>`', line: inst.line });
       }
-    }
+    });
     return violations;
   },
 };
 
 // DL3048: Invalid label key
+const VALID_LABEL_KEY = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
+
 export const DL3048: Rule = {
   id: 'DL3048', severity: 'info',
   description: 'Invalid label key',
   check(ctx) {
     const violations: Violation[] = [];
-    const validKeyRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'LABEL') {
-          const l = inst as LabelInstruction;
-          for (const pair of l.pairs) {
-            if (!validKeyRegex.test(pair.key)) {
-              violations.push({ rule: 'DL3048', severity: 'info', message: `Invalid label key "${pair.key}"`, line: inst.line });
-            }
-          }
+    forEachInstruction(ctx, 'LABEL', (inst) => {
+      const l = inst as LabelInstruction;
+      for (const pair of l.pairs) {
+        if (!VALID_LABEL_KEY.test(pair.key)) {
+          violations.push({ rule: 'DL3048', severity: 'info', message: `Invalid label key "${pair.key}"`, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -388,18 +366,14 @@ export const DL3050: Rule = {
     if (!ctx.allowedLabels || ctx.allowedLabels.length === 0) return [];
     const violations: Violation[] = [];
     const allowed = new Set(ctx.allowedLabels);
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type === 'LABEL') {
-          const l = inst as LabelInstruction;
-          for (const pair of l.pairs) {
-            if (!allowed.has(pair.key)) {
-              violations.push({ rule: 'DL3050', severity: 'info', message: `Superfluous label "${pair.key}" present`, line: inst.line });
-            }
-          }
+    forEachInstruction(ctx, 'LABEL', (inst) => {
+      const l = inst as LabelInstruction;
+      for (const pair of l.pairs) {
+        if (!allowed.has(pair.key)) {
+          violations.push({ rule: 'DL3050', severity: 'info', message: `Superfluous label "${pair.key}" present`, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };

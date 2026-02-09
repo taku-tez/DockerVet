@@ -1,13 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse } from '../../src/parser/parser';
-import { lint } from '../../src/engine/linter';
-
-const defaultConfig = { ignore: [], trustedRegistries: [], requiredLabels: [], override: {} };
-const lintDockerfile = (content: string, config = defaultConfig) => {
-  const ast = parse(content);
-  return lint(ast, { config });
-};
-const hasRule = (violations: any[], rule: string) => violations.some(v => v.rule === rule);
+import { lintDockerfile, hasRule, defaultConfig } from '../helpers';
 
 describe('DV1001 - Hardcoded secrets', () => {
   it('flags ENV with password', () => {

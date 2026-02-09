@@ -1,29 +1,10 @@
-// Shared helpers for package manager rules
+/**
+ * Package manager related DL rules (DL3008-DL3042).
+ *
+ * Uses shared utilities from ../utils.ts for common patterns.
+ */
 import { Rule, Violation } from '../types';
-
-function runCheck(ctx: any, regex: RegExp, ruleId: string, severity: any, msg: string): Violation[] {
-  const violations: Violation[] = [];
-  for (const stage of ctx.ast.stages) {
-    for (const inst of stage.instructions) {
-      if (inst.type === 'RUN' && regex.test(inst.arguments)) {
-        violations.push({ rule: ruleId, severity, message: msg, line: inst.line });
-      }
-    }
-  }
-  return violations;
-}
-
-function runCheckNeg(ctx: any, triggerRegex: RegExp, mustHaveRegex: RegExp, ruleId: string, severity: any, msg: string): Violation[] {
-  const violations: Violation[] = [];
-  for (const stage of ctx.ast.stages) {
-    for (const inst of stage.instructions) {
-      if (inst.type === 'RUN' && triggerRegex.test(inst.arguments) && !mustHaveRegex.test(inst.arguments)) {
-        violations.push({ rule: ruleId, severity, message: msg, line: inst.line });
-      }
-    }
-  }
-  return violations;
-}
+import { runCheck, runCheckNeg, checkVersionPinning, forEachInstruction } from '../utils';
 
 // DL3008: Pin versions in apt-get install
 export const DL3008: Rule = {
@@ -31,19 +12,16 @@ export const DL3008: Rule = {
   description: 'Pin versions in apt-get install',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/apt-get\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].replace(/-y|--yes|--no-install-recommends|--quiet|-q/g, '').trim().split(/\s+/).filter(p => p && !p.startsWith('-'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('=') && !pkg.startsWith('$')) {
-            violations.push({ rule: 'DL3008', severity: 'warning', message: `Pin versions in apt-get install. Instead of \`apt-get install ${pkg}\` use \`apt-get install ${pkg}=<version>\``, line: inst.line });
-          }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      const m = inst.arguments.match(/apt-get\s+install\s+(.+?)(?:[;&|]|$)/s);
+      if (!m) return;
+      const pkgs = m[1].replace(/-y|--yes|--no-install-recommends|--quiet|-q/g, '').trim().split(/\s+/).filter(p => p && !p.startsWith('-'));
+      for (const pkg of pkgs) {
+        if (!pkg.includes('=') && !pkg.startsWith('$')) {
+          violations.push({ rule: 'DL3008', severity: 'warning', message: `Pin versions in apt-get install. Instead of \`apt-get install ${pkg}\` use \`apt-get install ${pkg}=<version>\``, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -63,19 +41,16 @@ export const DL3013: Rule = {
   description: 'Pin versions in pip install',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/pip3?\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('--'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
-            violations.push({ rule: 'DL3013', severity: 'warning', message: `Pin versions in pip. Instead of \`pip install ${pkg}\` use \`pip install ${pkg}==<version>\``, line: inst.line });
-          }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      const m = inst.arguments.match(/pip3?\s+install\s+(.+?)(?:[;&|]|$)/s);
+      if (!m) return;
+      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('--'));
+      for (const pkg of pkgs) {
+        if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
+          violations.push({ rule: 'DL3013', severity: 'warning', message: `Pin versions in pip. Instead of \`pip install ${pkg}\` use \`pip install ${pkg}==<version>\``, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -100,19 +75,16 @@ export const DL3016: Rule = {
   description: 'Pin versions in npm',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/npm\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('@') && !pkg.startsWith('.') && !pkg.startsWith('/') && !pkg.startsWith('$')) {
-            violations.push({ rule: 'DL3016', severity: 'warning', message: `Pin versions in npm. Instead of \`npm install ${pkg}\` use \`npm install ${pkg}@<version>\``, line: inst.line });
-          }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      const m = inst.arguments.match(/npm\s+install\s+(.+?)(?:[;&|]|$)/s);
+      if (!m) return;
+      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-'));
+      for (const pkg of pkgs) {
+        if (!pkg.includes('@') && !pkg.startsWith('.') && !pkg.startsWith('/') && !pkg.startsWith('$')) {
+          violations.push({ rule: 'DL3016', severity: 'warning', message: `Pin versions in npm. Instead of \`npm install ${pkg}\` use \`npm install ${pkg}@<version>\``, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -123,19 +95,16 @@ export const DL3018: Rule = {
   description: 'Pin versions in apk add',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/apk\s+(?:--[^\s]+\s+)*add\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('=')) {
-            violations.push({ rule: 'DL3018', severity: 'warning', message: `Pin versions in apk add. Instead of \`apk add ${pkg}\` use \`apk add ${pkg}=<version>\``, line: inst.line });
-          }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      const m = inst.arguments.match(/apk\s+(?:--[^\s]+\s+)*add\s+(.+?)(?:[;&|]|$)/s);
+      if (!m) return;
+      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$'));
+      for (const pkg of pkgs) {
+        if (!pkg.includes('=')) {
+          violations.push({ rule: 'DL3018', severity: 'warning', message: `Pin versions in apk add. Instead of \`apk add ${pkg}\` use \`apk add ${pkg}=<version>\``, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -160,24 +129,19 @@ export const DL3028: Rule = {
   description: 'Pin versions in gem install',
   check(ctx) {
     const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/gem\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const allParts = m[1].split(/\s+/).filter(p => p);
-        for (let i = 0; i < allParts.length; i++) {
-          const part = allParts[i];
-          // Skip flags and their values
-          if (part === '-v' || part === '--version') { i++; continue; }
-          if (part.startsWith('-')) continue;
-          const pkg = part;
-          if (!pkg.startsWith('$') && !pkg.includes(':')) {
-            violations.push({ rule: 'DL3028', severity: 'warning', message: `Pin versions in gem install. Instead of \`gem install ${pkg}\` use \`gem install ${pkg}:<version>\``, line: inst.line });
-          }
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      const m = inst.arguments.match(/gem\s+install\s+(.+?)(?:[;&|]|$)/s);
+      if (!m) return;
+      const allParts = m[1].split(/\s+/).filter(p => p);
+      for (let i = 0; i < allParts.length; i++) {
+        const part = allParts[i];
+        if (part === '-v' || part === '--version') { i++; continue; }
+        if (part.startsWith('-')) continue;
+        if (!part.startsWith('$') && !part.includes(':')) {
+          violations.push({ rule: 'DL3028', severity: 'warning', message: `Pin versions in gem install. Instead of \`gem install ${part}\` use \`gem install ${part}:<version>\``, line: inst.line });
         }
       }
-    }
+    });
     return violations;
   },
 };
@@ -201,21 +165,13 @@ export const DL3033: Rule = {
   id: 'DL3033', severity: 'warning',
   description: 'Specify version with yum install -y <package>-<version>',
   check(ctx) {
-    const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/yum\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('-') || pkg.split('-').every(p => !/^\d/.test(p))) {
-            violations.push({ rule: 'DL3033', severity: 'warning', message: `Specify version with yum install -y ${pkg}-<version>`, line: inst.line });
-          }
-        }
-      }
-    }
-    return violations;
+    return checkVersionPinning(
+      ctx,
+      /yum\s+install\s+(.+?)(?:[;&|]|$)/s,
+      (pkg) => pkg.includes('-') && !pkg.split('-').every(p => !/^\d/.test(p)),
+      'DL3033', 'warning',
+      (pkg) => `Specify version with yum install -y ${pkg}-<version>`,
+    );
   },
 };
 
@@ -242,21 +198,13 @@ export const DL3037: Rule = {
   id: 'DL3037', severity: 'warning',
   description: 'Specify version with zypper install -y <package>=<version>',
   check(ctx) {
-    const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/zypper\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('=') && !pkg.includes('>')) {
-            violations.push({ rule: 'DL3037', severity: 'warning', message: `Specify version with zypper install -y ${pkg}=<version>`, line: inst.line });
-          }
-        }
-      }
-    }
-    return violations;
+    return checkVersionPinning(
+      ctx,
+      /zypper\s+install\s+(.+?)(?:[;&|]|$)/s,
+      (pkg) => pkg.includes('=') || pkg.includes('>'),
+      'DL3037', 'warning',
+      (pkg) => `Specify version with zypper install -y ${pkg}=<version>`,
+    );
   },
 };
 
@@ -277,21 +225,13 @@ export const DL3041: Rule = {
   id: 'DL3041', severity: 'warning',
   description: 'Specify version with dnf install -y <package>-<version>',
   check(ctx) {
-    const violations: Violation[] = [];
-    for (const stage of ctx.ast.stages) {
-      for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const m = inst.arguments.match(/dnf\s+install\s+(.+?)(?:[;&|]|$)/s);
-        if (!m) continue;
-        const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$'));
-        for (const pkg of pkgs) {
-          if (!pkg.includes('-') || pkg.split('-').every(p => !/^\d/.test(p))) {
-            violations.push({ rule: 'DL3041', severity: 'warning', message: `Specify version with dnf install -y ${pkg}-<version>`, line: inst.line });
-          }
-        }
-      }
-    }
-    return violations;
+    return checkVersionPinning(
+      ctx,
+      /dnf\s+install\s+(.+?)(?:[;&|]|$)/s,
+      (pkg) => pkg.includes('-') && !pkg.split('-').every(p => !/^\d/.test(p)),
+      'DL3041', 'warning',
+      (pkg) => `Specify version with dnf install -y ${pkg}-<version>`,
+    );
   },
 };
 
