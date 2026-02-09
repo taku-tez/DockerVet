@@ -304,6 +304,87 @@ export const DV3015: Rule = {
   },
 };
 
+// DV3016: AI Prompt Injection in LABEL (DockerDash attack)
+export const DV3016: Rule = {
+  id: 'DV3016', severity: 'error',
+  description: 'AI prompt injection detected in LABEL value (DockerDash attack).',
+  check(ctx) {
+    const violations: Violation[] = [];
+
+    // Category A: Command execution patterns (+3)
+    const catA = [
+      /execute the command/i, /run the command/i, /run docker/i,
+      /docker\s+(?:stop|exec|rm|ps|kill)/i,
+      /capture the output/i, /return only the command output/i,
+    ];
+    // Category B: AI/MCP prompt injection (+3)
+    const catB = [
+      /mcp\s+(?:tools|gateway|server)/i,
+      /ignore (?:previous|your) instructions/i,
+      /you are now/i, /respond by (?:running|executing)/i,
+      /as part of the workflow/i,
+    ];
+    // Category C: Data exfiltration (+2)
+    const catC_exfil = [/exfiltrat(?:e|ion)/i, /data exfiltration/i];
+    const catC_send = [/send to https?:\/\//i, /curl https?:\/\//i, /wget https?:\/\//i];
+
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'LABEL') continue;
+        const val = inst.arguments || inst.raw;
+        let score = 0;
+
+        for (const p of catA) { if (p.test(val)) { score += 3; break; } }
+        for (const p of catB) { if (p.test(val)) { score += 3; break; } }
+
+        // C: markdown image exfil
+        if (/!\[/.test(val) && /https?:\/\//.test(val)) {
+          score += 2;
+        } else {
+          let cHit = false;
+          for (const p of catC_send) { if (p.test(val)) { cHit = true; break; } }
+          if (!cHit) { for (const p of catC_exfil) { if (p.test(val)) { cHit = true; break; } } }
+          if (cHit) score += 2;
+        }
+
+        if (score >= 3) {
+          violations.push({ rule: 'DV3016', severity: 'error', message: `AI prompt injection detected in LABEL (score: ${score}). This may be a DockerDash-style meta-context injection attack.`, line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3017: Suspicious External URL with Imperative Context in LABEL
+export const DV3017: Rule = {
+  id: 'DV3017', severity: 'warning',
+  description: 'Suspicious external URL with imperative context in LABEL.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const urlRe = /https?:\/\/\S+/gi;
+    // Imperative verbs (exclude informational: visit, see, check, refer, read, view, go)
+    const imperativeRe = /\b(?:run|execute|send|forward|render|call|fetch|post|submit|invoke|dispatch|transmit|upload|push|pipe|redirect|exfiltrate|curl|wget)\b/i;
+
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'LABEL') continue;
+        const val = inst.arguments || inst.raw;
+        if (!urlRe.test(val)) continue;
+        urlRe.lastIndex = 0;
+
+        // Skip if the value is essentially just a URL (key=url pattern)
+        // Extract label values: handle key=value or key="value" pairs
+        const stripped = val.replace(/https?:\/\/\S+/gi, '').replace(/['"]/g, '');
+        if (!imperativeRe.test(stripped)) continue;
+
+        violations.push({ rule: 'DV3017', severity: 'warning', message: 'Suspicious external URL with imperative context in LABEL. This may indicate a prompt injection or data exfiltration attempt.', line: inst.line });
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3010: VOLUME with sensitive paths
 export const DV3010: Rule = {
   id: 'DV3010', severity: 'warning',

@@ -525,5 +525,49 @@
     },
     "notableFindings": "Heavy DV4012 consecutive COPY (31x). DV1001 correctly flags POSTGRES_PASSWORD. DL3020 ADD usage in preview Dockerfile. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "dani-garcia/vaultwarden",
+    "scannedAt": "2026-02-09T08:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 166,
+    "severities": {
+      "error": 1,
+      "warning": 104,
+      "info": 53,
+      "style": 8
+    },
+    "notableFindings": "DV1009 false positive on Jinja2 template variables ({{ base_image }}) in Dockerfile.j2 files",
+    "improvements": [
+      "Fixed DV1009 to skip Jinja2 template variables"
+    ]
+  },
+  {
+    "repo": "immich-app/immich",
+    "scannedAt": "2026-02-09T08:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 102,
+    "severities": {
+      "error": 3,
+      "warning": 50,
+      "info": 36,
+      "style": 13
+    },
+    "notableFindings": "All findings legitimate. Heavy DL3008 apt pinning, DV4003 missing WORKDIR in multi-stage ML builds.",
+    "improvements": []
+  },
+  {
+    "repo": "zitadel/zitadel",
+    "scannedAt": "2026-02-09T08:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 36,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 16,
+      "style": 4
+    },
+    "notableFindings": "All findings legitimate. Clean multi-stage Go builds with minor DL3045/DV1009 issues.",
+    "improvements": []
   }
 ]
