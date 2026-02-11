@@ -1,8 +1,16 @@
 # DockerVet 🐳🔍
 
-Dockerfile security linter — Hadolint-compatible rules + security-focused DockerVet rules.
+[![npm version](https://img.shields.io/npm/v/dockervet)](https://www.npmjs.com/package/dockervet)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+Dockerfile security linter — Hadolint-compatible rules + security-focused DockerVet rules.
 **Zero runtime dependencies.** Written in TypeScript.
+
+## Quick Start
+
+```bash
+npx dockervet --help
+```
 
 ## Installation
 
@@ -209,6 +217,10 @@ Both `dockervet` and `hadolint` inline ignore formats are supported.
 - **[ApiVet](https://github.com/tez-hub/apivet)** — OpenAPI linter
 - **[WpVet](https://github.com/tez-hub/wpvet)** — WordPress security scanner
 - **DockerVet** — Dockerfile security linter
+
+## Part of xxVet Series
+
+xxVet is a collection of 15 focused security CLI tools. See [full catalog](https://www.notion.so/xxVet-CLI-304b1e6bcbc2817abe62d4aecee9914a).
 
 ## License
 
