@@ -109,7 +109,7 @@ export const DL3022: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type === 'COPY') {
           const c = inst as CopyInstruction;
-          if (c.from && !/^\d+$/.test(c.from) && !aliases.has(c.from)) {
+          if (c.from && !/^\d+$/.test(c.from) && !aliases.has(c.from) && !c.from.includes('/') && !c.from.includes('.')) {
             violations.push({ rule: 'DL3022', severity: 'warning', message: `COPY --from=${c.from} references an undefined FROM alias`, line: inst.line });
           }
         }

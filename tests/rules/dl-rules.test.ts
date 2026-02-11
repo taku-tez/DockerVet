@@ -425,6 +425,39 @@ describe('DL3049 - Label missing', () => {
   });
 });
 
+describe('DL3008 - apt-get combined flags', () => {
+  it('does not flag -yqq as a package name', () => {
+    const v = lintDockerfile('FROM ubuntu:20.04\nRUN apt-get update && apt-get install -yqq curl=7.0');
+    expect(v.filter(r => r.rule === 'DL3008' && r.message.includes('qq')).length).toBe(0);
+  });
+  it('does not flag -yq as a package name', () => {
+    const v = lintDockerfile('FROM ubuntu:20.04\nRUN apt-get install -yq git=1.0');
+    expect(v.filter(r => r.rule === 'DL3008' && r.message.includes(' q')).length).toBe(0);
+  });
+});
+
+describe('DL3013 - pip compatible release specifier', () => {
+  it('does not flag ~= as unpinned', () => {
+    const v = lintDockerfile('FROM python:3.11\nRUN pip install supervisor~=4.2');
+    expect(hasRule(v, 'DL3013')).toBe(false);
+  });
+  it('still flags fully unpinned pip packages', () => {
+    const v = lintDockerfile('FROM python:3.11\nRUN pip install requests');
+    expect(hasRule(v, 'DL3013')).toBe(true);
+  });
+});
+
+describe('DL3022 - COPY --from external image', () => {
+  it('does not flag COPY --from with external image reference', () => {
+    const v = lintDockerfile('FROM ubuntu:20.04\nCOPY --from=docker.io/library/postgres:13 /usr/bin/pg_dump /usr/bin/');
+    expect(hasRule(v, 'DL3022')).toBe(false);
+  });
+  it('still flags undefined local alias', () => {
+    const v = lintDockerfile('FROM ubuntu:20.04\nCOPY --from=mybuilder /app /app');
+    expect(hasRule(v, 'DL3022')).toBe(true);
+  });
+});
+
 describe('DL3057 - HEALTHCHECK missing', () => {
   it('flags missing HEALTHCHECK', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN echo'), 'DL3057')).toBe(true);

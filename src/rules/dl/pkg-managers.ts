@@ -15,7 +15,7 @@ export const DL3008: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/apt-get\s+install\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].replace(/-y|--yes|--no-install-recommends|--quiet|-q/g, '').trim().split(/\s+/).filter(p => p && !p.startsWith('-'));
+      const pkgs = m[1].replace(/-[yqf]+\b|--yes|--no-install-recommends|--quiet|--fix-broken/g, '').trim().split(/\s+/).filter(p => p && !p.startsWith('-'));
       for (const pkg of pkgs) {
         if (!pkg.includes('=') && !pkg.startsWith('$')) {
           violations.push({ rule: 'DL3008', severity: 'warning', message: `Pin versions in apt-get install. Instead of \`apt-get install ${pkg}\` use \`apt-get install ${pkg}=<version>\``, line: inst.line });
@@ -46,7 +46,7 @@ export const DL3013: Rule = {
       if (!m) return;
       const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('--'));
       for (const pkg of pkgs) {
-        if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
+        if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('~=') && !pkg.includes('!=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
           violations.push({ rule: 'DL3013', severity: 'warning', message: `Pin versions in pip. Instead of \`pip install ${pkg}\` use \`pip install ${pkg}==<version>\``, line: inst.line });
         }
       }
