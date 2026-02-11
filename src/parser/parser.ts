@@ -142,7 +142,7 @@ function parseArgArgs(args: string, line: number): ArgInstruction {
 
 function parseLabelArgs(args: string, line: number): LabelInstruction {
   const pairs: Array<{ key: string; value: string }> = [];
-  const regex = /([^\s=]+)=(?:"([^"]*?)"|'([^']*?)'|(\S*))/g;
+  const regex = /([^\s=]+)=(?:"((?:[^"\\]|\\.)*)"|'([^']*?)'|(\S*))/g;
   let m: RegExpExecArray | null;
   while ((m = regex.exec(args)) !== null) {
     pairs.push({ key: m[1], value: m[2] ?? m[3] ?? m[4] ?? '' });

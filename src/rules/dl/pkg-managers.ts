@@ -78,7 +78,9 @@ export const DL3016: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/npm\s+install\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-'));
+      // Strip inline comments (# ...) before parsing package names
+      const cleaned = m[1].replace(/#.*$/gm, '');
+      const pkgs = cleaned.split(/\s+/).filter(p => p && !p.startsWith('-'));
       for (const pkg of pkgs) {
         if (!pkg.includes('@') && !pkg.startsWith('.') && !pkg.startsWith('/') && !pkg.startsWith('$')) {
           violations.push({ rule: 'DL3016', severity: 'warning', message: `Pin versions in npm. Instead of \`npm install ${pkg}\` use \`npm install ${pkg}@<version>\``, line: inst.line });

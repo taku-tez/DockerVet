@@ -176,6 +176,9 @@ describe('DL3016 - Pin npm versions', () => {
   it('passes pinned', () => {
     expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install express@4.18.0'), 'DL3016')).toBe(false);
   });
+  it('ignores inline comments after package names', () => {
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install --global \\\n\tpm2@5 \\\n\tcorepack@latest # Remove again once corepack >= 0.31 made it into base image'), 'DL3016')).toBe(false);
+  });
 });
 
 describe('DL3018 - Pin apk versions', () => {
@@ -405,6 +408,9 @@ describe('DL3048 - Invalid label key', () => {
   });
   it('passes valid key', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nLABEL maintainer="test"'), 'DL3048')).toBe(false);
+  });
+  it('handles escaped quotes in LABEL JSON values', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nLABEL com.docker.extension.screenshots="[{\\"alt\\": \\"screenshot\\", \\"url\\": \\"https://example.com/img.png\\"}]"'), 'DL3048')).toBe(false);
   });
 });
 
