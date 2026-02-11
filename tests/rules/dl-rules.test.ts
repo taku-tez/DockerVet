@@ -32,6 +32,18 @@ describe('DL3001 - Inappropriate commands', () => {
   it('still flags mount command alongside --mount', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN --mount=type=cache,target=/tmp mount /dev/sda1 /mnt'), 'DL3001')).toBe(true);
   });
+  it('does not flag --service as a flag argument', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN some-tool --service nginx'), 'DL3001')).toBe(false);
+  });
+  it('does not flag vim in apk add', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk add --no-cache vim git curl'), 'DL3001')).toBe(false);
+  });
+  it('does not flag nano in apt-get install', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y nano'), 'DL3001')).toBe(false);
+  });
+  it('still flags service command used directly', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN service nginx start'), 'DL3001')).toBe(true);
+  });
 });
 
 describe('DL3002 - Last USER not root', () => {

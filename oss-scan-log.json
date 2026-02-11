@@ -628,5 +628,20 @@
     "warnings": 10,
     "info": 14,
     "notes": "e2e Dockerfiles, clean scan"
+  },
+  {
+    "repo": "semaphoreui/semaphore",
+    "files": 4,
+    "issues": "DL3018(many), DV1003(3), DV3008(2), DL3013(12), DL3001(2-fixed FP), DV4012(8)"
+  },
+  {
+    "repo": "coollabsio/coolify",
+    "files": 5,
+    "issues": "DL3018(28), DV1009(9), DL3001(3-all FP fixed), DV4002(4)"
+  },
+  {
+    "repo": "timvisee/send",
+    "files": 1,
+    "issues": "DV1009(2), DL3018(2), DV4002(1)"
   }
 ]
