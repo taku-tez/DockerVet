@@ -390,16 +390,42 @@ export const DV3010: Rule = {
   id: 'DV3010', severity: 'warning',
   description: 'Avoid VOLUME on sensitive paths like /root, /home, /tmp.',
   check(ctx) {
-    const sensitivePaths = ['/root', '/home', '/tmp'];
+    const warningPaths = ['/root', '/home'];
+    const infoPaths = ['/tmp'];
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'VOLUME') continue;
-        for (const p of sensitivePaths) {
+        for (const p of warningPaths) {
           const re = new RegExp(`(?:^|[\\s,\\["])${p.replace('/', '\\/')}(?:[\\s,\\]"]|$)`);
           if (re.test(inst.arguments)) {
             violations.push({ rule: 'DV3010', severity: 'warning', message: `VOLUME on sensitive path "${p}" may expose sensitive data.`, line: inst.line });
           }
+        }
+        for (const p of infoPaths) {
+          const re = new RegExp(`(?:^|[\\s,\\["])${p.replace('/', '\\/')}(?:[\\s,\\]"]|$)`);
+          if (re.test(inst.arguments)) {
+            violations.push({ rule: 'DV3010', severity: 'info', message: `VOLUME on "${p}" is common but may expose ephemeral data. Ensure no secrets are written there.`, line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3018: Plaintext password via chpasswd without -e
+export const DV3018: Rule = {
+  id: 'DV3018', severity: 'error',
+  description: 'chpasswd used without -e flag may set plaintext passwords in build history.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        // Match chpasswd calls that don't have -e flag
+        if (/chpasswd/.test(inst.arguments) && !/chpasswd\s+-e|chpasswd\s+--encrypted/.test(inst.arguments)) {
+          violations.push({ rule: 'DV3018', severity: 'error', message: 'chpasswd without -e flag sets plaintext passwords, which are stored in image layers.', line: inst.line });
         }
       }
     }

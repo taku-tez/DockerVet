@@ -126,8 +126,16 @@ describe('DV3010 - VOLUME sensitive paths', () => {
   it('flags VOLUME /home', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /home'), 'DV3010')).toBe(true);
   });
-  it('flags VOLUME /tmp', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /tmp'), 'DV3010')).toBe(true);
+  it('flags VOLUME /tmp as info (not warning)', () => {
+    const results = lintDockerfile('FROM ubuntu\nVOLUME /tmp');
+    expect(hasRule(results, 'DV3010')).toBe(true);
+    const tmpViolation = results.find(v => v.rule === 'DV3010');
+    expect(tmpViolation?.severity).toBe('info');
+  });
+  it('flags VOLUME /root as warning', () => {
+    const rootResults = lintDockerfile('FROM ubuntu\nVOLUME /root');
+    const rootViolation = rootResults.find(v => v.rule === 'DV3010');
+    expect(rootViolation?.severity).toBe('warning');
   });
   it('passes VOLUME /data', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /data'), 'DV3010')).toBe(false);
@@ -267,6 +275,21 @@ describe('DV3017 - Suspicious URL with imperative context in LABEL', () => {
   });
   it('passes docs URL', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL docs="https://docs.example.com/getting-started"'), 'DV3017')).toBe(false);
+  });
+});
+
+describe('DV3018 - chpasswd plaintext password', () => {
+  it('flags chpasswd without -e', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo "user:pass" | chpasswd'), 'DV3018')).toBe(true);
+  });
+  it('passes chpasswd with -e', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo "git:*" | chpasswd -e'), 'DV3018')).toBe(false);
+  });
+  it('passes chpasswd with --encrypted', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo "git:$hash" | chpasswd --encrypted'), 'DV3018')).toBe(false);
+  });
+  it('flags chpasswd in multi-command RUN', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN adduser foo && echo "foo:bar" | chpasswd'), 'DV3018')).toBe(true);
   });
 });
 
