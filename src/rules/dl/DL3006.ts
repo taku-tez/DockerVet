@@ -17,6 +17,19 @@ export const DL3006: Rule = {
       // Skip references to other build stages (e.g., FROM gobuild)
       if (stageAliases.has(f.image.toLowerCase())) continue;
       if (!f.tag && !f.digest) {
+        // If image is a variable reference (e.g., ${BASEIMG}), resolve from global ARGs
+        // to check if the default value already contains a tag or digest
+        if (f.image.includes('$')) {
+          const varMatch = f.image.match(/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/);
+          if (varMatch) {
+            const argName = varMatch[1];
+            const argDef = ctx.ast.globalArgs.find(a => a.name === argName);
+            if (argDef && (argDef as any).defaultValue) {
+              const defaultVal = (argDef as any).defaultValue;
+              if (defaultVal.includes('@') || defaultVal.includes(':')) continue;
+            }
+          }
+        }
         violations.push({ rule: 'DL3006', severity: 'warning', message: `Always tag the version of an image explicitly. Tag "${f.image}" with a specific version.`, line: f.line });
       }
     }

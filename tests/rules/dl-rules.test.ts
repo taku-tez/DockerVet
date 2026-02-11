@@ -95,6 +95,15 @@ describe('DL3006 - Tag version explicitly', () => {
   it('skips internal stage aliases', () => {
     expect(hasRule(lintDockerfile('FROM golang:1.21 AS gobuild\nRUN go build\nFROM gobuild\nRUN echo hi'), 'DL3006')).toBe(false);
   });
+  it('should not warn when ARG default has tag', () => {
+    expect(hasRule(lintDockerfile('ARG BASEIMG=gcr.io/distroless/static:nonroot\nFROM ${BASEIMG}'), 'DL3006')).toBe(false);
+  });
+  it('should not warn when ARG default has digest', () => {
+    expect(hasRule(lintDockerfile('ARG BASEIMG=gcr.io/distroless/static@sha256:abc123\nFROM ${BASEIMG}'), 'DL3006')).toBe(false);
+  });
+  it('should warn when ARG has no default', () => {
+    expect(hasRule(lintDockerfile('ARG BASEIMG\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
+  });
 });
 
 describe('DL3007 - No latest tag', () => {
