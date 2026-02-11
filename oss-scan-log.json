@@ -604,5 +604,29 @@
     "repo": "excalidraw/excalidraw",
     "files": 3,
     "date": "2026-02-11"
+  },
+  {
+    "repo": "ghostfolio/ghostfolio",
+    "files": 1,
+    "errors": 0,
+    "warnings": 8,
+    "info": 7,
+    "notes": "FP found: DL3029 on $BUILDPLATFORM - fixed"
+  },
+  {
+    "repo": "documenso/documenso",
+    "files": 3,
+    "errors": 0,
+    "warnings": 15,
+    "info": 16,
+    "notes": "Clean scan, no FP"
+  },
+  {
+    "repo": "highlight/highlight",
+    "files": 5,
+    "errors": 0,
+    "warnings": 10,
+    "info": 14,
+    "notes": "e2e Dockerfiles, clean scan"
   }
 ]

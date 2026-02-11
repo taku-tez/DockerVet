@@ -198,13 +198,15 @@ export const DL3026: Rule = {
 };
 
 // DL3029: Do not use --platform flag with FROM
+// Skip BuildKit automatic platform ARGs ($BUILDPLATFORM, $TARGETPLATFORM, etc.)
+const BUILDKIT_PLATFORM_ARGS = /^\$\{?(BUILDPLATFORM|TARGETPLATFORM|BUILDOS|TARGETOS|BUILDARCH|TARGETARCH|BUILDVARIANT|TARGETVARIANT)\}?$/i;
 export const DL3029: Rule = {
   id: 'DL3029', severity: 'warning',
   description: 'Do not use --platform flag with FROM',
   check(ctx) {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
-      if (stage.from.platform) {
+      if (stage.from.platform && !BUILDKIT_PLATFORM_ARGS.test(stage.from.platform)) {
         violations.push({ rule: 'DL3029', severity: 'warning', message: 'Do not use --platform flag with FROM', line: stage.from.line });
       }
     }

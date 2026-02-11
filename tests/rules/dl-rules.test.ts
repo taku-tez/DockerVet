@@ -289,6 +289,18 @@ describe('DL3029 - No --platform with FROM', () => {
   it('passes without --platform', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04'), 'DL3029')).toBe(false);
   });
+  it('skips BuildKit $BUILDPLATFORM variable', () => {
+    expect(hasRule(lintDockerfile('FROM --platform=$BUILDPLATFORM node:22-slim'), 'DL3029')).toBe(false);
+  });
+  it('skips BuildKit $TARGETPLATFORM variable', () => {
+    expect(hasRule(lintDockerfile('FROM --platform=$TARGETPLATFORM ubuntu:22.04'), 'DL3029')).toBe(false);
+  });
+  it('skips BuildKit ${BUILDPLATFORM} variable', () => {
+    expect(hasRule(lintDockerfile('FROM --platform=${BUILDPLATFORM} node:20'), 'DL3029')).toBe(false);
+  });
+  it('still flags hardcoded platform values', () => {
+    expect(hasRule(lintDockerfile('FROM --platform=linux/arm64 ubuntu:20.04'), 'DL3029')).toBe(true);
+  });
 });
 
 describe('DL3030 - yum -y', () => {
