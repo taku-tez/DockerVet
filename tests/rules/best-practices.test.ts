@@ -110,6 +110,12 @@ describe('DV4009 - chmod 777', () => {
   it('passes no chmod', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi'), 'DV4009')).toBe(false);
   });
+  it('flags chmod -R 777', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod -R 777 /usr/bin'), 'DV4009')).toBe(true);
+  });
+  it('flags chmod -fR 777', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod -fR 777 /app'), 'DV4009')).toBe(true);
+  });
 });
 
 describe('DV4010 - chown -R', () => {
@@ -154,5 +160,11 @@ describe('DV4012 - consecutive COPY instructions', () => {
   });
   it('passes single COPY', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY . .'), 'DV4012')).toBe(false);
+  });
+  it('passes consecutive COPY with different destinations (Go monorepo pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM golang\nCOPY pkg/util pkg/util\nCOPY pkg/api pkg/api\nCOPY pkg/build pkg/build'), 'DV4012')).toBe(false);
+  });
+  it('flags consecutive COPY with same destination', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY file1.txt /app/\nCOPY file2.txt /app/'), 'DV4012')).toBe(true);
   });
 });

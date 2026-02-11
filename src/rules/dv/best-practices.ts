@@ -174,7 +174,7 @@ export const DV4009: Rule = {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
-        if (inst.type === 'RUN' && /chmod\s+777/.test(inst.arguments)) {
+        if (inst.type === 'RUN' && /chmod\s+(?:-[a-zA-Z]+\s+)*777/.test(inst.arguments)) {
           violations.push({ rule: 'DV4009', severity: 'warning', message: 'chmod 777 grants excessive permissions. Use more restrictive permissions.', line: inst.line });
         }
       }
@@ -230,15 +230,17 @@ export const DV4012: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
-      let prevCopy: { from?: string; line: number } | null = null;
+      let prevCopy: { from?: string; dest: string; line: number } | null = null;
       for (const inst of stage.instructions) {
         if (inst.type === 'COPY') {
           const c = inst as CopyInstruction;
           const curFrom = c.from || '';
-          if (prevCopy && prevCopy.from === curFrom) {
+          const curDest = c.destination || '';
+          // Only flag when both --from and destination match (actually combinable)
+          if (prevCopy && prevCopy.from === curFrom && prevCopy.dest === curDest) {
             violations.push({ rule: 'DV4012', severity: 'style', message: 'Multiple consecutive COPY instructions with same source could potentially be combined.', line: inst.line });
           }
-          prevCopy = { from: curFrom, line: inst.line };
+          prevCopy = { from: curFrom, dest: curDest, line: inst.line };
         } else {
           prevCopy = null;
         }
