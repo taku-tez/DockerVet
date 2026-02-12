@@ -125,6 +125,12 @@ describe('DL3008 - Pin versions in apt-get', () => {
   it('passes pinned', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN apt-get install curl=7.68.0'), 'DL3008')).toBe(false);
   });
+  it('flags bare apt install (not just apt-get)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN apt install curl'), 'DL3008')).toBe(true);
+  });
+  it('passes pinned bare apt install', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN apt install curl=7.68.0'), 'DL3008')).toBe(false);
+  });
 });
 
 describe('DL3009 - Delete apt-get lists', () => {

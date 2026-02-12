@@ -11,7 +11,7 @@ export const DV2001: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
         const a = inst.arguments;
-        if (/apt-get\s+update/.test(a) && !/apt-get\s+install/.test(a)) {
+        if (/apt-get\s+update/.test(a) && !/(?:apt-get|apt)\s+install/.test(a)) {
           violations.push({ rule: 'DV2001', severity: 'warning', message: 'apt-get update should be combined with apt-get install in the same RUN instruction to avoid cache issues.', line: inst.line });
         }
       }
@@ -68,7 +68,7 @@ export const DV2004: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
-        if (/apt-get\s+install/.test(inst.arguments) && !inst.arguments.includes('--no-install-recommends')) {
+        if (/(?:apt-get|apt)\s+install/.test(inst.arguments) && !inst.arguments.includes('--no-install-recommends')) {
           violations.push({ rule: 'DV2004', severity: 'info', message: 'Consider using --no-install-recommends with apt-get install to minimize image size.', line: inst.line });
         }
       }
@@ -141,10 +141,10 @@ export const DV2008: Rule = {
       const runs = stage.instructions.filter(i => i.type === 'RUN');
       for (let i = 0; i < runs.length; i++) {
         const a = runs[i].arguments;
-        if (/apt-get\s+update/.test(a) && !/apt-get\s+install/.test(a)) {
+        if (/apt-get\s+update/.test(a) && !/(?:apt-get|apt)\s+install/.test(a)) {
           // Check if next RUN has install without update
           const next = runs[i + 1];
-          if (next && /apt-get\s+install/.test(next.arguments) && !/apt-get\s+update/.test(next.arguments)) {
+          if (next && /(?:apt-get|apt)\s+install/.test(next.arguments) && !/apt-get\s+update/.test(next.arguments)) {
             violations.push({ rule: 'DV2008', severity: 'warning', message: 'apt-get update and apt-get install should be in the same RUN instruction to prevent stale cache.', line: runs[i].line });
           }
         }

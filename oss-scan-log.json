@@ -658,5 +658,35 @@
     "repo": "redpanda-data/redpanda",
     "files": 8,
     "issues": "DL3008, DV1006, DV4003"
+  },
+  {
+    "repo": "bitwarden/server",
+    "files": 15,
+    "date": "2026-02-12",
+    "findings": {
+      "errors": 0,
+      "warnings": 82,
+      "infos": 49
+    }
+  },
+  {
+    "repo": "metabase/metabase",
+    "files": 5,
+    "date": "2026-02-12",
+    "findings": {
+      "errors": 2,
+      "warnings": 39,
+      "infos": 31
+    }
+  },
+  {
+    "repo": "nocodb/nocodb",
+    "files": 5,
+    "date": "2026-02-12",
+    "findings": {
+      "errors": 3,
+      "warnings": 82,
+      "infos": 47
+    }
   }
 ]

@@ -13,7 +13,7 @@ export const DL3008: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     forEachInstruction(ctx, 'RUN', (inst) => {
-      const m = inst.arguments.match(/apt-get\s+install\s+(.+?)(?:[;&|]|$)/s);
+      const m = inst.arguments.match(/(?:apt-get|apt)\s+install\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
       // Strip shell subcommands $(...) (with balanced parens) and backtick commands
       let cleaned = m[1].replace(/`[^`]*`/g, ' ');
@@ -56,7 +56,7 @@ export const DL3009: Rule = {
   id: 'DL3009', severity: 'info',
   description: 'Delete the apt-get lists after installing something',
   check(ctx) {
-    return runCheckNeg(ctx, /apt-get\s+install/, /rm\s+(-rf?\s+)?\/var\/lib\/apt\/lists/, 'DL3009', 'info', 'Delete the apt-get lists after installing something');
+    return runCheckNeg(ctx, /(?:apt-get|apt)\s+install/, /rm\s+(-rf?\s+)?\/var\/lib\/apt\/lists/, 'DL3009', 'info', 'Delete the apt-get lists after installing something');
   },
 };
 
@@ -84,14 +84,14 @@ export const DL3013: Rule = {
 export const DL3014: Rule = {
   id: 'DL3014', severity: 'warning',
   description: 'Use the -y switch to avoid manual input `apt-get -y install <package>`',
-  check(ctx) { return runCheckNeg(ctx, /apt-get\s+install/, /(-y|--yes|--assume-yes)/, 'DL3014', 'warning', 'Use the -y switch to avoid manual input `apt-get -y install <package>`'); },
+  check(ctx) { return runCheckNeg(ctx, /(?:apt-get|apt)\s+install/, /(-y|--yes|--assume-yes)/, 'DL3014', 'warning', 'Use the -y switch to avoid manual input `apt-get -y install <package>`'); },
 };
 
 // DL3015: Avoid additional packages with apt-get
 export const DL3015: Rule = {
   id: 'DL3015', severity: 'info',
   description: 'Avoid additional packages by specifying --no-install-recommends',
-  check(ctx) { return runCheckNeg(ctx, /apt-get\s+install/, /--no-install-recommends/, 'DL3015', 'info', 'Avoid additional packages by specifying --no-install-recommends'); },
+  check(ctx) { return runCheckNeg(ctx, /(?:apt-get|apt)\s+install/, /--no-install-recommends/, 'DL3015', 'info', 'Avoid additional packages by specifying --no-install-recommends'); },
 };
 
 // DL3016: Pin versions in npm install
