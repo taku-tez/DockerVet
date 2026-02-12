@@ -77,6 +77,15 @@ describe('DL3004 - No sudo', () => {
   it('passes without sudo', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get update'), 'DL3004')).toBe(false);
   });
+  it('ignores sudo as apt-get package name', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y sudo zip'), 'DL3004')).toBe(false);
+  });
+  it('ignores sudo as apk package name', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk add --no-cache sudo'), 'DL3004')).toBe(false);
+  });
+  it('flags sudo command even when also installed as package', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y sudo && sudo chmod 777 /tmp'), 'DL3004')).toBe(true);
+  });
 });
 
 describe('DL3006 - Tag version explicitly', () => {
@@ -253,6 +262,12 @@ describe('DL3021 - COPY multiple sources needs / dest', () => {
   });
   it('passes with /', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY a.txt b.txt dest/'), 'DL3021')).toBe(false);
+  });
+  it('handles JSON array form correctly', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY ["a.txt", "b.txt", "./"]'), 'DL3021')).toBe(false);
+  });
+  it('flags JSON array form without trailing /', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY ["a.txt", "b.txt", "dest"]'), 'DL3021')).toBe(true);
   });
 });
 

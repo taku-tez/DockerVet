@@ -55,9 +55,20 @@ function parseFromArgs(args: string, line: number): FromInstruction {
   };
 }
 
+function parseJsonArray(s: string): string[] | null {
+  const trimmed = s.trim();
+  if (!trimmed.startsWith('[') || !trimmed.endsWith(']')) return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed) && parsed.every((x: unknown) => typeof x === 'string')) return parsed;
+  } catch { /* not valid JSON */ }
+  return null;
+}
+
 function parseCopyArgs(type: 'COPY' | 'ADD', args: string, line: number): CopyInstruction {
   const { flags, rest } = parseFlags(args);
-  const parts = parseShellWords(rest.trim());
+  const jsonArr = parseJsonArray(rest.trim());
+  const parts = jsonArr ?? parseShellWords(rest.trim());
   const destination = parts.length > 0 ? parts[parts.length - 1] : '';
   const sources = parts.slice(0, -1);
 
