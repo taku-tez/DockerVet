@@ -242,12 +242,13 @@ export const DV3013: Rule = {
     for (const stage of ctx.ast.stages) {
       // Only check final stage
       if (stage !== ctx.ast.stages[ctx.ast.stages.length - 1]) continue;
+      const suidPattern = /chmod\s+(?:[ugo]*\+s|[246][0-7]{3}|--reference)/;
       const hasChmodSuid = stage.instructions.some(i =>
-        i.type === 'RUN' && /chmod\s+[ugo]*\+s/.test(i.arguments)
+        i.type === 'RUN' && suidPattern.test(i.arguments)
       );
       if (hasChmodSuid) {
         const inst = stage.instructions.find(i =>
-          i.type === 'RUN' && /chmod\s+[ugo]*\+s/.test(i.arguments)
+          i.type === 'RUN' && suidPattern.test(i.arguments)
         )!;
         violations.push({ rule: 'DV3013', severity: 'info', message: 'Setting setuid/setgid bit detected. This can enable privilege escalation. Consider if this is necessary.', line: inst.line });
       }

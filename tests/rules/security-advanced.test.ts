@@ -179,6 +179,15 @@ describe('DV3013 - setuid/setgid bits', () => {
   it('flags chmod u+s', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod u+s /usr/bin/something'), 'DV3013')).toBe(true);
   });
+  it('flags chmod 4755 (octal setuid)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 4755 /usr/bin/something'), 'DV3013')).toBe(true);
+  });
+  it('flags chmod 2755 (octal setgid)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 2755 /usr/bin/something'), 'DV3013')).toBe(true);
+  });
+  it('flags chmod 6755 (octal setuid+setgid)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 6755 /usr/bin/something'), 'DV3013')).toBe(true);
+  });
   it('passes normal chmod', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 755 /app'), 'DV3013')).toBe(false);
   });
