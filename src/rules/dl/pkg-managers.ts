@@ -100,7 +100,7 @@ export const DL3018: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/apk\s+(?:--[^\s]+\s+)*add\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$'));
+      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$') && !p.includes('$'));
       for (const pkg of pkgs) {
         if (!pkg.includes('=')) {
           violations.push({ rule: 'DL3018', severity: 'warning', message: `Pin versions in apk add. Instead of \`apk add ${pkg}\` use \`apk add ${pkg}=<version>\``, line: inst.line });

@@ -643,5 +643,20 @@
     "repo": "timvisee/send",
     "files": 1,
     "issues": "DV1009(2), DL3018(2), DV4002(1)"
+  },
+  {
+    "repo": "backstage/backstage",
+    "files": 10,
+    "issues": "DL3008, DV1009, DV4010(FP fixed), DL3018(FP fixed)"
+  },
+  {
+    "repo": "apache/kafka",
+    "files": 4,
+    "issues": "DL3018, DL3004, DL3038, DV4007"
+  },
+  {
+    "repo": "redpanda-data/redpanda",
+    "files": 8,
+    "issues": "DL3008, DV1006, DV4003"
   }
 ]

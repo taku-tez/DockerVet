@@ -192,7 +192,14 @@ export const DV4010: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'RUN' && /chown\s+-R/.test(inst.arguments)) {
-          violations.push({ rule: 'DV4010', severity: 'info', message: 'Recursive chown -R increases layer size. Consider using COPY --chown instead.', line: inst.line });
+          // Skip system directories where COPY --chown is not applicable
+          const chownTarget = inst.arguments.match(/chown\s+-R\s+\S+\s+(.+)/);
+          const targets = chownTarget ? chownTarget[1].trim().split(/\s+/) : [];
+          const systemDirs = ['/tmp', '/var', '/etc', '/run', '/opt', '/usr', '/home'];
+          const allSystem = targets.length > 0 && targets.every(t => systemDirs.some(sd => t === sd || t.startsWith(sd + '/')));
+          if (!allSystem) {
+            violations.push({ rule: 'DV4010', severity: 'info', message: 'Recursive chown -R increases layer size. Consider using COPY --chown instead.', line: inst.line });
+          }
         }
       }
     }

@@ -212,6 +212,12 @@ describe('DL3018 - Pin apk versions', () => {
   it('passes pinned', () => {
     expect(hasRule(lintDockerfile('FROM alpine:3\nRUN apk add curl=7.80.0-r0'), 'DL3018')).toBe(false);
   });
+  it('skips packages with variable references that may contain version pins', () => {
+    expect(hasRule(lintDockerfile('FROM alpine:3\nENV NODE_VERSION="20=~20.11"\nRUN apk add nodejs-$NODE_VERSION'), 'DL3018')).toBe(false);
+  });
+  it('skips packages with ${VAR} syntax', () => {
+    expect(hasRule(lintDockerfile('FROM alpine:3\nARG PKG_VER\nRUN apk add python-${PKG_VER}'), 'DL3018')).toBe(false);
+  });
 });
 
 describe('DL3019 - apk --no-cache', () => {

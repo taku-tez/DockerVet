@@ -128,6 +128,15 @@ describe('DV4010 - chown -R', () => {
   it('passes no chown', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi'), 'DV4010')).toBe(false);
   });
+  it('skips system directories like /tmp', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chown -R 65532:65532 /tmp'), 'DV4010')).toBe(false);
+  });
+  it('skips /home directory', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chown -R nonroot:nonroot /home/nonroot/.yarn/berry'), 'DV4010')).toBe(false);
+  });
+  it('still flags app directories', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chown -R app:app /app'), 'DV4010')).toBe(true);
+  });
 });
 
 describe('DV4011 - WORKDIR relative path', () => {
