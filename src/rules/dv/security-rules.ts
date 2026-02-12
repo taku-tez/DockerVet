@@ -144,6 +144,8 @@ export const DV1006: Rule = {
           fromTag = (aliasStage.from.tag || '').toLowerCase();
         }
       }
+      // scratch has no shell/passwd — USER instruction is meaningless
+      if (fromImage === 'scratch') return violations;
       const isNonRootBase =
         /nonroot/.test(fromTag) ||
         /nonroot/.test(fromImage) ||

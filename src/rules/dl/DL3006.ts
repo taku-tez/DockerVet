@@ -27,6 +27,8 @@ export const DL3006: Rule = {
             if (argDef && (argDef as any).defaultValue) {
               const defaultVal = (argDef as any).defaultValue;
               if (defaultVal.includes('@') || defaultVal.includes(':')) continue;
+              // Skip if default value references a stage alias
+              if (stageAliases.has(defaultVal.toLowerCase())) continue;
             }
           }
         }

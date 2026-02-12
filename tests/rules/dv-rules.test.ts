@@ -102,6 +102,9 @@ describe('DV1006 - Non-root user', () => {
     const df = 'FROM cgr.dev/chainguard/static@sha256:abc AS distroless_source\nFROM ubuntu AS builder\nRUN make\nFROM distroless_source\nCOPY --from=builder /app /app';
     expect(hasRule(lintDockerfile(df), 'DV1006')).toBe(false);
   });
+  it('skips FROM scratch (no shell/passwd available)', () => {
+    expect(hasRule(lintDockerfile('FROM scratch\nCOPY app /app\nCMD ["/app"]'), 'DV1006')).toBe(false);
+  });
 });
 
 describe('DV1007 - Package manager cache not cleaned', () => {

@@ -104,6 +104,9 @@ describe('DL3006 - Tag version explicitly', () => {
   it('should warn when ARG has no default', () => {
     expect(hasRule(lintDockerfile('ARG BASEIMG\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
   });
+  it('skips ARG that defaults to a stage alias', () => {
+    expect(hasRule(lintDockerfile('ARG GO_IMAGE=go-builder-base\nFROM golang:1.25-alpine AS go-builder-base\nRUN echo build\nFROM ${GO_IMAGE}'), 'DL3006')).toBe(false);
+  });
 });
 
 describe('DL3007 - No latest tag', () => {
@@ -321,6 +324,9 @@ describe('DL3029 - No --platform with FROM', () => {
   });
   it('still flags hardcoded platform values', () => {
     expect(hasRule(lintDockerfile('FROM --platform=linux/arm64 ubuntu:20.04'), 'DL3029')).toBe(true);
+  });
+  it('skips user-defined ARG variable in --platform', () => {
+    expect(hasRule(lintDockerfile('ARG JS_PLATFORM=linux/amd64\nFROM --platform=${JS_PLATFORM} node:24-alpine'), 'DL3029')).toBe(false);
   });
 });
 

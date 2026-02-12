@@ -206,7 +206,7 @@ export const DL3029: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
-      if (stage.from.platform && !BUILDKIT_PLATFORM_ARGS.test(stage.from.platform)) {
+      if (stage.from.platform && !BUILDKIT_PLATFORM_ARGS.test(stage.from.platform) && !/^\$/.test(stage.from.platform)) {
         violations.push({ rule: 'DL3029', severity: 'warning', message: 'Do not use --platform flag with FROM', line: stage.from.line });
       }
     }
