@@ -15,9 +15,34 @@ export const DL3008: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/apt-get\s+install\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].replace(/-[yqf]+\b|--yes|--no-install-recommends|--quiet|--fix-broken/g, '').trim().split(/\s+/).filter(p => p && !p.startsWith('-'));
-      for (const pkg of pkgs) {
-        if (!pkg.includes('=') && !pkg.startsWith('$')) {
+      // Strip shell subcommands $(...) (with balanced parens) and backtick commands
+      let cleaned = m[1].replace(/`[^`]*`/g, ' ');
+      // Remove $(...) with balanced parentheses using manual parsing
+      let result = '';
+      let i = 0;
+      while (i < cleaned.length) {
+        if (cleaned[i] === '$' && cleaned[i + 1] === '(') {
+          let depth = 1;
+          i += 2;
+          while (i < cleaned.length && depth > 0) {
+            if (cleaned[i] === '(') depth++;
+            else if (cleaned[i] === ')') depth--;
+            i++;
+          }
+          result += ' ';
+        } else {
+          result += cleaned[i];
+          i++;
+        }
+      }
+      cleaned = result;
+      const pkgs = cleaned.replace(/-[yqf]+\b|--yes|--no-install-recommends|--quiet|--fix-broken/g, '').trim().split(/\s+/).filter(p => p && !p.startsWith('-'));
+      const shellTokens = /^[![\]{}()=<>"';\\|&]+$|^if$|^then$|^else$|^fi$|^do$|^done$/;
+      for (const rawPkg of pkgs) {
+        // Strip surrounding quotes
+        const pkg = rawPkg.replace(/^["']|["']$/g, '');
+        if (!pkg || pkg.includes('=') || pkg.startsWith('$') || shellTokens.test(pkg)) continue;
+        {
           violations.push({ rule: 'DL3008', severity: 'warning', message: `Pin versions in apt-get install. Instead of \`apt-get install ${pkg}\` use \`apt-get install ${pkg}=<version>\``, line: inst.line });
         }
       }

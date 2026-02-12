@@ -481,6 +481,27 @@ describe('DL3008 - apt-get combined flags', () => {
   });
 });
 
+describe('DL3008 - shell subcommand in apt-get install', () => {
+  it('does not flag shell syntax inside $() as package names', () => {
+    const v = lintDockerfile('FROM ubuntu:20.04\nRUN apt-get update && apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ]; then echo "libmimalloc2.0"; fi) && rm -rf /var/lib/apt/lists/*');
+    const dl3008 = v.filter(r => r.rule === 'DL3008');
+    // tini is legit, but shell tokens like !, [, ], "openvino", if, then, echo, fi should NOT appear
+    expect(dl3008.some(r => r.message.includes('`!'))).toBe(false);
+    expect(dl3008.some(r => r.message.includes('`['))).toBe(false);
+    expect(dl3008.some(r => r.message.includes('`]'))).toBe(false);
+    expect(dl3008.some(r => r.message.includes('openvino'))).toBe(false);
+    expect(dl3008.some(r => r.message.includes('echo'))).toBe(false);
+    expect(dl3008.some(r => r.message.includes('tini'))).toBe(true);
+  });
+
+  it('does not flag backtick subcommands as packages', () => {
+    const v = lintDockerfile('FROM ubuntu:20.04\nRUN apt-get install -y curl `echo wget`');
+    const dl3008 = v.filter(r => r.rule === 'DL3008');
+    expect(dl3008.some(r => r.message.includes('curl'))).toBe(true);
+    expect(dl3008.some(r => r.message.includes('echo'))).toBe(false);
+  });
+});
+
 describe('DL3013 - pip compatible release specifier', () => {
   it('does not flag ~= as unpinned', () => {
     const v = lintDockerfile('FROM python:3.11\nRUN pip install supervisor~=4.2');
