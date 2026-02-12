@@ -391,6 +391,9 @@ describe('DL3040 - dnf clean all', () => {
   it('flags missing clean', () => {
     expect(hasRule(lintDockerfile('FROM fedora:35\nRUN dnf install -y curl'), 'DL3040')).toBe(true);
   });
+  it('does not flag microdnf (separate tool)', () => {
+    expect(hasRule(lintDockerfile('FROM fedora:35\nRUN microdnf install -y curl'), 'DL3040')).toBe(false);
+  });
 });
 
 describe('DL3042 - pip --no-cache-dir', () => {

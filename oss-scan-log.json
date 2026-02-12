@@ -688,5 +688,8 @@
       "warnings": 82,
       "infos": 47
     }
-  }
+  },
+  "elastic/elasticsearch",
+  "verdaccio/verdaccio",
+  "coder/code-server"
 ]

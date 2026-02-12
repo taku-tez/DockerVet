@@ -21,6 +21,13 @@ describe('DL3041 - dnf version pinning', () => {
   it('flags unpinned dnf package', () => {
     expect(hasRule(lintDockerfile('FROM fedora:35\nRUN dnf install -y curl'), 'DL3041')).toBe(true);
   });
+  it('does not flag microdnf packages', () => {
+    expect(hasRule(lintDockerfile('FROM fedora:35\nRUN microdnf install -y curl'), 'DL3041')).toBe(false);
+  });
+  it('does not flag backslash line continuations as packages', () => {
+    const df = 'FROM fedora:35\nRUN dnf install -y \\\n  curl-7.79.1 \\\n  wget-1.21';
+    expect(hasRule(lintDockerfile(df), 'DL3041')).toBe(false);
+  });
 });
 
 describe('DL3050 - Superfluous labels', () => {

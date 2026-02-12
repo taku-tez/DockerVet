@@ -120,6 +120,12 @@ describe('DV1007 - Package manager cache not cleaned', () => {
   it('flags dnf without cleanup', () => {
     expect(hasRule(lintDockerfile('FROM fedora:35\nRUN dnf install -y curl'), 'DV1007')).toBe(true);
   });
+  it('flags microdnf without cleanup', () => {
+    expect(hasRule(lintDockerfile('FROM fedora:35\nRUN microdnf install -y curl'), 'DV1007')).toBe(true);
+  });
+  it('passes microdnf with cleanup', () => {
+    expect(hasRule(lintDockerfile('FROM fedora:35\nRUN microdnf install -y curl && microdnf clean all'), 'DV1007')).toBe(false);
+  });
 });
 
 describe('DV1008 - COPY . . too broad', () => {

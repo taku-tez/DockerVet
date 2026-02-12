@@ -177,9 +177,13 @@ export const DV1007: Rule = {
         if (/yum\s+install/.test(a) && !/yum\s+clean\s+all/.test(a)) {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'yum cache not cleaned. Add `yum clean all` in the same RUN instruction.', line: inst.line });
         }
-        // dnf
-        if (/dnf\s+install/.test(a) && !/dnf\s+clean\s+all/.test(a)) {
+        // dnf (but not microdnf which has its own cache management)
+        if (/(?<!micro)dnf\s+install/.test(a) && !/dnf\s+clean\s+all/.test(a)) {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'dnf cache not cleaned. Add `dnf clean all` in the same RUN instruction.', line: inst.line });
+        }
+        // microdnf
+        if (/microdnf\s+install/.test(a) && !/microdnf\s+clean\s+all/.test(a)) {
+          violations.push({ rule: 'DV1007', severity: 'warning', message: 'microdnf cache not cleaned. Add `microdnf clean all` in the same RUN instruction.', line: inst.line });
         }
       }
     }
