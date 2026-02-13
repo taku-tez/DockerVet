@@ -69,7 +69,7 @@ export const DL3013: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/pip3?\s+install\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('--'));
+      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('--')).map(p => p.replace(/[()]+$/g, '').replace(/^[()]+/g, '')).filter(p => p);
       for (const pkg of pkgs) {
         if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('~=') && !pkg.includes('!=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
           violations.push({ rule: 'DL3013', severity: 'warning', message: `Pin versions in pip. Instead of \`pip install ${pkg}\` use \`pip install ${pkg}==<version>\``, line: inst.line });
@@ -275,6 +275,14 @@ export const DL3042: Rule = {
         }
       }
     }
-    return runCheckNeg(ctx, /pip3?\s+install/, /--no-cache-dir/, 'DL3042', 'warning', 'Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`');
+    // Skip RUN instructions that use BuildKit --mount=type=cache (pip cache is managed by BuildKit)
+    const violations: Violation[] = [];
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      if (/--mount=type=cache/.test(inst.arguments)) return;
+      if (/pip3?\s+install/.test(inst.arguments) && !/--no-cache-dir/.test(inst.arguments)) {
+        violations.push({ rule: 'DL3042', severity: 'warning', message: 'Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`', line: inst.line });
+      }
+    });
+    return violations;
   },
 };

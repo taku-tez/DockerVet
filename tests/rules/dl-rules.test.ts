@@ -436,6 +436,19 @@ describe('DL3042 - pip --no-cache-dir', () => {
   it('passes when PIP_NO_CACHE_DIR is set among other vars', () => {
     expect(hasRule(lintDockerfile('FROM python:3\nENV PATH="/app:$PATH" PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1\nRUN pip install flask==2.0'), 'DL3042')).toBe(false);
   });
+  it('passes when RUN uses --mount=type=cache (BuildKit cache)', () => {
+    expect(hasRule(lintDockerfile('FROM python:3\nRUN --mount=type=cache,target=/root/.cache pip install flask==2.0'), 'DL3042')).toBe(false);
+  });
+});
+
+describe('DL3013 - pip subshell parentheses', () => {
+  it('does not include trailing paren in package name', () => {
+    const v = lintDockerfile('FROM python:3\nRUN (pip install --upgrade pip wheel setuptools)');
+    const dl3013 = v.filter(x => x.rule === 'DL3013');
+    for (const finding of dl3013) {
+      expect(finding.message).not.toMatch(/\)/);
+    }
+  });
 });
 
 describe('DL3043 - ONBUILD FROM/MAINTAINER', () => {
