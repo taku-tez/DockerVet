@@ -89,7 +89,7 @@ export const DL3021: Rule = {
     for (const type of ['COPY', 'ADD'] as const) {
       forEachInstruction(ctx, type, (inst) => {
         const c = inst as CopyInstruction;
-        if (c.sources.length > 1 && !c.destination.endsWith('/')) {
+        if (c.sources.length > 1 && !c.destination.endsWith('/') && c.destination !== '.' && c.destination !== './') {
           violations.push({ rule: 'DL3021', severity: 'error', message: 'COPY with more than 2 arguments requires the last argument to end with /', line: inst.line });
         }
       });

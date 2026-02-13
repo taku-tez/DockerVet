@@ -266,5 +266,15 @@ export const DL3041: Rule = {
 export const DL3042: Rule = {
   id: 'DL3042', severity: 'warning',
   description: 'Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`',
-  check(ctx) { return runCheckNeg(ctx, /pip3?\s+install/, /--no-cache-dir/, 'DL3042', 'warning', 'Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`'); },
+  check(ctx) {
+    // Skip if PIP_NO_CACHE_DIR is set via ENV/ARG in any prior stage
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV' && /PIP_NO_CACHE_DIR\s*=\s*["']?(1|true|on|yes)/i.test(inst.arguments)) {
+          return [];
+        }
+      }
+    }
+    return runCheckNeg(ctx, /pip3?\s+install/, /--no-cache-dir/, 'DL3042', 'warning', 'Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`');
+  },
 };

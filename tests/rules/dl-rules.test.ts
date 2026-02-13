@@ -275,6 +275,12 @@ describe('DL3021 - COPY multiple sources needs / dest', () => {
   it('flags JSON array form without trailing /', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY ["a.txt", "b.txt", "dest"]'), 'DL3021')).toBe(true);
   });
+  it('allows . as destination (current directory)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nWORKDIR /app\nCOPY a.txt b.txt .'), 'DL3021')).toBe(false);
+  });
+  it('allows ./ as destination', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nWORKDIR /app\nCOPY a.txt b.txt ./'), 'DL3021')).toBe(false);
+  });
 });
 
 describe('DL3023 - COPY --from self-reference', () => {
@@ -423,6 +429,12 @@ describe('DL3042 - pip --no-cache-dir', () => {
   });
   it('passes with --no-cache-dir', () => {
     expect(hasRule(lintDockerfile('FROM python:3\nRUN pip install --no-cache-dir flask==2.0'), 'DL3042')).toBe(false);
+  });
+  it('passes when PIP_NO_CACHE_DIR=1 is set via ENV', () => {
+    expect(hasRule(lintDockerfile('FROM python:3\nENV PIP_NO_CACHE_DIR=1\nRUN pip install flask==2.0'), 'DL3042')).toBe(false);
+  });
+  it('passes when PIP_NO_CACHE_DIR is set among other vars', () => {
+    expect(hasRule(lintDockerfile('FROM python:3\nENV PATH="/app:$PATH" PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1\nRUN pip install flask==2.0'), 'DL3042')).toBe(false);
   });
 });
 
