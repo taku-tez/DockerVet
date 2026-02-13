@@ -233,6 +233,12 @@ describe('DL3018 - Pin apk versions', () => {
   it('skips packages with ${VAR} syntax', () => {
     expect(hasRule(lintDockerfile('FROM alpine:3\nARG PKG_VER\nRUN apk add python-${PKG_VER}'), 'DL3018')).toBe(false);
   });
+  it('skips --virtual package names (dot-prefixed)', () => {
+    expect(hasRule(lintDockerfile('FROM alpine:3\nRUN apk add --no-cache --virtual .fetch-deps ca-certificates=1.0 openssl=3.0'), 'DL3018')).toBe(false);
+  });
+  it('still flags real packages after --virtual name', () => {
+    expect(hasRule(lintDockerfile('FROM alpine:3\nRUN apk add --no-cache --virtual .build-deps curl'), 'DL3018')).toBe(true);
+  });
 });
 
 describe('DL3019 - apk --no-cache', () => {
@@ -450,6 +456,14 @@ describe('DL3045 - COPY relative without WORKDIR', () => {
   });
   it('passes absolute destination', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY app.js /app/'), 'DL3045')).toBe(false);
+  });
+  it('passes when parent stage has WORKDIR (multi-stage inheritance)', () => {
+    const df = 'FROM rust:1.70 AS chef\nWORKDIR /app\nRUN cargo install cargo-chef\n\nFROM chef AS planner\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src';
+    expect(hasRule(lintDockerfile(df), 'DL3045')).toBe(false);
+  });
+  it('flags when parent stage has no WORKDIR', () => {
+    const df = 'FROM rust:1.70 AS base\nRUN echo hi\n\nFROM base AS builder\nCOPY app.js app/';
+    expect(hasRule(lintDockerfile(df), 'DL3045')).toBe(true);
   });
 });
 
