@@ -156,7 +156,8 @@ function parseLabelArgs(args: string, line: number): LabelInstruction {
   const regex = /([^\s=]+)=(?:"((?:[^"\\]|\\.)*)"|'([^']*?)'|(\S*))/g;
   let m: RegExpExecArray | null;
   while ((m = regex.exec(args)) !== null) {
-    pairs.push({ key: m[1], value: m[2] ?? m[3] ?? m[4] ?? '' });
+    const key = m[1].replace(/^["']|["']$/g, '');
+    pairs.push({ key, value: m[2] ?? m[3] ?? m[4] ?? '' });
   }
   return { type: 'LABEL', raw: `LABEL ${args}`, line, arguments: args, flags: {}, pairs };
 }

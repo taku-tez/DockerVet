@@ -35,6 +35,12 @@ describe('DV4003 - No WORKDIR before RUN', () => {
   it('passes no RUN', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nCMD ["echo"]'), 'DV4003')).toBe(false);
   });
+  it('skips FROM scratch stages', () => {
+    expect(hasRule(lintDockerfile('FROM scratch\nCOPY binary /\nENTRYPOINT ["/binary"]'), 'DV4003')).toBe(false);
+  });
+  it('skips FROM scratch even in multi-stage', () => {
+    expect(hasRule(lintDockerfile('FROM golang AS build\nWORKDIR /src\nRUN go build\nFROM scratch\nCOPY --from=build /src/app /app'), 'DV4003')).toBe(false);
+  });
 });
 
 describe('DV4004 - ARG after ENV', () => {

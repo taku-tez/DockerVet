@@ -54,6 +54,8 @@ export const DV4003: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
+      // Skip scratch-based stages — they typically have no shell and don't need WORKDIR
+      if (stage.from.image === 'scratch') continue;
       const hasWorkdir = stage.instructions.some(i => i.type === 'WORKDIR');
       const hasRun = stage.instructions.some(i => i.type === 'RUN');
       if (hasRun && !hasWorkdir) {

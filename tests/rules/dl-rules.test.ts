@@ -507,6 +507,9 @@ describe('DL3048 - Invalid label key', () => {
   it('handles escaped quotes in LABEL JSON values', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nLABEL com.docker.extension.screenshots="[{\\"alt\\": \\"screenshot\\", \\"url\\": \\"https://example.com/img.png\\"}]"'), 'DL3048')).toBe(false);
   });
+  it('does not flag quoted label keys (Docker-valid syntax)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nLABEL "com.centurylinklabs.watchtower"="true"'), 'DL3048')).toBe(false);
+  });
 });
 
 describe('DL3049 - Label missing', () => {
