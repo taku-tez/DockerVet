@@ -59,6 +59,18 @@ describe('DV4005 - No CMD or ENTRYPOINT', () => {
   it('passes with ENTRYPOINT', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nENTRYPOINT ["echo"]'), 'DV4005')).toBe(false);
   });
+  it('skips builder Dockerfiles by filename', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi', undefined, 'docker/builder-go.dockerfile'), 'DV4005')).toBe(false);
+  });
+  it('skips base Dockerfiles by filename', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi', undefined, 'docker/debian-base.dockerfile'), 'DV4005')).toBe(false);
+  });
+  it('skips test Dockerfiles by filename', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi', undefined, 'test/test-radius.dockerfile'), 'DV4005')).toBe(false);
+  });
+  it('still flags regular Dockerfiles without CMD', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi', undefined, 'Dockerfile'), 'DV4005')).toBe(true);
+  });
 });
 
 describe('DV4006 - Large port range', () => {

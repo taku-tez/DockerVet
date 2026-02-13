@@ -16,6 +16,7 @@ export interface RuleContext {
   trustedRegistries: string[];
   requiredLabels: string[];
   allowedLabels?: string[];
+  filePath?: string;
 }
 
 export interface Rule {

@@ -98,7 +98,7 @@ function processContent(
   noColor: boolean, config: any, trustedRegistries: string[]
 ): number {
   const ast = parse(content);
-  const violations = lint(ast, { config, trustedRegistries });
+  const violations = lint(ast, { config, trustedRegistries, filePath: filename });
 
   switch (format) {
     case 'json':

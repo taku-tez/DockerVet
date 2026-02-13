@@ -6,6 +6,7 @@ import { DockerVetConfig } from './config';
 export interface LintOptions {
   config: DockerVetConfig;
   trustedRegistries?: string[];
+  filePath?: string;
 }
 
 export function lint(ast: DockerfileAST, options: LintOptions): Violation[] {
@@ -18,6 +19,7 @@ export function lint(ast: DockerfileAST, options: LintOptions): Violation[] {
     trustedRegistries,
     requiredLabels: config.requiredLabels || [],
     allowedLabels: config.allowedLabels,
+    filePath: options.filePath,
   };
 
   const violations: Violation[] = [];
