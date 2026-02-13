@@ -237,3 +237,20 @@ export const DV1009: Rule = {
     return violations;
   },
 };
+
+// DV1010: curl --insecure / curl -k in HEALTHCHECK
+export const DV1010: Rule = {
+  id: 'DV1010', severity: 'warning',
+  description: 'Avoid using curl with --insecure/-k in HEALTHCHECK. This disables TLS certificate verification.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'HEALTHCHECK' && /\bcurl\b/.test(inst.arguments) && /\s-k\b|\s--insecure\b/.test(inst.arguments)) {
+          violations.push({ rule: 'DV1010', severity: 'warning', message: 'HEALTHCHECK uses curl with --insecure/-k, disabling TLS certificate verification. Consider using a non-TLS endpoint or proper certificates.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};

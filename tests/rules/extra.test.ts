@@ -147,4 +147,24 @@ describe('Additional rule edge cases', () => {
   it('DL3012 passes single HEALTHCHECK', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nHEALTHCHECK CMD true'), 'DL3012')).toBe(false);
   });
+
+  it('DV1010 flags curl -k in HEALTHCHECK', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nHEALTHCHECK CMD curl -k https://localhost/health'), 'DV1010')).toBe(true);
+  });
+
+  it('DV1010 flags curl --insecure in HEALTHCHECK', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nHEALTHCHECK CMD curl --insecure https://localhost/health'), 'DV1010')).toBe(true);
+  });
+
+  it('DV1010 passes curl without -k in HEALTHCHECK', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nHEALTHCHECK CMD curl http://localhost/health'), 'DV1010')).toBe(false);
+  });
+
+  it('DL3047 does not flag apt-get install wget', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN apt-get update && apt-get install -y wget'), 'DL3047')).toBe(false);
+  });
+
+  it('DL3047 flags wget usage without --progress', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN wget https://example.com/file.tar.gz'), 'DL3047')).toBe(true);
+  });
 });
