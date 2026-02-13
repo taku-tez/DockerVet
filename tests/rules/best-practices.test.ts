@@ -47,6 +47,12 @@ describe('DV4004 - ARG after ENV', () => {
   it('passes no ARG or ENV', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi'), 'DV4004')).toBe(false);
   });
+  it('passes ARG after ENV when ARG is referenced by later ENV', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV PATH="/usr/bin"\nARG BUILD_ID\nENV MY_BUILD=${BUILD_ID}'), 'DV4004')).toBe(false);
+  });
+  it('flags ARG after ENV when ARG is NOT referenced by later ENV', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV FOO=bar\nARG UNUSED_ARG'), 'DV4004')).toBe(true);
+  });
 });
 
 describe('DV4005 - No CMD or ENTRYPOINT', () => {

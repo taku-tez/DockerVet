@@ -1,5 +1,5 @@
 import { Rule, Violation } from '../types';
-import { CopyInstruction, EnvInstruction, ExposeInstruction } from '../../parser/types';
+import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction } from '../../parser/types';
 
 // DV4001: Multiple package install in separate RUNs
 export const DV4001: Rule = {
@@ -77,11 +77,19 @@ export const DV4004: Rule = {
         if (inst.type === 'ENV') envIndices.push(idx);
         if (inst.type === 'ARG') argIndices.push(idx);
       });
-      // Flag if ARG comes after ENV in same stage
+      // Flag if ARG comes after ENV but is NOT referenced by a later ENV
       for (const ai of argIndices) {
-        for (const ei of envIndices) {
-          if (ai > ei) {
-            const argInst = stage.instructions[ai];
+        const firstEnvIdx = envIndices.length > 0 ? envIndices[0] : Infinity;
+        if (ai > firstEnvIdx) {
+          const argInst = stage.instructions[ai] as ArgInstruction;
+          const argName = argInst.name;
+          // Check if any ENV after this ARG references it
+          const referencedByLaterEnv = argName && stage.instructions.slice(ai + 1).some(inst => {
+            if (inst.type !== 'ENV') return false;
+            const raw = (inst as { raw?: string }).raw || '';
+            return raw.includes('${' + argName + '}') || raw.includes('$' + argName);
+          });
+          if (!referencedByLaterEnv) {
             violations.push({ rule: 'DV4004', severity: 'info', message: 'ARG defined after ENV. Define ARG before ENV for better build cache utilization.', line: argInst.line });
             return violations;
           }
