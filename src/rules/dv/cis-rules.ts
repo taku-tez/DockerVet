@@ -177,3 +177,20 @@ export const DV2009: Rule = {
     return violations;
   },
 };
+
+// DV2010: apk upgrade in Dockerfile
+export const DV2010: Rule = {
+  id: 'DV2010', severity: 'warning',
+  description: 'Avoid apk upgrade in Dockerfiles for reproducible builds.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'RUN' && /\bapk\s+(--[a-z-]+\s+)*upgrade\b/.test(inst.arguments)) {
+          violations.push({ rule: 'DV2010', severity: 'warning', message: 'Avoid apk upgrade in Dockerfiles. It makes builds non-reproducible. Pin specific package versions instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};

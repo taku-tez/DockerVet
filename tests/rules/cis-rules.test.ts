@@ -112,3 +112,18 @@ describe('DV2009 - Unsafe SHELL', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nSHELL ["/bin/sh", "-c"]'), 'DV2009')).toBe(false);
   });
 });
+
+describe('DV2010: apk upgrade', () => {
+  it('flags apk upgrade', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk upgrade'), 'DV2010')).toBe(true);
+  });
+  it('flags apk --no-cache upgrade', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk --no-cache upgrade'), 'DV2010')).toBe(true);
+  });
+  it('passes apk add', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk add --no-cache curl'), 'DV2010')).toBe(false);
+  });
+  it('flags apk upgrade in compound RUN', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk upgrade && apk add --no-cache curl'), 'DV2010')).toBe(true);
+  });
+});
