@@ -29,6 +29,15 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('passes _FILE suffix with multiple secret path ENVs', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV MINIO_SECRET_KEY_FILE=secret_key MINIO_ROOT_PASSWORD_FILE=secret_key'), 'DV1001')).toBe(false);
   });
+  it('flags ARG with encryption_key (cal.com pattern)', () => {
+    expect(hasRule(lintDockerfile('ARG CALENDSO_ENCRYPTION_KEY=secret\nFROM ubuntu:20.04'), 'DV1001')).toBe(true);
+  });
+  it('flags ENV with signing_key', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV JWT_SIGNING_KEY=mykey123'), 'DV1001')).toBe(true);
+  });
+  it('passes ARG encryption_key without default', () => {
+    expect(hasRule(lintDockerfile('ARG ENCRYPTION_KEY\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
+  });
   it('passes ARG with _FILE suffix', () => {
     expect(hasRule(lintDockerfile('ARG DB_PASSWORD_FILE=password\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
   });
