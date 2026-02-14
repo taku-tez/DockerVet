@@ -272,6 +272,14 @@ describe('DL3020 - Use COPY instead of ADD', () => {
   it('passes ADD with archive', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nADD archive.tar.gz /opt/'), 'DL3020')).toBe(false);
   });
+  it('passes ADD with ARG variable that defaults to a URL', () => {
+    const df = 'ARG DIST=https://example.com/app.tar.gz\nFROM ubuntu:20.04\nADD $DIST /opt/';
+    expect(hasRule(lintDockerfile(df), 'DL3020')).toBe(false);
+  });
+  it('passes ADD with braced ARG variable that defaults to a URL', () => {
+    const df = 'ARG PKG_URL=https://releases.example.com/v1.0/pkg.tar.gz\nFROM ubuntu:20.04\nADD ${PKG_URL} /tmp/';
+    expect(hasRule(lintDockerfile(df), 'DL3020')).toBe(false);
+  });
 });
 
 describe('DL3021 - COPY multiple sources needs / dest', () => {

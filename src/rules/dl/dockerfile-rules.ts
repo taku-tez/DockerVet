@@ -68,10 +68,28 @@ export const DL3020: Rule = {
   description: 'Use COPY instead of ADD for files and folders',
   check(ctx) {
     const violations: Violation[] = [];
+    // Build ARG default lookup for variable resolution
+    const argDefaults = new Map<string, string>();
+    for (const a of ctx.ast.globalArgs) argDefaults.set(a.name, a.defaultValue || '');
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG') {
+          const ai = inst as import('../../parser/types').ArgInstruction;
+          argDefaults.set(ai.name, ai.defaultValue || '');
+        }
+      }
+    }
+    const resolveVar = (s: string): string => {
+      const m = s.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/);
+      return m ? (argDefaults.get(m[1]) || s) : s;
+    };
     forEachInstruction(ctx, 'ADD', (inst) => {
       const a = inst as CopyInstruction;
-      const hasUrlSrc = a.sources.some(s => isUrl(s));
-      const hasArchive = a.sources.some(s => ARCHIVE_PATTERN.test(s));
+      const hasUrlSrc = a.sources.some(s => isUrl(s) || isUrl(resolveVar(s)));
+      const hasArchive = a.sources.some(s => {
+        const resolved = resolveVar(s);
+        return ARCHIVE_PATTERN.test(s) || ARCHIVE_PATTERN.test(resolved);
+      });
       if (!hasUrlSrc && !hasArchive) {
         violations.push({ rule: 'DL3020', severity: 'error', message: 'Use COPY instead of ADD for files and folders', line: inst.line });
       }
