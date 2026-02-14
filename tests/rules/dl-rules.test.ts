@@ -605,6 +605,29 @@ describe('DL3013 - pip compatible release specifier', () => {
   });
 });
 
+describe('DL3013 - uv pip install --system false positive', () => {
+  it('does not flag flag values as packages (--python-preference system)', () => {
+    const v = lintDockerfile('FROM python:3.11\nRUN uv pip install --system --python-preference system --requirements requirements.txt');
+    expect(hasRule(v, 'DL3013')).toBe(false);
+  });
+  it('does not flag --target /path as a package', () => {
+    const v = lintDockerfile('FROM python:3.11\nRUN pip install --target /tmp/deps flask');
+    const dl3013 = v.filter(x => x.rule === 'DL3013');
+    expect(dl3013.length).toBe(1);
+    expect(dl3013[0].message).toContain('flask');
+  });
+  it('does not flag --index-url value as package', () => {
+    const v = lintDockerfile('FROM python:3.11\nRUN pip install --index-url https://pypi.org/simple/ requests');
+    const dl3013 = v.filter(x => x.rule === 'DL3013');
+    expect(dl3013.length).toBe(1);
+    expect(dl3013[0].message).toContain('requests');
+  });
+  it('handles --flag=value syntax without false positive', () => {
+    const v = lintDockerfile('FROM python:3.11\nRUN pip install --cache-dir=/tmp flask==2.0');
+    expect(hasRule(v, 'DL3013')).toBe(false);
+  });
+});
+
 describe('DL3022 - COPY --from external image', () => {
   it('does not flag COPY --from with external image reference', () => {
     const v = lintDockerfile('FROM ubuntu:20.04\nCOPY --from=docker.io/library/postgres:13 /usr/bin/pg_dump /usr/bin/');

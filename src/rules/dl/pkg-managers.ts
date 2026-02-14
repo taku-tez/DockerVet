@@ -69,7 +69,24 @@ export const DL3013: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/pip3?\s+install\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('--')).map(p => p.replace(/[()]+$/g, '').replace(/^[()]+/g, '')).filter(p => p);
+      const tokens = m[1].split(/\s+/).map(p => p.replace(/[()]+$/g, '').replace(/^[()]+/g, '')).filter(p => p);
+      // Filter out flags and their values (e.g., --python-preference system, -t /path)
+      const pkgs: string[] = [];
+      const flagsWithValue = new Set(['--target', '-t', '--prefix', '--root', '--src', '-b', '-d',
+        '--index-url', '-i', '--extra-index-url', '--constraint', '-c', '--requirement', '-r',
+        '--find-links', '-f', '--python', '--python-preference', '--cache-dir', '--config-settings',
+        '--global-option', '--install-option', '--build-option', '--platform', '--implementation',
+        '--abi', '--progress-bar', '--keyring-provider', '--break-system-packages']);
+      let skipNext = false;
+      for (const t of tokens) {
+        if (skipNext) { skipNext = false; continue; }
+        if (t.startsWith('--') && t.includes('=')) continue; // --flag=value
+        if (t.startsWith('-')) {
+          if (flagsWithValue.has(t)) skipNext = true;
+          continue;
+        }
+        pkgs.push(t);
+      }
       for (const pkg of pkgs) {
         if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('~=') && !pkg.includes('!=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
           violations.push({ rule: 'DL3013', severity: 'warning', message: `Pin versions in pip. Instead of \`pip install ${pkg}\` use \`pip install ${pkg}==<version>\``, line: inst.line });
