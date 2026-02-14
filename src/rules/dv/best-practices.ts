@@ -54,12 +54,23 @@ export const DV4003: Rule = {
   description: 'No WORKDIR set before RUN instructions.',
   check(ctx) {
     const violations: Violation[] = [];
+    // Build alias→stage map to resolve parent WORKDIR inheritance
+    const aliasMap = new Map<string, typeof ctx.ast.stages[0]>();
+    for (const s of ctx.ast.stages) {
+      if (s.from.alias) aliasMap.set(s.from.alias.toLowerCase(), s);
+    }
+    const stageHasWorkdir = (stage: typeof ctx.ast.stages[0]): boolean => {
+      if (stage.instructions.some(i => i.type === 'WORKDIR')) return true;
+      // Check if parent stage (FROM <alias>) has WORKDIR
+      const parent = aliasMap.get(stage.from.image.toLowerCase());
+      if (parent) return stageHasWorkdir(parent);
+      return false;
+    };
     for (const stage of ctx.ast.stages) {
       // Skip scratch-based stages — they typically have no shell and don't need WORKDIR
       if (stage.from.image === 'scratch') continue;
-      const hasWorkdir = stage.instructions.some(i => i.type === 'WORKDIR');
       const hasRun = stage.instructions.some(i => i.type === 'RUN');
-      if (hasRun && !hasWorkdir) {
+      if (hasRun && !stageHasWorkdir(stage)) {
         violations.push({ rule: 'DV4003', severity: 'info', message: 'No WORKDIR set. Use WORKDIR to define the working directory explicitly.', line: stage.from.line });
       }
     }

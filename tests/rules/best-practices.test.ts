@@ -41,6 +41,15 @@ describe('DV4003 - No WORKDIR before RUN', () => {
   it('skips FROM scratch even in multi-stage', () => {
     expect(hasRule(lintDockerfile('FROM golang AS build\nWORKDIR /src\nRUN go build\nFROM scratch\nCOPY --from=build /src/app /app'), 'DV4003')).toBe(false);
   });
+  it('inherits WORKDIR from parent stage via alias', () => {
+    expect(hasRule(lintDockerfile('FROM node:20 AS base\nWORKDIR /app\nRUN npm install\nFROM base AS production\nRUN echo prod'), 'DV4003')).toBe(false);
+  });
+  it('inherits WORKDIR through chained aliases', () => {
+    expect(hasRule(lintDockerfile('FROM node:20 AS base\nWORKDIR /app\nRUN npm install\nFROM base AS mid\nRUN echo mid\nFROM mid AS final\nRUN echo final'), 'DV4003')).toBe(false);
+  });
+  it('flags child stage when parent has no WORKDIR', () => {
+    expect(hasRule(lintDockerfile('FROM node:20 AS base\nRUN npm install\nFROM base AS production\nRUN echo prod'), 'DV4003')).toBe(true);
+  });
 });
 
 describe('DV4004 - ARG after ENV', () => {
