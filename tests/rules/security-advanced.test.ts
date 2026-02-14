@@ -316,3 +316,25 @@ describe('DV3015 - curl/wget pipe to shell', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/file.tar.gz -o file.tar.gz'), 'DV3015')).toBe(false);
   });
 });
+
+describe('DV3019', () => {
+  it('flags downloaded script executed without checksum', () => {
+    expect(hasRule(lintDockerfile(`FROM node:20
+RUN curl -sSL https://example.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh`), 'DV3019')).toBe(true);
+  });
+
+  it('does not flag when sha256sum verification is present', () => {
+    expect(hasRule(lintDockerfile(`FROM node:20
+RUN curl -sSL https://example.com/install.sh -o install.sh && echo "abc123 install.sh" | sha256sum -c - && sh install.sh`), 'DV3019')).toBe(false);
+  });
+
+  it('does not flag pipe-to-shell (handled by DV3015)', () => {
+    expect(hasRule(lintDockerfile(`FROM node:20
+RUN curl -sSL https://example.com/install.sh | bash`), 'DV3019')).toBe(false);
+  });
+
+  it('flags wget download-then-execute', () => {
+    expect(hasRule(lintDockerfile(`FROM node:20
+RUN wget -O setup.sh https://example.com/setup.sh && bash setup.sh`), 'DV3019')).toBe(true);
+  });
+});

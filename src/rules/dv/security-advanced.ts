@@ -433,3 +433,25 @@ export const DV3018: Rule = {
     return violations;
   },
 };
+
+// DV3019: Downloaded script executed without checksum verification
+export const DV3019: Rule = {
+  id: 'DV3019', severity: 'info',
+  description: 'Downloaded script executed without checksum verification.',
+  check(ctx) {
+    // Detect pattern: curl/wget -o <file> ... && (sh|bash|chmod +x) <file>
+    // but NOT when sha256sum/md5sum/gpg verify is present in the same RUN
+    const downloadAndExec = /(?:curl|wget)\s+[^|]*?(?:-[^\s]*[oO]\s+\S+|--output\s+\S+|>\s*\S+).*?(?:&&|;)\s*(?:sh\s|bash\s|chmod\s+\+x\s|\.\/)(?!.*(?:sha256sum|sha512sum|md5sum|gpg\s+--verify))/;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (downloadAndExec.test(args) && !/(?:sha256sum|sha512sum|md5sum|gpg\s+--verify)/.test(args)) {
+          violations.push({ rule: 'DV3019', severity: 'info', message: 'Downloaded script executed without checksum verification. Consider adding sha256sum/gpg verification before execution.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
