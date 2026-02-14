@@ -439,15 +439,20 @@ export const DV3019: Rule = {
   id: 'DV3019', severity: 'info',
   description: 'Downloaded script executed without checksum verification.',
   check(ctx) {
-    // Detect pattern: curl/wget -o <file> ... && (sh|bash|chmod +x) <file>
+    // Detect pattern: curl/wget downloading files and then executing or extracting
     // but NOT when sha256sum/md5sum/gpg verify is present in the same RUN
+    const checksumPattern = /(?:sha256sum|sha512sum|md5sum|gpg\s+--verify|cosign\s+verify)/;
+    // Pattern 1: download + execute (sh/bash/chmod/source)
     const downloadAndExec = /(?:curl|wget)\s+[^|]*?(?:-[^\s]*[oO]\s+\S+|--output\s+\S+|>\s*\S+).*?(?:&&|;)\s*(?:sh\s|bash\s|chmod\s+\+x\s|\.\/)(?!.*(?:sha256sum|sha512sum|md5sum|gpg\s+--verify))/;
+    // Pattern 2: download + extract (tar/unzip/gunzip) without checksum
+    const downloadAndExtract = /(?:curl|wget)\s+[^|]*?(?:-[^\s]*[oO]\s+\S+|--output\s+\S+|>\s*\S+).*?(?:&&|;)\s*(?:tar\s|unzip\s|gunzip\s)/;
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
         const args = inst.arguments;
-        if (downloadAndExec.test(args) && !/(?:sha256sum|sha512sum|md5sum|gpg\s+--verify)/.test(args)) {
+        if (checksumPattern.test(args)) continue;
+        if (downloadAndExec.test(args) || downloadAndExtract.test(args)) {
           violations.push({ rule: 'DV3019', severity: 'info', message: 'Downloaded script executed without checksum verification. Consider adding sha256sum/gpg verification before execution.', line: inst.line });
         }
       }

@@ -337,4 +337,22 @@ RUN curl -sSL https://example.com/install.sh | bash`), 'DV3019')).toBe(false);
     expect(hasRule(lintDockerfile(`FROM node:20
 RUN wget -O setup.sh https://example.com/setup.sh && bash setup.sh`), 'DV3019')).toBe(true);
   });
+
+  it('flags download-then-extract without checksum (tar)', () => {
+    expect(hasRule(lintDockerfile(`FROM debian:bookworm
+RUN curl -L https://github.com/etcd-io/etcd/releases/download/v3.5.17/etcd-v3.5.17-linux-amd64.tar.gz -o /tmp/etcd.tar.gz \\
+    && tar xzvf /tmp/etcd.tar.gz -C /tmp/etcd --strip-components=1`), 'DV3019')).toBe(true);
+  });
+
+  it('flags download-then-unzip without checksum', () => {
+    expect(hasRule(lintDockerfile(`FROM debian:bookworm
+RUN wget -O /tmp/tool.zip https://example.com/tool.zip && unzip /tmp/tool.zip -d /opt/tool`), 'DV3019')).toBe(true);
+  });
+
+  it('does not flag download-then-extract with checksum', () => {
+    expect(hasRule(lintDockerfile(`FROM debian:bookworm
+RUN curl -L https://example.com/app.tar.gz -o /tmp/app.tar.gz \\
+    && echo "abcdef123456 /tmp/app.tar.gz" | sha256sum -c - \\
+    && tar xzf /tmp/app.tar.gz -C /opt/app`), 'DV3019')).toBe(false);
+  });
 });
