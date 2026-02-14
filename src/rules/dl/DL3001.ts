@@ -22,6 +22,9 @@ export const DL3001: Rule = {
               // Skip package install lines (apt-get install, apk add, etc.)
               if (/^\s*(apt-get|apt|apk|yum|dnf|microdnf|zypper|pacman|pip3?|npm|gem|go)\s+(install|add|get)\b/.test(shellCmd)) continue;
 
+              // Skip systemctl/service management commands (e.g., "systemctl enable ssh")
+              if (/^\s*(systemctl|update-rc\.d)\s+(enable|disable|start|stop|restart|mask|unmask)\b/.test(shellCmd)) continue;
+
               // Match only as a standalone command at the start of the shell command
               // Not as a flag (--service, -kill) or part of another word
               const regex = new RegExp(`(?:^|\\s)${cmd}(?:\\s|$)`);

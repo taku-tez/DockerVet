@@ -443,7 +443,7 @@ export const DV3019: Rule = {
     // but NOT when sha256sum/md5sum/gpg verify is present in the same RUN
     const checksumPattern = /(?:sha256sum|sha512sum|md5sum|gpg\s+--verify|cosign\s+verify)/;
     // Pattern 1: download + execute (sh/bash/chmod/source)
-    const downloadAndExec = /(?:curl|wget)\s+[^|]*?(?:-[^\s]*[oO]\s+\S+|--output\s+\S+|>\s*\S+).*?(?:&&|;)\s*(?:sh\s|bash\s|chmod\s+\+x\s|\.\/)(?!.*(?:sha256sum|sha512sum|md5sum|gpg\s+--verify))/;
+    const downloadAndExec = /(?:curl|wget)\s+[^|]*?(?:-[^\s]*[oO]\s+\S+|--output\s+\S+|>\s*\S+).*?(?:&&|;)\s*(?:sh\s|bash\s|chmod\s+(?:\+x|[0-7]{3,4}|[a-z]+=[a-z]*x[a-z]*)[\s]|\.\/)(?!.*(?:sha256sum|sha512sum|md5sum|gpg\s+--verify))/;
     // Pattern 2: download + extract (tar/unzip/gunzip) without checksum
     const downloadAndExtract = /(?:curl|wget)\s+[^|]*?(?:-[^\s]*[oO]\s+\S+|--output\s+\S+|>\s*\S+).*?(?:&&|;)\s*(?:tar\s|unzip\s|gunzip\s)/;
     const violations: Violation[] = [];

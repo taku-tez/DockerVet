@@ -44,6 +44,12 @@ describe('DL3001 - Inappropriate commands', () => {
   it('still flags service command used directly', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN service nginx start'), 'DL3001')).toBe(true);
   });
+  it('does not flag systemctl enable ssh (service management, not ssh usage)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN systemctl enable docker ssh'), 'DL3001')).toBe(false);
+  });
+  it('does not flag systemctl disable ssh', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN systemctl disable ssh'), 'DL3001')).toBe(false);
+  });
 });
 
 describe('DL3002 - Last USER not root', () => {

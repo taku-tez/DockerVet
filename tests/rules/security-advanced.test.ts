@@ -355,4 +355,13 @@ RUN curl -L https://example.com/app.tar.gz -o /tmp/app.tar.gz \\
     && echo "abcdef123456 /tmp/app.tar.gz" | sha256sum -c - \\
     && tar xzf /tmp/app.tar.gz -C /opt/app`), 'DV3019')).toBe(false);
   });
+  it('flags curl -o binary + chmod a=rx without checksum (from coder)', () => {
+    expect(hasRule(lintDockerfile(`FROM ubuntu
+RUN curl --silent --show-error --location --output /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64" && \\
+    chmod a=rx /usr/local/bin/yq`), 'DV3019')).toBe(true);
+  });
+  it('flags curl -o binary + chmod 755 without checksum', () => {
+    expect(hasRule(lintDockerfile(`FROM ubuntu
+RUN curl -sL -o /usr/local/bin/tool https://example.com/tool && chmod 755 /usr/local/bin/tool`), 'DV3019')).toBe(true);
+  });
 });
