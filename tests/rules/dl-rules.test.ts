@@ -239,6 +239,18 @@ describe('DL3018 - Pin apk versions', () => {
   it('still flags real packages after --virtual name', () => {
     expect(hasRule(lintDockerfile('FROM alpine:3\nRUN apk add --no-cache --virtual .build-deps curl'), 'DL3018')).toBe(true);
   });
+  it('skips non-dot-prefixed --virtual package name', () => {
+    const df = 'FROM alpine:3\nRUN apk --no-cache --no-progress add --virtual build-deps build-base=1.0 git=2.0';
+    const results = lintDockerfile(df).filter(v => v.rule === 'DL3018');
+    // build-deps is the virtual name, should not be flagged
+    expect(results.some(v => v.message.includes('build-deps'))).toBe(false);
+  });
+  it('skips -t shorthand for --virtual', () => {
+    const df = 'FROM alpine:3\nRUN apk add -t mydeps curl';
+    const results = lintDockerfile(df).filter(v => v.rule === 'DL3018');
+    expect(results.some(v => v.message.includes('mydeps'))).toBe(false);
+    expect(results.some(v => v.message.includes('curl'))).toBe(true);
+  });
 });
 
 describe('DL3019 - apk --no-cache', () => {

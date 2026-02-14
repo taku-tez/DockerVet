@@ -201,3 +201,19 @@ describe('DV4012 - consecutive COPY instructions', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY file1.txt /app/\nCOPY file2.txt /app/'), 'DV4012')).toBe(true);
   });
 });
+
+describe('DV4013 - Pin pecl versions', () => {
+  it('flags unpinned pecl install', () => {
+    expect(hasRule(lintDockerfile('FROM php:8.3\nRUN pecl install redis'), 'DV4013')).toBe(true);
+  });
+  it('passes pinned pecl install', () => {
+    expect(hasRule(lintDockerfile('FROM php:8.3\nRUN pecl install redis-5.3.7'), 'DV4013')).toBe(false);
+  });
+  it('flags multiple unpinned pecl installs', () => {
+    const results = lintDockerfile('FROM php:8.3\nRUN pecl install redis && pecl install xdebug').filter(v => v.rule === 'DV4013');
+    expect(results.length).toBe(2);
+  });
+  it('skips variable references', () => {
+    expect(hasRule(lintDockerfile('FROM php:8.3\nRUN pecl install $EXT'), 'DV4013')).toBe(false);
+  });
+});

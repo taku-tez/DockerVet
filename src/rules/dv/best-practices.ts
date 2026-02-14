@@ -1,4 +1,5 @@
 import { Rule, Violation } from '../types';
+import { forEachInstruction } from '../utils';
 import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction } from '../../parser/types';
 
 // DV4001: Multiple package install in separate RUNs
@@ -242,6 +243,27 @@ export const DV4011: Rule = {
         violations.push({ rule: 'DV4011', severity: 'warning', message: `WORKDIR "${dir}" is a relative path. Use an absolute path for predictable behavior.`, line: inst.line });
       }
     }
+    return violations;
+  },
+};
+
+// DV4013: Pin versions in pecl install
+export const DV4013: Rule = {
+  id: 'DV4013', severity: 'warning',
+  description: 'Pin versions in pecl install for reproducible builds',
+  check(ctx) {
+    const violations: Violation[] = [];
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      const regex = /pecl\s+install\s+([^\s;&|]+)/g;
+      let m;
+      while ((m = regex.exec(inst.arguments)) !== null) {
+        const pkg = m[1];
+        // pecl uses package-version format (e.g., redis-5.3.7)
+        if (!pkg.includes('-') && !pkg.startsWith('$')) {
+          violations.push({ rule: 'DV4013', severity: 'warning', message: `Pin versions in pecl install. Instead of \`pecl install ${pkg}\` use \`pecl install ${pkg}-<version>\``, line: inst.line });
+        }
+      }
+    });
     return violations;
   },
 };

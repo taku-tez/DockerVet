@@ -33,7 +33,7 @@ import {
 } from './dv/security-advanced';
 import {
   DV4001, DV4002, DV4003, DV4004, DV4005, DV4006, DV4007, DV4008, DV4009, DV4010,
-  DV4011, DV4012,
+  DV4011, DV4012, DV4013,
 } from './dv/best-practices';
 
 export const ALL_RULES: Rule[] = [
@@ -49,7 +49,7 @@ export const ALL_RULES: Rule[] = [
   DV3001, DV3002, DV3003, DV3004, DV3005, DV3006, DV3007, DV3008, DV3009, DV3010,
   DV3011, DV3012, DV3013, DV3014, DV3015, DV3016, DV3017, DV3018,
   DV4001, DV4002, DV4003, DV4004, DV4005, DV4006, DV4007, DV4008, DV4009, DV4010,
-  DV4011, DV4012,
+  DV4011, DV4012, DV4013,
 ];
 
 export const RULE_MAP = new Map<string, Rule>(ALL_RULES.map(r => [r.id, r]));

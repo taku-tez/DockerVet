@@ -125,7 +125,14 @@ export const DL3018: Rule = {
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/apk\s+(?:--[^\s]+\s+)*add\s+(.+?)(?:[;&|]|$)/s);
       if (!m) return;
-      const pkgs = m[1].split(/\s+/).filter(p => p && !p.startsWith('-') && !p.startsWith('$') && !p.includes('$') && !p.startsWith('.'));
+      const tokens = m[1].split(/\s+/).filter(p => p);
+      // Filter out --virtual and its argument (the virtual package name)
+      const pkgs: string[] = [];
+      for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i] === '--virtual' || tokens[i] === '-t') { i++; continue; }
+        if (tokens[i].startsWith('-') || tokens[i].startsWith('$') || tokens[i].includes('$') || tokens[i].startsWith('.')) continue;
+        pkgs.push(tokens[i]);
+      }
       for (const pkg of pkgs) {
         if (!pkg.includes('=')) {
           violations.push({ rule: 'DL3018', severity: 'warning', message: `Pin versions in apk add. Instead of \`apk add ${pkg}\` use \`apk add ${pkg}=<version>\``, line: inst.line });
