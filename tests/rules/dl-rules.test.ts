@@ -534,6 +534,12 @@ describe('DL3047 - wget --progress', () => {
   it('passes with --progress', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN wget --progress=dot:giga http://example.com'), 'DL3047')).toBe(false);
   });
+  it('passes with -q (quiet mode)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN wget -q http://example.com/file.tar.gz'), 'DL3047')).toBe(false);
+  });
+  it('passes with --quiet', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN wget --quiet http://example.com/file.tar.gz'), 'DL3047')).toBe(false);
+  });
 });
 
 describe('DL3048 - Invalid label key', () => {

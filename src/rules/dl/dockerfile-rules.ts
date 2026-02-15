@@ -335,7 +335,7 @@ export const DL3047: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     forEachInstruction(ctx, 'RUN', (inst) => {
-      if (/\bwget\b/.test(inst.arguments) && !/--progress/.test(inst.arguments) && !/\bapt-get\b.*\binstall\b.*\bwget\b/.test(inst.arguments) && !/\bapk\b.*\badd\b.*\bwget\b/.test(inst.arguments)) {
+      if (/\bwget\b/.test(inst.arguments) && !/--progress/.test(inst.arguments) && !/\bwget\s+(-\w*q|-\w*\s+--quiet|--quiet)\b/.test(inst.arguments) && !/\bwget\b.*\s-q\b/.test(inst.arguments) && !/\bapt-get\b.*\binstall\b.*\bwget\b/.test(inst.arguments) && !/\bapk\b.*\badd\b.*\bwget\b/.test(inst.arguments)) {
         violations.push({ rule: 'DL3047', severity: 'info', message: 'Avoid use of wget without progress bar. Use `wget --progress=dot:giga <url>`', line: inst.line });
       }
     });
