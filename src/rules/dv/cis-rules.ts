@@ -194,3 +194,22 @@ export const DV2010: Rule = {
     return violations;
   },
 };
+
+// DV2011: apk update is redundant when apk add --no-cache is used
+export const DV2011: Rule = {
+  id: 'DV2011', severity: 'info',
+  description: 'apk update is redundant when apk add --no-cache is used in the same RUN instruction.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const cmd = inst.arguments;
+        if (cmd.includes('apk update') && cmd.includes('apk add') && cmd.includes('--no-cache')) {
+          violations.push({ rule: 'DV2011', severity: 'info', message: 'apk update is redundant when using apk add --no-cache. The --no-cache flag already fetches the latest index.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};

@@ -127,3 +127,18 @@ describe('DV2010: apk upgrade', () => {
     expect(hasRule(lintDockerfile('FROM alpine\nRUN apk upgrade && apk add --no-cache curl'), 'DV2010')).toBe(true);
   });
 });
+
+describe('DV2011: redundant apk update with --no-cache', () => {
+  it('should flag apk update before apk add --no-cache', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk update && apk add --no-cache curl'), 'DV2011')).toBe(true);
+  });
+  it('should not flag apk update with apk add (no --no-cache)', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk update && apk add curl'), 'DV2011')).toBe(false);
+  });
+  it('should not flag apk add --no-cache without apk update', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk add --no-cache curl'), 'DV2011')).toBe(false);
+  });
+  it('should flag real-world pattern (chatwoot)', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk update && apk add --no-cache openssl tar build-base'), 'DV2011')).toBe(true);
+  });
+});
