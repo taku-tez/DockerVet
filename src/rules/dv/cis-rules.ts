@@ -213,3 +213,27 @@ export const DV2011: Rule = {
     return violations;
   },
 };
+
+// DV2012: Silent error suppression with || true
+export const DV2012: Rule = {
+  id: 'DV2012', severity: 'info',
+  description: 'RUN command uses || true to suppress errors, which can mask build failures.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const cmd = inst.arguments;
+        // Match || true, || :, or || exit 0 at end of command/subshell
+        if (/\|\|\s*(?:true|:|exit\s+0)\s*(?:$|;|\))/.test(cmd)) {
+          violations.push({
+            rule: 'DV2012', severity: 'info',
+            message: 'RUN uses "|| true" to suppress errors. This can mask build failures. Consider handling errors explicitly or documenting why suppression is needed.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};

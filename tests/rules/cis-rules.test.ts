@@ -142,3 +142,24 @@ describe('DV2011: redundant apk update with --no-cache', () => {
     expect(hasRule(lintDockerfile('FROM alpine\nRUN apk update && apk add --no-cache openssl tar build-base'), 'DV2011')).toBe(true);
   });
 });
+
+describe('DV2012: silent error suppression with || true', () => {
+  it('should flag || true at end of RUN', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN some-command || true'), 'DV2012')).toBe(true);
+  });
+  it('should flag || : at end of RUN', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN some-command || :'), 'DV2012')).toBe(true);
+  });
+  it('should flag || exit 0 at end of RUN', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN some-command || exit 0'), 'DV2012')).toBe(true);
+  });
+  it('should flag || true in subshell', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN (cd /tmp && tar -xf foo.tar.gz || true)'), 'DV2012')).toBe(true);
+  });
+  it('should not flag normal RUN', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk add curl'), 'DV2012')).toBe(false);
+  });
+  it('should flag real-world pattern (keycloak)', () => {
+    expect(hasRule(lintDockerfile('FROM ubi9\nRUN (cd /tmp && tar -xvf /tmp/keycloak.tar.gz && rm /tmp/keycloak.tar.gz) || true'), 'DV2012')).toBe(true);
+  });
+});

@@ -130,6 +130,12 @@ export const DV4005: Rule = {
     if (!lastStage) return violations;
     const hasCmdOrEp = lastStage.instructions.some(i => i.type === 'CMD' || i.type === 'ENTRYPOINT');
     if (!hasCmdOrEp) {
+      // Skip extension images: FROM uses a variable or a specific app image (not scratch/base),
+      // and has no COPY/ADD of application code — likely inherits CMD/ENTRYPOINT from parent
+      const fromImage = lastStage.from.image || '';
+      const usesVariable = fromImage.includes('$');
+      const hasAppCopy = lastStage.instructions.some(i => i.type === 'COPY' || i.type === 'ADD');
+      if (usesVariable && !hasAppCopy) return violations;
       violations.push({ rule: 'DV4005', severity: 'info', message: 'No CMD or ENTRYPOINT instruction found in the final stage.', line: lastStage.from.line });
     }
     return violations;

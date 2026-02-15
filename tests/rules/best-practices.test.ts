@@ -92,6 +92,12 @@ describe('DV4005 - No CMD or ENTRYPOINT', () => {
   it('still flags regular Dockerfiles without CMD', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi', undefined, 'Dockerfile'), 'DV4005')).toBe(true);
   });
+  it('skips extension images with FROM variable and no COPY/ADD', () => {
+    expect(hasRule(lintDockerfile('ARG IMAGE=keycloak\nARG VERSION=latest\nFROM $IMAGE:$VERSION\nRUN /opt/keycloak/bin/kc.sh build', undefined, 'Dockerfile-custom-image'), 'DV4005')).toBe(false);
+  });
+  it('still flags FROM variable with COPY (real app)', () => {
+    expect(hasRule(lintDockerfile('ARG BASE=node\nFROM $BASE:20\nCOPY . /app\nRUN npm install', undefined, 'Dockerfile'), 'DV4005')).toBe(true);
+  });
 });
 
 describe('DV4006 - Large port range', () => {
