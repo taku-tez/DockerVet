@@ -1,5 +1,6 @@
 import { Rule, Violation } from '../types';
 import { CopyInstruction, ExposeInstruction } from '../../parser/types';
+import { isUrl } from '../utils';
 
 // DV3001: AWS/GCP credential patterns in ENV/ARG/RUN
 export const DV3001: Rule = {
@@ -454,6 +455,45 @@ export const DV3019: Rule = {
         if (checksumPattern.test(args)) continue;
         if (downloadAndExec.test(args) || downloadAndExtract.test(args)) {
           violations.push({ rule: 'DV3019', severity: 'info', message: 'Downloaded script executed without checksum verification. Consider adding sha256sum/gpg verification before execution.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3020: ADD with remote URL without checksum
+export const DV3020: Rule = {
+  id: 'DV3020', severity: 'warning',
+  description: 'ADD with remote URL lacks integrity verification.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const argDefaults = new Map<string, string>();
+    for (const a of ctx.ast.globalArgs) argDefaults.set(a.name, a.defaultValue || '');
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG') {
+          const ai = inst as import('../../parser/types').ArgInstruction;
+          argDefaults.set(ai.name, ai.defaultValue || '');
+        }
+        if (inst.type === 'ADD') {
+          const a = inst as CopyInstruction;
+          const resolveVar = (s: string): string => {
+            const m = s.match(/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/);
+            return m ? (argDefaults.get(m[1]) || s) : s;
+          };
+          const hasUrlSrc = a.sources.some(s => isUrl(s) || isUrl(resolveVar(s)));
+          if (hasUrlSrc) {
+            // Check if --checksum flag is used (Docker 24+ syntax)
+            const raw = inst.raw || '';
+            if (!/--checksum[= ]/i.test(raw)) {
+              violations.push({
+                rule: 'DV3020', severity: 'warning',
+                message: 'ADD with remote URL lacks integrity verification. Use ADD --checksum=<digest> (Docker 24+) or download with curl/wget and verify checksum.',
+                line: inst.line,
+              });
+            }
+          }
         }
       }
     }

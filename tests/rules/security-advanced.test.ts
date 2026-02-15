@@ -365,3 +365,23 @@ RUN curl --silent --show-error --location --output /usr/local/bin/yq "https://gi
 RUN curl -sL -o /usr/local/bin/tool https://example.com/tool && chmod 755 /usr/local/bin/tool`), 'DV3019')).toBe(true);
   });
 });
+
+// DV3020: ADD with remote URL without checksum
+describe('DV3020', () => {
+  it('flags ADD with HTTP URL without checksum', () => {
+    const r = lintDockerfile('FROM alpine\nADD https://example.com/file.tar.gz /app/\n');
+    expect(hasRule(r, 'DV3020')).toBe(true);
+  });
+  it('allows ADD with --checksum flag', () => {
+    const r = lintDockerfile('FROM alpine\nADD --checksum=sha256:abc123 https://example.com/file.tar.gz /app/\n');
+    expect(hasRule(r, 'DV3020')).toBe(false);
+  });
+  it('does not flag ADD with local file', () => {
+    const r = lintDockerfile('FROM alpine\nADD local.tar.gz /app/\n');
+    expect(hasRule(r, 'DV3020')).toBe(false);
+  });
+  it('flags ADD with variable resolving to URL', () => {
+    const r = lintDockerfile('ARG URL=https://example.com/file.bin\nFROM alpine\nADD $URL /app/\n');
+    expect(hasRule(r, 'DV3020')).toBe(true);
+  });
+});
