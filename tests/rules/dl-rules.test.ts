@@ -519,6 +519,10 @@ describe('DL3045 - COPY relative without WORKDIR', () => {
     const df = 'FROM rust:1.70 AS base\nRUN echo hi\n\nFROM base AS builder\nCOPY app.js app/';
     expect(hasRule(lintDockerfile(df), 'DL3045')).toBe(true);
   });
+  it('passes with transitive WORKDIR inheritance (grandparent)', () => {
+    const df = 'FROM node:22 AS base\nWORKDIR /app\n\nFROM base AS deps\nCOPY package.json ./\n\nFROM deps AS dev\nCOPY --from=base /app/out ./';
+    expect(hasRule(lintDockerfile(df), 'DL3045')).toBe(false);
+  });
 });
 
 describe('DL3046 - useradd without -l', () => {

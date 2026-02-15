@@ -226,6 +226,14 @@ export const DV2012: Rule = {
         const cmd = inst.arguments;
         // Match || true, || :, or || exit 0 at end of command/subshell
         if (/\|\|\s*(?:true|:|exit\s+0)\s*(?:$|;|\))/.test(cmd)) {
+          // Suppress for safe cleanup patterns where failure is expected
+          // e.g., find ... | xargs rm ... || true, rm -f ... || true
+          const suppressionLine = cmd.match(/([^\n;\\]*\|\|\s*(?:true|:|exit\s+0))/)?.[1] || '';
+          if (/\b(?:find|xargs)\b.*\brm\b.*\|\|/.test(suppressionLine) ||
+              /\brm\s+-[rf]+\b.*\|\|/.test(suppressionLine) ||
+              /\bfind\b.*-(?:delete|empty)\b.*\|\|/.test(suppressionLine)) {
+            continue;
+          }
           violations.push({
             rule: 'DV2012', severity: 'info',
             message: 'RUN uses "|| true" to suppress errors. This can mask build failures. Consider handling errors explicitly or documenting why suppression is needed.',

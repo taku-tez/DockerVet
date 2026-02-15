@@ -162,4 +162,13 @@ describe('DV2012: silent error suppression with || true', () => {
   it('should flag real-world pattern (keycloak)', () => {
     expect(hasRule(lintDockerfile('FROM ubi9\nRUN (cd /tmp && tar -xvf /tmp/keycloak.tar.gz && rm /tmp/keycloak.tar.gz) || true'), 'DV2012')).toBe(true);
   });
+  it('suppresses for find/xargs rm cleanup pattern', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN find /tmp -name "*.pyc" -print0 | xargs -0 rm -f || true'), 'DV2012')).toBe(false);
+  });
+  it('suppresses for rm -rf cleanup pattern', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN rm -rf /tmp/cache || true'), 'DV2012')).toBe(false);
+  });
+  it('suppresses for find -delete cleanup pattern', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN find /tmp -type d -empty -delete || true'), 'DV2012')).toBe(false);
+  });
 });

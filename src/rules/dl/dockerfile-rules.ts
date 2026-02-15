@@ -280,12 +280,27 @@ export const DL3045: Rule = {
   description: 'COPY to a relative destination without WORKDIR set',
   check(ctx) {
     const violations: Violation[] = [];
-    // Build map of stage alias -> whether it has WORKDIR
+    // Build map of stage alias -> whether it has WORKDIR (directly or inherited)
     const stageHasWorkdir = new Map<string, boolean>();
+    const stageParent = new Map<string, string | undefined>();
     for (const stage of ctx.ast.stages) {
       const alias = stage.from.alias?.toLowerCase();
       const has = stage.instructions.some(i => i.type === 'WORKDIR');
-      if (alias) stageHasWorkdir.set(alias, has);
+      const parent = stage.from.image?.toLowerCase();
+      if (alias) {
+        stageParent.set(alias, parent);
+        stageHasWorkdir.set(alias, has);
+      }
+    }
+    // Resolve transitive WORKDIR inheritance
+    const resolvedWorkdir = (alias: string | undefined): boolean => {
+      if (!alias) return false;
+      if (stageHasWorkdir.get(alias)) return true;
+      const parent = stageParent.get(alias);
+      return parent ? resolvedWorkdir(parent) : false;
+    };
+    for (const [alias] of stageHasWorkdir) {
+      if (resolvedWorkdir(alias)) stageHasWorkdir.set(alias, true);
     }
 
     for (const stage of ctx.ast.stages) {
