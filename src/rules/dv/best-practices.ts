@@ -136,6 +136,16 @@ export const DV4005: Rule = {
       const usesVariable = fromImage.includes('$');
       const hasAppCopy = lastStage.instructions.some(i => i.type === 'COPY' || i.type === 'ADD');
       if (usesVariable && !hasAppCopy) return violations;
+      // Skip images that extend a specific app image (registry paths, org-scoped, or local build aliases)
+      // These likely inherit CMD/ENTRYPOINT from their parent image
+      const baseImages = /^(scratch|alpine|debian|ubuntu|centos|fedora|rockylinux|amazonlinux|node|python|ruby|golang|rust|php|openjdk|eclipse-temurin|maven|gradle|nginx|httpd|busybox|buildpack-deps|mcr\.microsoft\.com\/dotnet)$/i;
+      const isGenericBase = baseImages.test(fromImage.split(/[:/]/)[0]);
+      // If FROM references a prior build stage, it's an intermediate — skip
+      const priorStageNames = ctx.ast.stages.slice(0, -1).map(s => s.from.alias).filter(Boolean);
+      const fromAlias = lastStage.from.alias;
+      const isFromPriorStage = priorStageNames.includes(fromImage);
+      // Extension image: not a generic base, not scratch, not a prior build stage
+      if (!isGenericBase && !isFromPriorStage && (fromImage.includes('/') || fromImage.includes('-'))) return violations;
       violations.push({ rule: 'DV4005', severity: 'info', message: 'No CMD or ENTRYPOINT instruction found in the final stage.', line: lastStage.from.line });
     }
     return violations;

@@ -98,6 +98,15 @@ describe('DV4005 - No CMD or ENTRYPOINT', () => {
   it('still flags FROM variable with COPY (real app)', () => {
     expect(hasRule(lintDockerfile('ARG BASE=node\nFROM $BASE:20\nCOPY . /app\nRUN npm install', undefined, 'Dockerfile'), 'DV4005')).toBe(true);
   });
+  it('skips extension images from registry-scoped parents (e.g. ghcr.io/org/app)', () => {
+    expect(hasRule(lintDockerfile('FROM ghcr.io/windmill-labs/windmill-ee:dev\nRUN apt-get update\nCOPY . /app', undefined, 'DockerfileCuda'), 'DV4005')).toBe(false);
+  });
+  it('skips extension images from hyphenated local aliases (e.g. posthog-sandbox-base)', () => {
+    expect(hasRule(lintDockerfile('FROM posthog-sandbox-base\nCOPY local-agent /local-agent\nRUN pnpm install', undefined, 'Dockerfile.sandbox-local'), 'DV4005')).toBe(false);
+  });
+  it('still flags generic base images without CMD', () => {
+    expect(hasRule(lintDockerfile('FROM debian:bookworm\nRUN apt-get update', undefined, 'Dockerfile'), 'DV4005')).toBe(true);
+  });
 });
 
 describe('DV4006 - Large port range', () => {
