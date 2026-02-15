@@ -136,6 +136,32 @@ export const DV4005: Rule = {
       const usesVariable = fromImage.includes('$');
       const hasAppCopy = lastStage.instructions.some(i => i.type === 'COPY' || i.type === 'ADD');
       if (usesVariable && !hasAppCopy) return violations;
+      // If FROM uses a variable, resolve it from ARG defaults — if it references an org image, skip
+      if (usesVariable) {
+        // Collect ARG defaults from global args and all stages
+        const argDefaults = new Map<string, string>();
+        if (ctx.ast.globalArgs) {
+          for (const ga of ctx.ast.globalArgs) {
+            const gm = ga.arguments.match(/^(\w+)=(.+)/);
+            if (gm) argDefaults.set(gm[1], gm[2].replace(/^["']|["']$/g, ''));
+          }
+        }
+        for (const s of ctx.ast.stages) {
+          for (const inst of s.instructions) {
+            if (inst.type === 'ARG') {
+              const m = inst.arguments.match(/^(\w+)=(.+)/);
+              if (m) argDefaults.set(m[1], m[2].replace(/^["']|["']$/g, ''));
+            }
+          }
+        }
+        // Resolve the FROM image variable
+        let resolved = fromImage;
+        for (const [k, v] of argDefaults) {
+          resolved = resolved.replace(`$${k}`, v).replace(`\${${k}}`, v);
+        }
+        // If resolved image contains '/' (org-scoped) or '-' (specific app), likely inherits CMD
+        if (resolved.includes('/') || resolved.includes('-')) return violations;
+      }
       // Skip images that extend a specific app image (registry paths, org-scoped, or local build aliases)
       // These likely inherit CMD/ENTRYPOINT from their parent image
       const baseImages = /^(scratch|alpine|debian|ubuntu|centos|fedora|rockylinux|amazonlinux|node|python|ruby|golang|rust|php|openjdk|eclipse-temurin|maven|gradle|nginx|httpd|busybox|buildpack-deps|mcr\.microsoft\.com\/dotnet)$/i;

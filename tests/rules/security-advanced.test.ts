@@ -155,6 +155,15 @@ describe('DV3011 - sudo usage', () => {
   it('passes installing sudo package', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y sudo'), 'DV3011')).toBe(false);
   });
+  it('suppresses when USER is non-root before sudo (puppeteer/ray pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nUSER appuser\nRUN sudo rm -rf /tmp/cache'), 'DV3011')).toBe(false);
+  });
+  it('still flags sudo when USER is root', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nUSER root\nRUN sudo apt-get update'), 'DV3011')).toBe(true);
+  });
+  it('still flags sudo when USER switches back to root', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nUSER appuser\nRUN echo hi\nUSER root\nRUN sudo rm /tmp/x'), 'DV3011')).toBe(true);
+  });
 });
 
 describe('DV3012 - hardcoded tokens in RUN', () => {

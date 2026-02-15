@@ -190,10 +190,16 @@ export const DV3011: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
+      let currentUser = 'root';
       for (const inst of stage.instructions) {
+        if (inst.type === 'USER') {
+          currentUser = inst.arguments.trim().split(/[:\s]/)[0];
+        }
         if (inst.type !== 'RUN') continue;
         // Match sudo but not "apt-get install sudo" or "apk add sudo"
         if (/(?:^|&&|\|\||;)\s*sudo\s/.test(inst.arguments) || /^\s*sudo\s/.test(inst.arguments)) {
+          // If running as non-root user, sudo is legitimate
+          if (currentUser !== 'root' && currentUser !== '0') continue;
           violations.push({ rule: 'DV3011', severity: 'warning', message: 'Avoid using sudo in Dockerfiles. RUN instructions run as root by default. sudo adds unnecessary attack surface.', line: inst.line });
         }
       }

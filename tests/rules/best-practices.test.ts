@@ -107,6 +107,9 @@ describe('DV4005 - No CMD or ENTRYPOINT', () => {
   it('still flags generic base images without CMD', () => {
     expect(hasRule(lintDockerfile('FROM debian:bookworm\nRUN apt-get update', undefined, 'Dockerfile'), 'DV4005')).toBe(true);
   });
+  it('suppresses for FROM with variable resolved to org image via global ARG (ray)', () => {
+    expect(hasRule(lintDockerfile('ARG BASE_IMAGE\nARG FULL_BASE_IMAGE=rayproject/ray-deps:nightly\nFROM $FULL_BASE_IMAGE\nCOPY wheel.whl .\nRUN pip install wheel.whl', undefined, 'Dockerfile'), 'DV4005')).toBe(false);
+  });
 });
 
 describe('DV4006 - Large port range', () => {
