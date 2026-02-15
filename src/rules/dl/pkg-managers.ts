@@ -263,13 +263,13 @@ export const DL3037: Rule = {
 export const DL3038: Rule = {
   id: 'DL3038', severity: 'warning',
   description: 'Use the -y switch to avoid manual input `dnf install -y <package>`',
-  check(ctx) { return runCheckNeg(ctx, /(?<!micro)dnf\s+install/, /-y|--assumeyes/, 'DL3038', 'warning', 'Use the -y switch to avoid manual input `dnf install -y <package>`'); },
+  check(ctx) { return runCheckNeg(ctx, /(?<![a-z])dnf\s+install/, /-y|--assumeyes/, 'DL3038', 'warning', 'Use the -y switch to avoid manual input `dnf install -y <package>`'); },
 };
 
 export const DL3040: Rule = {
   id: 'DL3040', severity: 'warning',
   description: 'dnf clean all missing after dnf command',
-  check(ctx) { return runCheckNeg(ctx, /(?<!micro)dnf\s+(install|update)/, /dnf\s+clean\s+all/, 'DL3040', 'warning', 'dnf clean all missing after dnf command'); },
+  check(ctx) { return runCheckNeg(ctx, /(?<![a-z])dnf\s+(install|update)/, /dnf\s+clean\s+all/, 'DL3040', 'warning', 'dnf clean all missing after dnf command'); },
 };
 
 export const DL3041: Rule = {
@@ -278,7 +278,7 @@ export const DL3041: Rule = {
   check(ctx) {
     return checkVersionPinning(
       ctx,
-      /(?<!micro)dnf\s+install\s+(.+?)(?:[;&|]|$)/s,
+      /(?<![a-z])dnf\s+install\s+(.+?)(?:[;&|]|$)/s,
       (pkg) => pkg.includes('-') && !pkg.split('-').every(p => !/^\d/.test(p)),
       'DL3041', 'warning',
       (pkg) => `Specify version with dnf install -y ${pkg}-<version>`,

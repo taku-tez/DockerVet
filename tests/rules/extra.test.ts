@@ -28,6 +28,13 @@ describe('DL3041 - dnf version pinning', () => {
     const df = 'FROM fedora:35\nRUN dnf install -y \\\n  curl-7.79.1 \\\n  wget-1.21';
     expect(hasRule(lintDockerfile(df), 'DL3041')).toBe(false);
   });
+  it('does not flag tdnf packages (Photon OS)', () => {
+    expect(hasRule(lintDockerfile('FROM photon:5.0\nRUN tdnf install -y nginx shadow'), 'DL3041')).toBe(false);
+  });
+  it('does not flag /dev/null as a package (shell redirection)', () => {
+    const df = 'FROM fedora:35\nRUN dnf install -y curl-7.79.1 >> /dev/null';
+    expect(hasRule(lintDockerfile(df), 'DL3041')).toBe(false);
+  });
 });
 
 describe('DL3050 - Superfluous labels', () => {

@@ -178,7 +178,7 @@ export const DV1007: Rule = {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'yum cache not cleaned. Add `yum clean all` in the same RUN instruction.', line: inst.line });
         }
         // dnf (but not microdnf which has its own cache management)
-        if (/(?<!micro)dnf\s+install/.test(a) && !/dnf\s+clean\s+all/.test(a)) {
+        if (/(?<![a-z])dnf\s+install/.test(a) && !/dnf\s+clean\s+all/.test(a)) {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'dnf cache not cleaned. Add `dnf clean all` in the same RUN instruction.', line: inst.line });
         }
         // microdnf

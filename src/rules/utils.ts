@@ -81,7 +81,7 @@ export function extractPackages(
   if (!m) return [];
   return m[1]
     .split(/\s+/)
-    .filter(p => p && !p.startsWith('-') && !p.startsWith('$') && p !== '\\' && !/^[<%>]+$/.test(p));
+    .filter(p => p && !p.startsWith('-') && !p.startsWith('$') && p !== '\\' && !/^[<%>]+$/.test(p) && !p.startsWith('/dev/') && !/^[>|&]+$/.test(p));
 }
 
 /**

@@ -135,6 +135,9 @@ describe('DV1007 - Package manager cache not cleaned', () => {
   it('passes microdnf with cleanup', () => {
     expect(hasRule(lintDockerfile('FROM fedora:35\nRUN microdnf install -y curl && microdnf clean all'), 'DV1007')).toBe(false);
   });
+  it('does not flag tdnf as dnf (Photon OS)', () => {
+    expect(hasRule(lintDockerfile('FROM photon:5.0\nRUN tdnf install -y nginx && tdnf clean all'), 'DV1007')).toBe(false);
+  });
 });
 
 describe('DV1008 - COPY . . too broad', () => {

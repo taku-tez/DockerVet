@@ -447,6 +447,9 @@ describe('DL3040 - dnf clean all', () => {
   it('does not flag microdnf (separate tool)', () => {
     expect(hasRule(lintDockerfile('FROM fedora:35\nRUN microdnf install -y curl'), 'DL3040')).toBe(false);
   });
+  it('does not flag tdnf (Photon OS)', () => {
+    expect(hasRule(lintDockerfile('FROM photon:5.0\nRUN tdnf install -y nginx shadow'), 'DL3040')).toBe(false);
+  });
 });
 
 describe('DL3042 - pip --no-cache-dir', () => {
