@@ -292,12 +292,14 @@ export const DL3045: Rule = {
         stageHasWorkdir.set(alias, has);
       }
     }
-    // Resolve transitive WORKDIR inheritance
-    const resolvedWorkdir = (alias: string | undefined): boolean => {
+    // Resolve transitive WORKDIR inheritance (with cycle detection)
+    const resolvedWorkdir = (alias: string | undefined, visited = new Set<string>()): boolean => {
       if (!alias) return false;
       if (stageHasWorkdir.get(alias)) return true;
+      if (visited.has(alias)) return false;
+      visited.add(alias);
       const parent = stageParent.get(alias);
-      return parent ? resolvedWorkdir(parent) : false;
+      return parent ? resolvedWorkdir(parent, visited) : false;
     };
     for (const [alias] of stageHasWorkdir) {
       if (resolvedWorkdir(alias)) stageHasWorkdir.set(alias, true);

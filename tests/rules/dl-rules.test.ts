@@ -532,6 +532,10 @@ describe('DL3045 - COPY relative without WORKDIR', () => {
     const df = 'FROM node:22 AS base\nWORKDIR /app\n\nFROM base AS deps\nCOPY package.json ./\n\nFROM deps AS dev\nCOPY --from=base /app/out ./';
     expect(hasRule(lintDockerfile(df), 'DL3045')).toBe(false);
   });
+  it('does not crash on circular alias (FROM node:22-slim AS node)', () => {
+    const df = 'FROM node:22-slim AS node\nCOPY app.js app/';
+    expect(() => lintDockerfile(df)).not.toThrow();
+  });
 });
 
 describe('DL3046 - useradd without -l', () => {

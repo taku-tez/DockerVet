@@ -50,6 +50,10 @@ describe('DV4003 - No WORKDIR before RUN', () => {
   it('flags child stage when parent has no WORKDIR', () => {
     expect(hasRule(lintDockerfile('FROM node:20 AS base\nRUN npm install\nFROM base AS production\nRUN echo prod'), 'DV4003')).toBe(true);
   });
+  it('does not crash when stage alias matches parent image name (circular alias)', () => {
+    // e.g. FROM node:22-slim AS node — alias "node" resolves to image "node" which matches the alias
+    expect(() => lintDockerfile('FROM node:22-slim AS node\nRUN echo hi\nFROM node AS build\nWORKDIR /app\nRUN echo build')).not.toThrow();
+  });
 });
 
 describe('DV4004 - ARG after ENV', () => {

@@ -59,11 +59,14 @@ export const DV4003: Rule = {
     for (const s of ctx.ast.stages) {
       if (s.from.alias) aliasMap.set(s.from.alias.toLowerCase(), s);
     }
-    const stageHasWorkdir = (stage: typeof ctx.ast.stages[0]): boolean => {
+    const stageHasWorkdir = (stage: typeof ctx.ast.stages[0], visited = new Set<string>()): boolean => {
       if (stage.instructions.some(i => i.type === 'WORKDIR')) return true;
-      // Check if parent stage (FROM <alias>) has WORKDIR
+      // Check if parent stage (FROM <alias>) has WORKDIR (with cycle detection)
+      const key = stage.from.alias?.toLowerCase() ?? stage.from.image.toLowerCase();
+      if (visited.has(key)) return false;
+      visited.add(key);
       const parent = aliasMap.get(stage.from.image.toLowerCase());
-      if (parent) return stageHasWorkdir(parent);
+      if (parent && parent !== stage) return stageHasWorkdir(parent, visited);
       return false;
     };
     for (const stage of ctx.ast.stages) {
