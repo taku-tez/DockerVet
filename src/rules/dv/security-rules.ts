@@ -175,7 +175,7 @@ export const DV1007: Rule = {
         if (inst.type !== 'RUN') continue;
         const a = inst.arguments;
         // apt-get
-        if (/(?:apt-get|apt)\s+install/.test(a) && !/rm\s+(-rf?\s+)?\/var\/lib\/apt\/lists/.test(a)) {
+        if (/(?:apt-get|apt)\s+install/.test(a) && !/rm\s+(?:-[rf]+\s+|(?:--(?:recursive|force|verbose)\s+)+)*\/var\/lib\/apt\/lists/.test(a)) {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*` in the same RUN instruction.', line: inst.line });
         }
         // yum

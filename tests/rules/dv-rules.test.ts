@@ -147,6 +147,12 @@ describe('DV1007 - Package manager cache not cleaned', () => {
   it('does not flag tdnf as dnf (Photon OS)', () => {
     expect(hasRule(lintDockerfile('FROM photon:5.0\nRUN tdnf install -y nginx && tdnf clean all'), 'DV1007')).toBe(false);
   });
+  it('recognizes rm --recursive --force --verbose as cleanup (paperless-ngx)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:24.04\nRUN apt-get update && apt-get install -y curl && rm --recursive --force --verbose /var/lib/apt/lists/*'), 'DV1007')).toBe(false);
+  });
+  it('recognizes rm --recursive --force as cleanup', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:24.04\nRUN apt-get update && apt-get install -y curl && rm --force --recursive /var/lib/apt/lists/*'), 'DV1007')).toBe(false);
+  });
   it('skips apt-get in non-final build stage (gotify pattern)', () => {
     const df = `FROM node:24 AS js-builder
 RUN apt-get update && apt-get install -y git

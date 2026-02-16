@@ -56,7 +56,7 @@ export const DL3009: Rule = {
   id: 'DL3009', severity: 'info',
   description: 'Delete the apt-get lists after installing something',
   check(ctx) {
-    return runCheckNeg(ctx, /(?:apt-get|apt)\s+install/, /rm\s+(-rf?\s+)?\/var\/lib\/apt\/lists/, 'DL3009', 'info', 'Delete the apt-get lists after installing something');
+    return runCheckNeg(ctx, /(?:apt-get|apt)\s+install/, /rm\s+(?:-[rf]+\s+|(?:--(?:recursive|force|verbose)\s+)+)*\/var\/lib\/apt\/lists/, 'DL3009', 'info', 'Delete the apt-get lists after installing something');
   },
 };
 
@@ -76,7 +76,8 @@ export const DL3013: Rule = {
         '--index-url', '-i', '--extra-index-url', '--constraint', '-c', '--requirement', '-r',
         '--find-links', '-f', '--python', '--python-preference', '--cache-dir', '--config-settings',
         '--global-option', '--install-option', '--build-option', '--platform', '--implementation',
-        '--abi', '--progress-bar', '--keyring-provider', '--break-system-packages']);
+        '--abi', '--progress-bar', '--keyring-provider', '--break-system-packages',
+        '--index-strategy', '--index', '--keyring', '--pip-args']);
       let skipNext = false;
       for (const t of tokens) {
         if (skipNext) { skipNext = false; continue; }

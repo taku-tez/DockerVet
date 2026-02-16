@@ -155,6 +155,9 @@ describe('DL3009 - Delete apt-get lists', () => {
   it('passes with rm', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN apt-get install -y curl && rm -rf /var/lib/apt/lists/*'), 'DL3009')).toBe(false);
   });
+  it('passes with rm --recursive --force --verbose (paperless-ngx)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:24.04\nRUN apt-get update && apt-get install -y curl && rm --recursive --force --verbose /var/lib/apt/lists/*'), 'DL3009')).toBe(false);
+  });
 });
 
 describe('DL3010 - Use ADD for archives', () => {
@@ -637,6 +640,14 @@ describe('DL3013 - uv pip install --system false positive', () => {
   });
   it('handles --flag=value syntax without false positive', () => {
     const v = lintDockerfile('FROM python:3.11\nRUN pip install --cache-dir=/tmp flask==2.0');
+    expect(hasRule(v, 'DL3013')).toBe(false);
+  });
+  it('does not flag --index-strategy value as package (paperless-ngx)', () => {
+    const v = lintDockerfile('FROM python:3.12\nRUN uv pip install --no-cache --system --index-strategy unsafe-best-match --requirements requirements.txt');
+    expect(hasRule(v, 'DL3013')).toBe(false);
+  });
+  it('does not flag --index value as package', () => {
+    const v = lintDockerfile('FROM python:3.12\nRUN uv pip install --index https://pypi.org/simple --requirements requirements.txt');
     expect(hasRule(v, 'DL3013')).toBe(false);
   });
 });
