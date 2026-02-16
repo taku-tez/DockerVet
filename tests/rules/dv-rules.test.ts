@@ -147,6 +147,13 @@ describe('DV1007 - Package manager cache not cleaned', () => {
   it('does not flag tdnf as dnf (Photon OS)', () => {
     expect(hasRule(lintDockerfile('FROM photon:5.0\nRUN tdnf install -y nginx && tdnf clean all'), 'DV1007')).toBe(false);
   });
+  it('skips apt-get in non-final build stage (gotify pattern)', () => {
+    const df = `FROM node:24 AS js-builder
+RUN apt-get update && apt-get install -y git
+FROM debian:sid-slim
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*`;
+    expect(hasRule(lintDockerfile(df), 'DV1007')).toBe(false);
+  });
 });
 
 describe('DV1008 - COPY . . too broad', () => {

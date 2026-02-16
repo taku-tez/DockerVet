@@ -75,7 +75,10 @@ export const DV3004: Rule = {
   check(ctx) {
     const certPatterns = /\.(pem|key|p12|pfx|jks|keystore)$/i;
     const violations: Violation[] = [];
+    const lastStageIndex = ctx.ast.stages.length - 1;
     for (const stage of ctx.ast.stages) {
+      // Skip non-final stages — cert files in build stages are discarded
+      if (stage.index !== lastStageIndex) continue;
       for (const inst of stage.instructions) {
         if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
         const c = inst as CopyInstruction;

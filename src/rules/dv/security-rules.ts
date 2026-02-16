@@ -167,7 +167,10 @@ export const DV1007: Rule = {
   description: 'Package manager cache not cleaned in same RUN instruction',
   check(ctx) {
     const violations: Violation[] = [];
+    const lastStageIndex = ctx.ast.stages.length - 1;
     for (const stage of ctx.ast.stages) {
+      // Skip non-final stages — cache bloat in build stages is discarded
+      if (stage.index !== lastStageIndex) continue;
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
         const a = inst.arguments;

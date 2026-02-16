@@ -53,6 +53,21 @@ describe('DV3004 - Certificate/key files', () => {
   it('passes normal file', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY app.js /app/'), 'DV3004')).toBe(false);
   });
+  it('skips cert in non-final build stage (dozzle pattern)', () => {
+    const df = `FROM golang:1.26-alpine AS builder
+COPY shared_key.pem shared_cert.pem ./
+RUN go build -o app
+FROM scratch
+COPY --from=builder /app /app`;
+    expect(hasRule(lintDockerfile(df), 'DV3004')).toBe(false);
+  });
+  it('still flags cert in final stage', () => {
+    const df = `FROM golang AS builder
+RUN go build -o app
+FROM ubuntu
+COPY server.pem /etc/ssl/`;
+    expect(hasRule(lintDockerfile(df), 'DV3004')).toBe(true);
+  });
 });
 
 describe('DV3005 - GPG keys', () => {
