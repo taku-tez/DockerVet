@@ -680,4 +680,16 @@ describe('DL3057 - HEALTHCHECK missing', () => {
   it('passes with HEALTHCHECK', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nHEALTHCHECK CMD curl localhost'), 'DL3057')).toBe(false);
   });
+  it('skips .devcontainer Dockerfiles', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN echo', defaultConfig, '.devcontainer/Dockerfile'), 'DL3057')).toBe(false);
+  });
+  it('skips RELEASING directory Dockerfiles', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.10\nRUN echo', defaultConfig, 'RELEASING/Dockerfile.make_tarball'), 'DL3057')).toBe(false);
+  });
+  it('skips hack directory Dockerfiles', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.21\nRUN echo', defaultConfig, 'hack/Dockerfile'), 'DL3057')).toBe(false);
+  });
+  it('skips examples directory Dockerfiles', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN echo', defaultConfig, 'examples/Dockerfile'), 'DL3057')).toBe(false);
+  });
 });
