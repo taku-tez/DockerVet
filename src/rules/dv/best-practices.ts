@@ -123,11 +123,16 @@ export const DV4005: Rule = {
   description: 'No CMD or ENTRYPOINT found in the final stage.',
   check(ctx) {
     const violations: Violation[] = [];
-    // Skip builder/base/test Dockerfiles — they typically don't need CMD/ENTRYPOINT
+    // Skip builder/base/test/data/verify Dockerfiles — they typically don't need CMD/ENTRYPOINT
     if (ctx.filePath) {
       const lower = ctx.filePath.toLowerCase();
       const basename = lower.split('/').pop() || '';
       if (/(?:builder|base|test|build-stage)/.test(basename)) return violations;
+      // Also check parent directory name for utility/helper containers
+      const parts = lower.split('/');
+      const parentDir = parts.length >= 2 ? parts[parts.length - 2] : '';
+      if (/^(?:build|data|ci|scripts|hack|contrib|packaging)$/.test(parentDir)) return violations;
+      if (/(?:verify|test|check)/.test(parentDir)) return violations;
     }
     const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
     if (!lastStage) return violations;

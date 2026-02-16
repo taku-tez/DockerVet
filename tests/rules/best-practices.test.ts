@@ -114,6 +114,12 @@ describe('DV4005 - No CMD or ENTRYPOINT', () => {
   it('suppresses for FROM with variable resolved to org image via global ARG (ray)', () => {
     expect(hasRule(lintDockerfile('ARG BASE_IMAGE\nARG FULL_BASE_IMAGE=rayproject/ray-deps:nightly\nFROM $FULL_BASE_IMAGE\nCOPY wheel.whl .\nRUN pip install wheel.whl', undefined, 'Dockerfile'), 'DV4005')).toBe(false);
   });
+  it('suppresses for Dockerfiles in build/data/verify/ci directories (grafana pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM debian:bookworm\nRUN apt-get update', undefined, '/project/build/Dockerfile'), 'DV4005')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM alpine\nCOPY data.json /data/', undefined, '/project/data/Dockerfile'), 'DV4005')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN dpkg -l', undefined, '/project/verify/Dockerfile.deb'), 'DV4005')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM golang\nRUN go test', undefined, '/project/ci/Dockerfile'), 'DV4005')).toBe(false);
+  });
 });
 
 describe('DV4006 - Large port range', () => {
