@@ -127,12 +127,14 @@ export const DV4005: Rule = {
     if (ctx.filePath) {
       const lower = ctx.filePath.toLowerCase();
       const basename = lower.split('/').pop() || '';
-      if (/(?:builder|base|test|build-stage)/.test(basename)) return violations;
+      if (/(?:builder|base|test|build-stage|\.binary$)/.test(basename)) return violations;
       // Also check parent directory name for utility/helper containers
       const parts = lower.split('/');
       const parentDir = parts.length >= 2 ? parts[parts.length - 2] : '';
       if (/^(?:build|data|ci|scripts|hack|contrib|packaging)$/.test(parentDir)) return violations;
       if (/(?:verify|test|check)/.test(parentDir)) return violations;
+      // Also check any ancestor directory for test/build/example paths
+      if (parts.some(p => /(?:test|tests|testing|e2e|integration-test|examples|docker-examples)/.test(p))) return violations;
     }
     const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
     if (!lastStage) return violations;
@@ -172,11 +174,14 @@ export const DV4005: Rule = {
       }
       // Skip images that extend a specific app image (registry paths, org-scoped, or local build aliases)
       // These likely inherit CMD/ENTRYPOINT from their parent image
-      const baseImages = /^(scratch|alpine|debian|ubuntu|centos|fedora|rockylinux|amazonlinux|node|python|ruby|golang|rust|php|openjdk|eclipse-temurin|maven|gradle|nginx|httpd|busybox|buildpack-deps|mcr\.microsoft\.com\/dotnet)$/i;
-      const isGenericBase = baseImages.test(fromImage.split(/[:/]/)[0]);
+      const imageName = fromImage.split(/[:/]/)[0];
+      // Images that ship with CMD/ENTRYPOINT — extending them without CMD is valid
+      const imagesWithCmd = /^(nginx|httpd|node|python|ruby|php|redis|postgres|mysql|mariadb|mongo|memcached|rabbitmq|elasticsearch|kibana|logstash|consul|vault|traefik|caddy|haproxy|tomcat|jetty|jenkins|sonarqube|gitlab|registry|verdaccio|grafana|influxdb|telegraf|chronograf|kapacitor|nats|etcd|cockroachdb|couchdb|cassandra|neo4j|wordpress|ghost|drupal|joomla|mediawiki|redmine|nextcloud|gitea|minio)$/i;
+      if (imagesWithCmd.test(imageName)) return violations;
+      const genericBases = /^(scratch|alpine|debian|ubuntu|centos|fedora|rockylinux|amazonlinux|golang|rust|openjdk|eclipse-temurin|maven|gradle|busybox|buildpack-deps|mcr\.microsoft\.com\/dotnet)$/i;
+      const isGenericBase = genericBases.test(imageName);
       // If FROM references a prior build stage, it's an intermediate — skip
       const priorStageNames = ctx.ast.stages.slice(0, -1).map(s => s.from.alias).filter(Boolean);
-      const fromAlias = lastStage.from.alias;
       const isFromPriorStage = priorStageNames.includes(fromImage);
       // Extension image: not a generic base, not scratch, not a prior build stage
       if (!isGenericBase && !isFromPriorStage && (fromImage.includes('/') || fromImage.includes('-'))) return violations;

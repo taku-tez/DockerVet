@@ -114,6 +114,22 @@ describe('DV4005 - No CMD or ENTRYPOINT', () => {
   it('suppresses for FROM with variable resolved to org image via global ARG (ray)', () => {
     expect(hasRule(lintDockerfile('ARG BASE_IMAGE\nARG FULL_BASE_IMAGE=rayproject/ray-deps:nightly\nFROM $FULL_BASE_IMAGE\nCOPY wheel.whl .\nRUN pip install wheel.whl', undefined, 'Dockerfile'), 'DV4005')).toBe(false);
   });
+  it('skips .binary Dockerfiles (harbor pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM golang\nRUN go build', undefined, 'make/photon/registry/Dockerfile.binary'), 'DV4005')).toBe(false);
+  });
+  it('skips Dockerfiles in ancestor tests/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM busybox\nRUN dd if=/dev/zero', undefined, 'tests/robot-cases/Group2/Dockerfile.longevity'), 'DV4005')).toBe(false);
+  });
+  it('skips Dockerfiles in docker-examples directory', () => {
+    expect(hasRule(lintDockerfile('FROM nginx:1.21-alpine\nCOPY nginx.conf /etc/nginx/', undefined, 'docker-examples/v5/nginx/Dockerfile'), 'DV4005')).toBe(false);
+  });
+  it('skips nginx extension images (inherits CMD)', () => {
+    expect(hasRule(lintDockerfile('FROM nginx:1.21-alpine\nCOPY default.conf /etc/nginx/conf.d/', undefined, 'Dockerfile'), 'DV4005')).toBe(false);
+  });
+  it('skips redis/postgres/mysql extension images', () => {
+    expect(hasRule(lintDockerfile('FROM redis:7-alpine\nCOPY redis.conf /etc/redis/', undefined, 'Dockerfile'), 'DV4005')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM postgres:15\nCOPY init.sql /docker-entrypoint-initdb.d/', undefined, 'Dockerfile'), 'DV4005')).toBe(false);
+  });
   it('suppresses for Dockerfiles in build/data/verify/ci directories (grafana pattern)', () => {
     expect(hasRule(lintDockerfile('FROM debian:bookworm\nRUN apt-get update', undefined, '/project/build/Dockerfile'), 'DV4005')).toBe(false);
     expect(hasRule(lintDockerfile('FROM alpine\nCOPY data.json /data/', undefined, '/project/data/Dockerfile'), 'DV4005')).toBe(false);
