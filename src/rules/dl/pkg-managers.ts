@@ -119,10 +119,11 @@ export const DL3016: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     forEachInstruction(ctx, 'RUN', (inst) => {
-      const m = inst.arguments.match(/npm\s+install\s+(.+?)(?:[;&|]|$)/s);
+      const m = inst.arguments.match(/npm\s+install\s+(.*?)(?:&&|\|\||[;\n]|$)/s);
       if (!m) return;
       // Strip inline comments (# ...) before parsing package names
-      const cleaned = m[1].replace(/#.*$/gm, '');
+      const cleaned = m[1].replace(/#.*$/gm, '').trim();
+      if (!cleaned) return; // bare "npm install" (from package.json)
       const pkgs = cleaned.split(/\s+/).filter(p => p && !p.startsWith('-'));
       for (const pkg of pkgs) {
         if (!pkg.includes('@') && !pkg.startsWith('.') && !pkg.startsWith('/') && !pkg.startsWith('$')) {

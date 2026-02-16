@@ -227,6 +227,12 @@ describe('DL3016 - Pin npm versions', () => {
   it('ignores inline comments after package names', () => {
     expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install --global \\\n\tpm2@5 \\\n\tcorepack@latest # Remove again once corepack >= 0.31 made it into base image'), 'DL3016')).toBe(false);
   });
+  it('does not flag bare npm install from package.json (Rocket.Chat pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN cd /app && npm install && npm cache clear --force'), 'DL3016')).toBe(false);
+  });
+  it('does not flag bare npm install before &&', () => {
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install && npm install'), 'DL3016')).toBe(false);
+  });
 });
 
 describe('DL3018 - Pin apk versions', () => {
