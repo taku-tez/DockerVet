@@ -41,6 +41,15 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('passes ARG with _FILE suffix', () => {
     expect(hasRule(lintDockerfile('ARG DB_PASSWORD_FILE=password\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
   });
+  it('skips ENV with file path value (docker-selenium FP)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SE_JAVA_SSL_TRUST_STORE_PASSWORD="/opt/selenium/secrets/server.pass"'), 'DV1001')).toBe(false);
+  });
+  it('skips ENV with private key file path value', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SE_HTTPS_PRIVATE_KEY="/opt/selenium/secrets/tls.key"'), 'DV1001')).toBe(false);
+  });
+  it('still flags ENV with actual secret value despite path-like name', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SE_SUPERVISORD_UNIX_SERVER_PASSWORD="secret"'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

@@ -4,6 +4,8 @@ import { EnvInstruction, ArgInstruction, CopyInstruction, UserInstruction } from
 const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|access_key|access_token|auth_token|token|private_key|encryption_key|signing_key|credentials?)/i;
 // Docker secrets convention: ENV vars ending in _FILE point to file paths, not actual secrets
 const FILE_PATH_SUFFIX = /_FILE$/i;
+// Values that look like file paths (not actual secrets)
+const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+)$/;
 
 // DV1001: Hardcoded secrets in ENV/ARG
 export const DV1001: Rule = {
@@ -16,14 +18,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$')) {
+            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$')) {
+          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue)) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -31,7 +33,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$')) {
+      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue)) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }
