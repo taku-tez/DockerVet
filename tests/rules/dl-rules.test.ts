@@ -692,4 +692,13 @@ describe('DL3057 - HEALTHCHECK missing', () => {
   it('skips examples directory Dockerfiles', () => {
     expect(hasRule(lintDockerfile('FROM node:20\nRUN echo', defaultConfig, 'examples/Dockerfile'), 'DL3057')).toBe(false);
   });
+  it('should skip tools/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM node:lts-alpine\nRUN echo', defaultConfig, 'tools/schema2openapi/Dockerfile'), 'DL3057')).toBe(false);
+  });
+  it('should skip Dockerfile.make filename', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.26-alpine\nRUN echo', defaultConfig, 'docker/Dockerfile.make'), 'DL3057')).toBe(false);
+  });
+  it('should skip Dockerfile.ci filename', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN echo', defaultConfig, 'Dockerfile.ci'), 'DL3057')).toBe(false);
+  });
 });

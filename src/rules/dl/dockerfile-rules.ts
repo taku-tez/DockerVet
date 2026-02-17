@@ -427,14 +427,19 @@ export const DL3050: Rule = {
 
 // DL3057: HEALTHCHECK instruction missing
 // Skip for non-service Dockerfiles (devcontainer, releasing, CI, test utilities)
-const DL3057_SKIP_DIRS = /(?:^|[/\\])(?:\.devcontainer|RELEASING|releasing|hack|contrib|packaging|benchmarks?|examples?)(?:[/\\]|$)/i;
+const DL3057_SKIP_DIRS = /(?:^|[/\\])(?:\.devcontainer|RELEASING|releasing|hack|contrib|packaging|benchmarks?|examples?|tools)(?:[/\\]|$)/i;
 export const DL3057: Rule = {
   id: 'DL3057', severity: 'info',
   description: 'HEALTHCHECK instruction missing',
   check(ctx) {
     const violations: Violation[] = [];
-    // Skip non-service Dockerfiles by path
+    // Skip non-service Dockerfiles by path or filename pattern
     if (ctx.filePath && DL3057_SKIP_DIRS.test(ctx.filePath)) return violations;
+    // Skip build/CI-oriented Dockerfiles by filename (e.g., Dockerfile.make, Dockerfile.ci)
+    if (ctx.filePath) {
+      const fname = ctx.filePath.replace(/^.*[/\\]/, '').toLowerCase();
+      if (/^dockerfile\.(make|ci|build|lint|test|dev)$/i.test(fname)) return violations;
+    }
     const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
     if (!lastStage) return violations;
     const hasHC = lastStage.instructions.some(i => i.type === 'HEALTHCHECK');
