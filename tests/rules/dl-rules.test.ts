@@ -713,4 +713,13 @@ describe('DL3057 - HEALTHCHECK missing', () => {
   it('should skip build.Dockerfile filename', () => {
     expect(hasRule(lintDockerfile('FROM golang:1.23\nRUN echo', defaultConfig, 'build.Dockerfile'), 'DL3057')).toBe(false);
   });
+  it('should skip testdata/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN echo', defaultConfig, 'vault/testdata/Dockerfile'), 'DL3057')).toBe(false);
+  });
+  it('should skip test-framework/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM ubi9\nRUN echo', defaultConfig, 'test-framework/db-edb/container/Dockerfile'), 'DL3057')).toBe(false);
+  });
+  it('should skip e2e-tests/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN echo', defaultConfig, 'e2e-tests/cypress/Dockerfile.webhook'), 'DL3057')).toBe(false);
+  });
 });

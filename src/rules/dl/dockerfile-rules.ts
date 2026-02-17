@@ -427,7 +427,7 @@ export const DL3050: Rule = {
 
 // DL3057: HEALTHCHECK instruction missing
 // Skip for non-service Dockerfiles (devcontainer, releasing, CI, test utilities)
-const DL3057_SKIP_DIRS = /(?:^|[/\\])(?:\.devcontainer|RELEASING|releasing|hack|contrib|packaging|benchmarks?|examples?|tools)(?:[/\\]|$)/i;
+const DL3057_SKIP_DIRS = /(?:^|[/\\])(?:\.devcontainer|RELEASING|releasing|hack|contrib|packaging|benchmarks?|examples?|tools|testdata|test-framework|e2e-tests?)(?:[/\\]|$)/i;
 export const DL3057: Rule = {
   id: 'DL3057', severity: 'info',
   description: 'HEALTHCHECK instruction missing',

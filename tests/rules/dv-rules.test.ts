@@ -41,6 +41,15 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('passes ARG with _FILE suffix', () => {
     expect(hasRule(lintDockerfile('ARG DB_PASSWORD_FILE=password\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
   });
+  it('skips testdata/ directory (Vault pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV PGPASSWORD=test123', undefined, 'vault/testdata/Dockerfile'), 'DV1001')).toBe(false);
+  });
+  it('skips test-framework/ directory (Keycloak pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM ubi9\nENV PGPASSWORD=test123', undefined, 'test-framework/db-edb/container/Dockerfile'), 'DV1001')).toBe(false);
+  });
+  it('skips e2e-tests/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV DB_PASSWORD=dummy', undefined, 'e2e-tests/Dockerfile'), 'DV1001')).toBe(false);
+  });
   it('skips ENV with file path value (docker-selenium FP)', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SE_JAVA_SSL_TRUST_STORE_PASSWORD="/opt/selenium/secrets/server.pass"'), 'DV1001')).toBe(false);
   });

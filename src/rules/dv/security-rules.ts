@@ -8,11 +8,14 @@ const FILE_PATH_SUFFIX = /_FILE$/i;
 const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+)$/;
 
 // DV1001: Hardcoded secrets in ENV/ARG
+const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__)(?:[/\\]|$)/i;
 export const DV1001: Rule = {
   id: 'DV1001', severity: 'error',
   description: 'Secrets should not be hardcoded in ENV or ARG instructions',
   check(ctx) {
     const violations: Violation[] = [];
+    // Skip test/fixture Dockerfiles where dummy secrets are expected
+    if (ctx.filePath && DV1001_SKIP_DIRS.test(ctx.filePath)) return violations;
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'ENV') {
