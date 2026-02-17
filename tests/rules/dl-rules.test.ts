@@ -701,4 +701,16 @@ describe('DL3057 - HEALTHCHECK missing', () => {
   it('should skip Dockerfile.ci filename', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN echo', defaultConfig, 'Dockerfile.ci'), 'DL3057')).toBe(false);
   });
+  it('should skip Dockerfile.tilt filename', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN echo', defaultConfig, 'Dockerfile.tilt'), 'DL3057')).toBe(false);
+  });
+  it('should skip Dockerfile.ui.tilt filename', () => {
+    expect(hasRule(lintDockerfile('FROM node:22\nRUN echo', defaultConfig, 'Dockerfile.ui.tilt'), 'DL3057')).toBe(false);
+  });
+  it('should skip dev.Dockerfile filename', () => {
+    expect(hasRule(lintDockerfile('FROM php:8.2\nRUN echo', defaultConfig, 'sdk/php/docker/dev.Dockerfile'), 'DL3057')).toBe(false);
+  });
+  it('should skip build.Dockerfile filename', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.23\nRUN echo', defaultConfig, 'build.Dockerfile'), 'DL3057')).toBe(false);
+  });
 });

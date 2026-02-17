@@ -438,7 +438,8 @@ export const DL3057: Rule = {
     // Skip build/CI-oriented Dockerfiles by filename (e.g., Dockerfile.make, Dockerfile.ci)
     if (ctx.filePath) {
       const fname = ctx.filePath.replace(/^.*[/\\]/, '').toLowerCase();
-      if (/^dockerfile\.(make|ci|build|lint|test|dev)$/i.test(fname)) return violations;
+      if (/^dockerfile\.(make|ci|build|lint|test|dev|(.+\.)?tilt)$/i.test(fname)) return violations;
+      if (/^(dev|build|ci|test|lint)\.dockerfile$/i.test(fname)) return violations;
     }
     const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
     if (!lastStage) return violations;
