@@ -8,10 +8,10 @@ export const DV3001: Rule = {
   description: 'Possible cloud credential detected.',
   check(ctx) {
     const patterns = [
-      /AKIA[0-9A-Z]{16}/,
-      /projects\/[^/]+\/secrets\//,
-      /GOOG[\w]{10,}/,
-      /AIza[0-9A-Za-z_-]{35}/,
+      /AKIA[0-9A-Z]{16}/,                  // AWS access key ID
+      /projects\/[^/]+\/secrets\//,          // GCP Secret Manager path
+      /AIza[0-9A-Za-z_-]{35}/,             // Google API key
+      /ya29\.[0-9A-Za-z_-]{50,}/,           // Google OAuth2 access token
     ];
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {

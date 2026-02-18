@@ -5,7 +5,8 @@ const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|acces
 // Docker secrets convention: ENV vars ending in _FILE point to file paths, not actual secrets
 const FILE_PATH_SUFFIX = /_FILE$/i;
 // Values that look like file paths (not actual secrets)
-const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+)$/;
+// Match absolute paths, ./relative paths, or bare filenames with an extension (e.g. google_credentials.json)
+const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+|[\w.-]+\.[a-zA-Z]{2,5})$/;
 
 // DV1001: Hardcoded secrets in ENV/ARG
 const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__)(?:[/\\]|$)/i;

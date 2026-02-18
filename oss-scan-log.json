@@ -830,5 +830,77 @@
       "infos": 17
     },
     "notes": "Clean scan, no FP. DL3020 correctly flags ADD usage across all Dockerfiles (6x). Simple Go multi-stage builds."
+  },
+  {
+    "repo": "gravitational/teleport",
+    "files": 12,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 4,
+      "warnings": 93,
+      "infos": 70,
+      "style": 3
+    },
+    "notes": "DV3005 FP: public GPG keyrings (docker.gpg, hashicorp.gpg) flagged as private keys - fixed. DV1003 correctly flags curl|sh. Heavy DL3008 apt pinning (60x)."
+  },
+  {
+    "repo": "getsentry/self-hosted",
+    "files": 6,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "infos": 25,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DV1006 correctly flags non-minimal base images. DL3057 HEALTHCHECK missing across all files."
+  },
+  {
+    "repo": "traefik/whoami",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 10,
+      "infos": 6,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Standard Go Alpine multi-stage builds with DL3018 apk pinning warnings."
+  },
+  {
+    "repo": "fluxcd/flux2",
+    "files": 1,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 3,
+      "info": 6,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Standard Alpine multi-stage build with DL3018 apk pinning and DL3057 HEALTHCHECK missing."
+  },
+  {
+    "repo": "influxdata/influxdb",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 49,
+      "info": 18,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (46x) across Dockerfile and Dockerfile.ci. DL3004 sudo in CI Dockerfile is legitimate."
+  },
+  {
+    "repo": "ory/hydra",
+    "files": 5,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 3,
+      "warnings": 23,
+      "info": 23,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD in main Dockerfile, DV3004 cert copying in test/conformance Dockerfiles (intentional test certs for TLS testing), DV1006 no USER in several files."
   }
 ]
