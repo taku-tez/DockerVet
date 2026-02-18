@@ -109,3 +109,7 @@ describe('isDockerfile', () => {
     expect(isDockerfile('weave-kube/Dockerfile.template')).toBe(false);
   });
 });
+
+// Note: vendor/ and node_modules/ path filtering is tested via VENDOR_PATH_PATTERN
+// in findDockerfiles() rather than isDockerfile() since it's a path-level filter.
+// The unit tests for that logic are covered by integration scan behavior.

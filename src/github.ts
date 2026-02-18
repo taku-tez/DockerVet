@@ -115,6 +115,12 @@ async function getDefaultBranch(owner: string, repo: string): Promise<string> {
 }
 
 /**
+ * Paths that indicate vendored/third-party code which should not be scanned.
+ * Findings in these directories reflect upstream projects, not the repo under review.
+ */
+const VENDOR_PATH_PATTERN = /(?:^|\/)(vendor|node_modules)(?:\/|$)/i;
+
+/**
  * Find Dockerfiles in a repository.
  */
 async function findDockerfiles(owner: string, repo: string, branch: string): Promise<string[]> {
@@ -123,7 +129,11 @@ async function findDockerfiles(owner: string, repo: string, branch: string): Pro
     throw new Error('Unexpected response from GitHub tree API');
   }
   return data.tree
-    .filter((entry: any) => entry.type === 'blob' && isDockerfile(entry.path))
+    .filter((entry: any) =>
+      entry.type === 'blob' &&
+      isDockerfile(entry.path) &&
+      !VENDOR_PATH_PATTERN.test(entry.path)
+    )
     .map((entry: any) => entry.path);
 }
 
@@ -132,8 +142,9 @@ async function findDockerfiles(owner: string, repo: string, branch: string): Pro
  */
 async function fetchFileContent(owner: string, repo: string, filePath: string): Promise<string> {
   const data = await githubRequest(`/repos/${owner}/${repo}/contents/${filePath}`);
-  if (data.encoding === 'base64' && data.content) {
-    return Buffer.from(data.content, 'base64').toString('utf-8');
+  if (data.encoding === 'base64') {
+    // content may be empty string for zero-byte files; that's valid
+    return data.content ? Buffer.from(data.content, 'base64').toString('utf-8') : '';
   }
   throw new Error(`Unexpected encoding for ${filePath}: ${data.encoding}`);
 }
