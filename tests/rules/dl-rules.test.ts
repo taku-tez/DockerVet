@@ -122,6 +122,16 @@ describe('DL3006 - Tag version explicitly', () => {
   it('skips ARG that defaults to a stage alias', () => {
     expect(hasRule(lintDockerfile('ARG GO_IMAGE=go-builder-base\nFROM golang:1.25-alpine AS go-builder-base\nRUN echo build\nFROM ${GO_IMAGE}'), 'DL3006')).toBe(false);
   });
+  it('skips ARG partial substitution that resolves to a stage alias (e.g. FROM base-${BUILD_TYPE})', () => {
+    const df = [
+      'ARG BUILD_TYPE=docker',
+      'FROM ubuntu:22.04 AS base-docker',
+      'FROM ubuntu:22.04 AS base-addon',
+      'ARG BUILD_TYPE',
+      'FROM base-${BUILD_TYPE} AS final',
+    ].join('\n');
+    expect(hasRule(lintDockerfile(df), 'DL3006')).toBe(false);
+  });
 });
 
 describe('DL3007 - No latest tag', () => {

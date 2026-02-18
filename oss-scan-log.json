@@ -2259,5 +2259,117 @@
       "style": 0
     },
     "notes": "Clean scan, no FP. Template Dockerfiles (*.header.template). DL3006 on $BASE_IMAGE and _REPLACE_BASE_IMAGE_ template placeholders - legitimate (no version in FROM). DV1003 curl|sh legitimate."
+  },
+  {
+    "repo": "SigNoz/signoz",
+    "files": 6,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 20,
+      "info": 17
+    },
+    "notes": "Clean scan, no FP. Standard multi-stage builds. DV1009 digest pinning (7x), DV1006 no USER."
+  },
+  {
+    "repo": "bytebase/bytebase",
+    "files": 3,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 23,
+      "info": 18
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD for local files legitimate. DL3018 apk pinning (14x)."
+  },
+  {
+    "repo": "hoppscotch/hoppscotch",
+    "files": 4,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 2,
+      "warnings": 31,
+      "info": 16,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV3014 correctly flags hardcoded DB connection strings in prod.Dockerfile (2x). DV3003 COPY .env legitimate."
+  },
+  {
+    "repo": "paperless-ngx/paperless-ngx",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 5,
+      "info": 16
+    },
+    "notes": "Clean scan, no FP. Minimal findings on well-maintained Dockerfiles."
+  },
+  {
+    "repo": "plausible/analytics",
+    "files": 1,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 17,
+      "info": 4,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning. DV4012 consecutive COPY."
+  },
+  {
+    "repo": "navidrome/navidrome",
+    "files": 3,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 20,
+      "info": 24
+    },
+    "notes": "Clean scan, no FP. Multi-arch Go Alpine builds. DV1009 (8x), DV4003 no WORKDIR."
+  },
+  {
+    "repo": "loft-sh/vcluster",
+    "files": 8,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 17,
+      "info": 38
+    },
+    "notes": "FP fixed: DV1001 flagged ARG TELEMETRY_PRIVATE_KEY=\"\" (empty-string default) as hardcoded secret. Parser fix: strip quotes from ARG default values."
+  },
+  {
+    "repo": "mealie-recipes/mealie",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 33,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning (25x) in multi-stage Python builds."
+  },
+  {
+    "repo": "umami-software/umami",
+    "files": 1,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 5,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DV3014 correctly flags hardcoded dummy DB URL for Next.js build (postgresql://user:pass@localhost:5432/dummy)."
+  },
+  {
+    "repo": "formbricks/formbricks",
+    "files": 1,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. Standard Next.js multi-stage build. DV1009 digest pinning, DL3018 apk pinning."
   }
 ]
