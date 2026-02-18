@@ -39,10 +39,20 @@ export function parseGitHubURL(input: string): GitHubRef {
 }
 
 /**
+ * Template file extensions that indicate the file is a template
+ * requiring preprocessing before it can be parsed as a Dockerfile.
+ * These files often contain placeholder values (e.g., ALPINE_BASEIMAGE)
+ * or template syntax (e.g., ERB, Jinja2) that cause false positives.
+ */
+const TEMPLATE_EXTENSIONS = /\.(erb|j2|jinja|jinja2|tmpl|tpl|template)$/i;
+
+/**
  * Check if a file path matches Dockerfile patterns.
  */
 export function isDockerfile(filePath: string): boolean {
   const basename = filePath.split('/').pop() || '';
+  // Skip template files (ERB, Jinja2, Go templates, generic .template)
+  if (TEMPLATE_EXTENSIONS.test(basename)) return false;
   if (basename === 'Dockerfile') return true;
   if (basename.endsWith('.Dockerfile') || basename.endsWith('.dockerfile')) return true;
   if (/^Dockerfile\..+/.test(basename)) return true;

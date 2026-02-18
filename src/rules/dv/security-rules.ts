@@ -76,7 +76,7 @@ export const DV1003: Rule = {
   description: 'Avoid piping curl/wget output to shell',
   check(ctx) {
     const violations: Violation[] = [];
-    const unsafePipe = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source\s)/;
+    const unsafePipe = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source)\b/;
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'RUN' && unsafePipe.test(inst.arguments)) {

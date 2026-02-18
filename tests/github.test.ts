@@ -87,4 +87,25 @@ describe('isDockerfile', () => {
   it('rejects Dockerfile substring in name', () => {
     expect(isDockerfile('notDockerfile')).toBe(false);
   });
+
+  it('rejects ERB template files', () => {
+    expect(isDockerfile('Dockerfile.template.erb')).toBe(false);
+    expect(isDockerfile('Dockerfile.erb')).toBe(false);
+  });
+
+  it('rejects Jinja2 template files', () => {
+    expect(isDockerfile('Dockerfile.j2')).toBe(false);
+    expect(isDockerfile('Dockerfile.jinja2')).toBe(false);
+    expect(isDockerfile('Dockerfile.jinja')).toBe(false);
+  });
+
+  it('rejects Go/Helm template files', () => {
+    expect(isDockerfile('Dockerfile.tmpl')).toBe(false);
+    expect(isDockerfile('Dockerfile.tpl')).toBe(false);
+  });
+
+  it('rejects generic .template files', () => {
+    expect(isDockerfile('Dockerfile.template')).toBe(false);
+    expect(isDockerfile('weave-kube/Dockerfile.template')).toBe(false);
+  });
 });

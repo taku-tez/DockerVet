@@ -95,6 +95,16 @@ describe('DV1003 - Unsafe curl pipe', () => {
   it('passes safe curl', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN curl -o /tmp/file.sh https://example.com/file.sh'), 'DV1003')).toBe(false);
   });
+  it('does not flag wget download + sha256sum verify pattern', () => {
+    // Download to file then verify — this is the SAFE pattern
+    const df = 'FROM ubuntu:20.04\nRUN wget -O file.tar.bz2 https://example.com/file.tar.bz2; echo "abc123 *file.tar.bz2" | sha256sum -c -';
+    expect(hasRule(lintDockerfile(df), 'DV1003')).toBe(false);
+  });
+  it('does not flag curl piped to sha256sum', () => {
+    // curl output piped to sha256sum for checksum verification — NOT a shell execution
+    const df = 'FROM ubuntu:20.04\nRUN curl -L https://example.com/file | sha256sum';
+    expect(hasRule(lintDockerfile(df), 'DV1003')).toBe(false);
+  });
 });
 
 describe('DV1004 - Multi-stage build suggestion', () => {

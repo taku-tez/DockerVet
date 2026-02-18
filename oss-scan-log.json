@@ -2371,5 +2371,264 @@
       "info": 13
     },
     "notes": "Clean scan, no FP. Standard Next.js multi-stage build. DV1009 digest pinning, DL3018 apk pinning."
+  },
+  {
+    "repo": "home-assistant/core",
+    "files": 3,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 2,
+      "warnings": 31,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh in Dockerfile.dev, DL3000 relative WORKDIR - both legitimate. DL3006 on ${BUILD_FROM} ARG with no default is legitimate."
+  },
+  {
+    "repo": "AdGuardTeam/AdGuardHome",
+    "files": 1,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 4,
+      "info": 2
+    },
+    "notes": "Clean scan, no FP. Minimal well-maintained Alpine build."
+  },
+  {
+    "repo": "huggingface/text-generation-inference",
+    "files": 3,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 2,
+      "warnings": 57,
+      "info": 25,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh in Dockerfile.neuron, DL3020 ADD in Dockerfile.nix - legitimate. Heavy DL3008 apt pinning (32x)."
+  },
+  {
+    "repo": "dragonflydb/dragonfly",
+    "files": 8,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 4,
+      "warnings": 71,
+      "info": 45,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD in ioredis.Dockerfile, DL3000 relative WORKDIR in pascaldekloe/relay Dockerfiles - all legitimate. DV3008 git clone (5x)."
+  },
+  {
+    "repo": "crowdsecurity/crowdsec",
+    "files": 2,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 37,
+      "info": 20
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt (16x), DL3018 apk (13x). DL3003 cd instead of WORKDIR (4x) legitimate."
+  },
+  {
+    "repo": "payloadcms/payload",
+    "files": 10,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 29,
+      "info": 27,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3025 CMD without JSON notation (9x). Heavy DV1009 digest pinning recommendations."
+  },
+  {
+    "repo": "gotify/server",
+    "files": 1,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DV4007 DEBIAN_FRONTEND as ENV, DV4008 TODO comment - informational findings."
+  },
+  {
+    "repo": "esphome/esphome",
+    "files": 2,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 12,
+      "info": 12
+    },
+    "notes": "FP fixed: DL3006 flagged FROM base-source-${BUILD_TYPE} and FROM base-${BUILD_TYPE} as missing version tags. These are internal stage aliases resolved via ARG BUILD_TYPE=docker. Fix: DL3006 now substitutes all ARG vars to get fully-resolved name."
+  },
+  {
+    "repo": "freshrss/freshrss",
+    "files": 2,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 57,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. Very heavy DL3018 apk pinning (40x) in PHP/Alpine builds. DL3008 apt pinning (14x)."
+  },
+  {
+    "repo": "healthchecks/healthchecks",
+    "files": 1,
+    "date": "2026-02-19",
+    "findings": {
+      "errors": 0,
+      "warnings": 12,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (9x). DL3013 pip pinning. Standard Python Alpine build."
+  },
+  {
+    "repo": "cilium/tetragon",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 153,
+    "severities": {
+      "error": 1,
+      "warning": 90,
+      "info": 56,
+      "style": 6
+    },
+    "notableFindings": "DL3000 on relative WORKDIR, DL3057 on many Dockerfiles without HEALTHCHECK",
+    "improvements": []
+  },
+  {
+    "repo": "fluent/fluentd-docker-image",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 124,
+    "totalIssues": 1135,
+    "severities": {
+      "error": 3,
+      "warning": 490,
+      "info": 642,
+      "style": 0
+    },
+    "notableFindings": "Template files (.erb) were causing DL3024 false positives; fixed by excluding template extensions",
+    "improvements": [
+      "Fixed: exclude .erb/.j2/.tmpl/.tpl/.jinja/.template files from scanning (template FP)"
+    ]
+  },
+  {
+    "repo": "apache/nifi",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 89,
+    "severities": {
+      "error": 10,
+      "warning": 30,
+      "info": 49,
+      "style": 0
+    },
+    "notableFindings": "DL3020 (ADD vs COPY) and DV1003 (curl|wget piped to shell) legitimate findings",
+    "improvements": []
+  },
+  {
+    "repo": "opensearch-project/opensearch",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 69,
+    "severities": {
+      "error": 1,
+      "warning": 36,
+      "info": 32,
+      "style": 0
+    },
+    "notableFindings": "DL3020 in test fixture Dockerfile, legitimate DL3057/DV1006 findings",
+    "improvements": []
+  },
+  {
+    "repo": "gitpod-io/gitpod",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 51,
+    "totalIssues": 501,
+    "severities": {
+      "error": 33,
+      "warning": 237,
+      "info": 226,
+      "style": 5
+    },
+    "notableFindings": "Large workspace image with DL3004 (sudo usage) and DV1003 (curl|bash patterns)",
+    "improvements": []
+  },
+  {
+    "repo": "weaveworks/weave",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 80,
+    "severities": {
+      "error": 1,
+      "warning": 50,
+      "info": 29,
+      "style": 0
+    },
+    "notableFindings": "Dockerfile.template files (with Go-template placeholders like ALPINE_BASEIMAGE) were causing DL3006/DV1009 false positives; fixed by template exclusion",
+    "improvements": [
+      "Fixed: exclude .template files from scanning (placeholder FP)"
+    ]
+  },
+  {
+    "repo": "mysql/mysql-docker",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 42,
+    "totalIssues": 128,
+    "severities": {
+      "error": 0,
+      "warning": 29,
+      "info": 84,
+      "style": 15
+    },
+    "notableFindings": "All findings legitimate (DL3018 apk pinning, DL3057 HEALTHCHECK)",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/postgres",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 20,
+    "totalIssues": 592,
+    "severities": {
+      "error": 0,
+      "warning": 422,
+      "info": 170,
+      "style": 0
+    },
+    "notableFindings": "DV1003 was producing false positives on 'wget ... | sha256sum' patterns (download+verify); fixed by adding word boundary to regex",
+    "improvements": [
+      "Fixed: DV1003 regex now uses \\b word boundary to avoid matching sha256sum as shell"
+    ]
+  },
+  {
+    "repo": "docker-library/golang",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 20,
+    "totalIssues": 158,
+    "severities": {
+      "error": 0,
+      "warning": 78,
+      "info": 80,
+      "style": 0
+    },
+    "notableFindings": "DV1003 false positive on sha256sum verify patterns now fixed",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/python",
+    "scannedAt": "2026-02-19T05:11:02+09:00",
+    "dockerfiles": 42,
+    "totalIssues": 1006,
+    "severities": {
+      "error": 0,
+      "warning": 788,
+      "info": 218,
+      "style": 0
+    },
+    "notableFindings": "DV1003 false positive on sha256sum verify patterns now fixed",
+    "improvements": []
   }
 ]
