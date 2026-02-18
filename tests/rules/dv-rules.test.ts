@@ -59,6 +59,15 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('still flags ENV with actual secret value despite path-like name', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SE_SUPERVISORD_UNIX_SERVER_PASSWORD="secret"'), 'DV1001')).toBe(true);
   });
+  it('does not flag ARG with empty string default', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.25\nARG TELEMETRY_PRIVATE_KEY=""'), 'DV1001')).toBe(false);
+  });
+  it('does not flag ARG with empty single-quoted default', () => {
+    expect(hasRule(lintDockerfile("FROM golang:1.25\nARG PRIVATE_KEY=''"), 'DV1001')).toBe(false);
+  });
+  it('flags ARG with quoted non-empty secret value', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.25\nARG PRIVATE_KEY="realvalue123"'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

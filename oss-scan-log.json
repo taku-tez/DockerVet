@@ -689,9 +689,6 @@
       "infos": 47
     }
   },
-  "elastic/elasticsearch",
-  "verdaccio/verdaccio",
-  "coder/code-server",
   {
     "repo": "meilisearch/meilisearch",
     "files": 1,
@@ -902,5 +899,1365 @@
       "style": 0
     },
     "notes": "Clean scan, no FP. DL3020 ADD in main Dockerfile, DV3004 cert copying in test/conformance Dockerfiles (intentional test certs for TLS testing), DV1006 no USER in several files."
+  },
+  {
+    "repo": "falcosecurity/falco",
+    "files": 4,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 3,
+      "warnings": 51,
+      "info": 19,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD usage in multiple Dockerfiles. Heavy DL3008 apt pinning. DL3006 on cgr.dev/chainguard/wolfi-base (no version tag) is legitimate."
+  },
+  {
+    "repo": "k3s-io/k3s",
+    "files": 7,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 4,
+      "warnings": 35,
+      "info": 36,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh in Dockerfile.dapper/local/test (build tooling). DL3000 relative WORKDIR. All legitimate."
+  },
+  {
+    "repo": "rancher/rancher",
+    "files": 11,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 3,
+      "warnings": 79,
+      "info": 110,
+      "style": 0
+    },
+    "notes": "FP found and fixed: DV3001 GOOG pattern matched GOOGLE_APPLICATION_CREDENTIALS/GOOGLE_CLOUD_PROJECT names (3 FPs). DV1001 flagged google_credentials.json filename as secret value (1 FP). Both fixed."
+  },
+  {
+    "repo": "hashicorp/terraform",
+    "scannedAt": "2026-02-18T09:10:14.767713Z",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add openssh` use `apk add openssh=<vers; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce",
+    "improvements": []
+  },
+  {
+    "repo": "nats-io/nats-server",
+    "scannedAt": "2026-02-18T09:12:15.820035Z",
+    "dockerfiles": 1,
+    "totalIssues": 10,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3003: Use WORKDIR to switch to a directory; DL3003: Use WORKDIR to switch to a directory; DL3003: Use WORKDIR to switch to a directory; DL3007: Using latest is prone to errors. Pin the version explicitly.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/flink",
+    "scannedAt": "2026-02-18T09:12:21.418863Z",
+    "dockerfiles": 2,
+    "totalIssues": 40,
+    "severities": {
+      "error": 13,
+      "warning": 14,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install tar` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install sudo` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install openssh-server` use",
+    "improvements": []
+  },
+  {
+    "repo": "apache/hadoop",
+    "scannedAt": "2026-02-18T09:12:33.623714Z",
+    "dockerfiles": 2,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "qdrant/qdrant",
+    "scannedAt": "2026-02-18T09:12:39.031272Z",
+    "dockerfiles": 2,
+    "totalIssues": 52,
+    "severities": {
+      "error": 1,
+      "warning": 24,
+      "info": 27,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"tonistiigi/xx\" with a specif; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3008: Pin versions in apt-get install. Instead of `apt-get install clang` use `apt-get; DL3008: Pin versions in apt-get install. Instead of `apt-get install lld` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install cmake` use `apt-get",
+    "improvements": []
+  },
+  {
+    "repo": "weaviate/weaviate",
+    "scannedAt": "2026-02-18T09:12:41.286494Z",
+    "dockerfiles": 2,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add gcc` use `apk add gcc=<version>`; DL3018: Pin versions in apk add. Instead of `apk add g++` use `apk add g++=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "langchain-ai/langchain",
+    "scannedAt": "2026-02-18T09:12:45.963033Z",
+    "dockerfiles": 1,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install vim` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install less` use `apt-get ",
+    "improvements": []
+  },
+  {
+    "repo": "open-webui/open-webui",
+    "scannedAt": "2026-02-18T09:12:50.553163Z",
+    "dockerfiles": 1,
+    "totalIssues": 27,
+    "severities": {
+      "error": 3,
+      "warning": 16,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV1001: Possible secret hardcoded in ARG: \"USE_TIKTOKEN_ENCODING_NAME\". Use --build-arg ; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1001: Possible secret hardcoded in ENV: \"TIKTOKEN_ENCODING_NAME\". Use build secrets or; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i",
+    "improvements": []
+  },
+  {
+    "repo": "bentoml/bentoml",
+    "scannedAt": "2026-02-18T09:13:06.528433Z",
+    "dockerfiles": 2,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3029: Do not use --platform flag with FROM; DV1006: No USER instruction found. Container will run as root by default.; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DV2008: apt-get update and apt-get install should be in the same RUN instruction to prev; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us",
+    "improvements": []
+  },
+  {
+    "repo": "gitleaks/gitleaks",
+    "scannedAt": "2026-02-18T09:14:07.645527Z",
+    "dockerfiles": 1,
+    "totalIssues": 10,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add openssh-client` use `apk add openss",
+    "improvements": []
+  },
+  {
+    "repo": "hadolint/hadolint",
+    "scannedAt": "2026-02-18T09:14:09.091774Z",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "open-policy-agent/opa",
+    "scannedAt": "2026-02-18T09:14:11.573049Z",
+    "dockerfiles": 2,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${BASE}\" with a specific ver; DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us",
+    "improvements": []
+  },
+  {
+    "repo": "dexidp/dex",
+    "scannedAt": "2026-02-18T09:14:18.918087Z",
+    "dockerfiles": 1,
+    "totalIssues": 19,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add alpine-sdk` use `apk add alpine-sdk; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add openssl` use `apk add openssl=<vers; DL3018: Pin versions in apk add. Instead of `apk add clang` use `apk add clang=<version>; DL3018: Pin versions in apk add. Instead of `apk add lld` use `apk add lld=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "oauth2-proxy/oauth2-proxy",
+    "scannedAt": "2026-02-18T09:14:20.834156Z",
+    "dockerfiles": 2,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install pre-commit` use `ap; DL3008: Pin versions in apt-get install. Instead of `apt-get install vim` use `apt-get i; DL3006: Always tag the version of an image explicitly. Tag \"${BUILD_IMAGE}\" with a speci; DV1008: COPY . copies the entire build context. Consider copying only needed files for b",
+    "improvements": []
+  },
+  {
+    "repo": "coder/coder",
+    "scannedAt": "2026-02-18T09:14:24.357481Z",
+    "dockerfiles": 2,
+    "totalIssues": 142,
+    "severities": {
+      "error": 4,
+      "warning": 96,
+      "info": 42,
+      "style": 0
+    },
+    "notableFindings": "DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DL3008: Pin versions in apt-get install. Instead of `apt-get install libssl-dev` use `ap; DL3008: Pin versions in apt-get install. Instead of `apt-get install openssl` use `apt-g; DL3008: Pin versions in apt-get install. Instead of `apt-get install pkg-config` use `ap; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us",
+    "improvements": []
+  },
+  {
+    "repo": "tektoncd/pipeline",
+    "scannedAt": "2026-02-18T09:14:37.870400Z",
+    "dockerfiles": 2,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3025: Use arguments JSON notation for ENTRYPOINT arguments; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "fluxcd/flagger",
+    "scannedAt": "2026-02-18T09:14:40.893647Z",
+    "dockerfiles": 2,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 13,
+      "style": 3
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3045: COPY to a relative destination without WORKDIR set. Use absolute paths or set WO; DL3018: Pin versions in apk add. Instead of `apk add alpine-sdk` use `apk add alpine-sdk; DL3018: Pin versions in apk add. Instead of `apk add perl` use `apk add perl=<version>`; DL3018: Pin versions in apk add. Instead of `apk add curl` use `apk add curl=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "metallb/metallb",
+    "scannedAt": "2026-02-18T09:14:44.185898Z",
+    "dockerfiles": 2,
+    "totalIssues": 10,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DV1006: No USER instruction found. Container will run as root by default.; DL3007: Using latest is prone to errors. Pin the version explicitly.; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "rook/rook",
+    "scannedAt": "2026-02-18T09:14:54.470069Z",
+    "dockerfiles": 2,
+    "totalIssues": 10,
+    "severities": {
+      "error": 1,
+      "warning": 4,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"BASEIMAGE\" with a specific v; DL3041: Specify version with dnf install -y baseos-<version>; DL3041: Specify version with dnf install -y iproute-<version>; DV1006: No USER instruction found. Container will run as root by default.; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "openfaas/faas",
+    "scannedAt": "2026-02-18T09:14:57.315033Z",
+    "dockerfiles": 1,
+    "totalIssues": 8,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce",
+    "improvements": []
+  },
+  {
+    "repo": "knative/serving",
+    "scannedAt": "2026-02-18T09:14:59.764665Z",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 3,
+      "warning": 5,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add make` use `apk add make=<version>`; DL3018: Pin versions in apk add. Instead of `apk add build-base` use `apk add build-base; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "scannedAt": "2026-02-18T09:16:40.449932Z",
+    "dockerfiles": 3,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install bash` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install crossbuild-essentia",
+    "improvements": []
+  },
+  {
+    "repo": "tigera/operator",
+    "scannedAt": "2026-02-18T09:16:48.063311Z",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DL3006: Always tag the version of an image explicitly. Tag \"${CALICO_BASE}\" with a speci",
+    "improvements": []
+  },
+  {
+    "repo": "stakater/Reloader",
+    "scannedAt": "2026-02-18T09:16:49.598388Z",
+    "dockerfiles": 2,
+    "totalIssues": 10,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${BUILDER_IMAGE}\" with a spe; DL3040: dnf clean all missing after dnf command; DL3041: Specify version with dnf install -y binutils-<version>; DL3040: dnf clean all missing after dnf command; DL3041: Specify version with dnf install -y 'dnf-command(download)'-<version>",
+    "improvements": []
+  },
+  {
+    "repo": "elastic/elasticsearch",
+    "scannedAt": "2026-02-18T09:17:31.072377+00:00Z",
+    "dockerfiles": 10,
+    "totalIssues": 101,
+    "severities": {
+      "error": 6,
+      "warning": 52,
+      "info": 43,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"redhat/ubi8\" with a specific; DV1006: No USER instruction found. Container will run as root by default.; DL3032: yum clean all missing after yum command; DL3033: Specify version with yum install -y git-<version>; DL3033: Specify version with yum install -y gcc-<version>",
+    "improvements": []
+  },
+  {
+    "repo": "elastic/kibana",
+    "scannedAt": "2026-02-18T09:17:35.339111+00:00Z",
+    "dockerfiles": 5,
+    "totalIssues": 72,
+    "severities": {
+      "error": 4,
+      "warning": 48,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${BASE_IMAGE}\" with a specif; DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install zsh` use `apt-get i",
+    "improvements": []
+  },
+  {
+    "repo": "kubernetes/kubernetes",
+    "scannedAt": "2026-02-18T09:17:46.917306+00:00Z",
+    "dockerfiles": 43,
+    "totalIssues": 258,
+    "severities": {
+      "error": 24,
+      "warning": 132,
+      "info": 102,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${BASE}\" with a specific ver; DL3020: Use COPY instead of ADD for files and folders; DL3006: Always tag the version of an image explicitly. Tag \"\"${BASEIMAGE}\"\" with a speci; DV1006: No USER instruction found. Container will run as root by default.; DL3006: Always tag the version of an image explicitly. Tag \"${SETCAP_IMAGE}\" with a spec",
+    "improvements": []
+  },
+  {
+    "repo": "kubernetes/minikube",
+    "scannedAt": "2026-02-18T09:17:51.941310+00:00Z",
+    "dockerfiles": 17,
+    "totalIssues": 94,
+    "severities": {
+      "error": 5,
+      "warning": 37,
+      "info": 52,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "argoproj/argo-workflows",
+    "scannedAt": "2026-02-18T09:17:54.586980+00:00Z",
+    "dockerfiles": 5,
+    "totalIssues": 66,
+    "severities": {
+      "error": 2,
+      "warning": 32,
+      "info": 32,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install protobuf-compiler` ; DL3008: Pin versions in apt-get install. Instead of `apt-get install clang-format` use `; DV1007: apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*` in the same RUN ins; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/alertmanager",
+    "scannedAt": "2026-02-18T09:17:56.497172+00:00Z",
+    "dockerfiles": 3,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/loki",
+    "scannedAt": "2026-02-18T09:18:05.349329+00:00Z",
+    "dockerfiles": 36,
+    "totalIssues": 312,
+    "severities": {
+      "error": 6,
+      "warning": 128,
+      "info": 178,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add tzdata` use `apk add tzdata=<versio; DL3029: Do not use --platform flag with FROM; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/tempo",
+    "scannedAt": "2026-02-18T09:18:09.085366+00:00Z",
+    "dockerfiles": 9,
+    "totalIssues": 40,
+    "severities": {
+      "error": 1,
+      "warning": 15,
+      "info": 24,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DV1006: No USER instruction found. Container will run as root by default.; DV2009: SHELL uses \"/busybox/sh\" which may be unsafe. Use standard shells like /bin/bash; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DV2009: SHELL uses \"/busybox/sh\" which may be unsafe. Use standard shells like /bin/bash",
+    "improvements": []
+  },
+  {
+    "repo": "jaegertracing/jaeger",
+    "scannedAt": "2026-02-18T09:18:12.696258+00:00Z",
+    "dockerfiles": 10,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"$base_image\" with a specific; DL3006: Always tag the version of an image explicitly. Tag \"$base_image\" with a specific; DL3006: Always tag the version of an image explicitly. Tag \"$base_image\" with a specific; DL3006: Always tag the version of an image explicitly. Tag \"$debug_image\" with a specifi; DL3006: Always tag the version of an image explicitly. Tag \"$base_image\" with a specific",
+    "improvements": []
+  },
+  {
+    "repo": "moby/moby",
+    "scannedAt": "2026-02-18T09:18:20.663265+00:00Z",
+    "dockerfiles": 29,
+    "totalIssues": 365,
+    "severities": {
+      "error": 5,
+      "warning": 196,
+      "info": 164,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"busybox\" with a specific ver; DL3008: Pin versions in apt-get install. Instead of `apt-get install file` use `apt-get ; DV3020: ADD with remote URL lacks integrity verification. Use ADD --checksum=<digest> (D; DL3008: Pin versions in apt-get install. Instead of `apt-get install criu` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us",
+    "improvements": []
+  },
+  {
+    "repo": "buildpacks/pack",
+    "scannedAt": "2026-02-18T09:18:23.295099+00:00Z",
+    "dockerfiles": 6,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3006: Always tag the version of an image explicitly. Tag \"${base_image}\" with a specif; DV1006: No USER instruction found. Container will run as root by default.; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi",
+    "improvements": []
+  },
+  {
+    "repo": "grpc/grpc-go",
+    "scannedAt": "2026-02-18T09:18:25.576749+00:00Z",
+    "dockerfiles": 5,
+    "totalIssues": 46,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add curl` use `apk add curl=<version>`; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3003: Use WORKDIR to switch to a directory; DL3006: Always tag the version of an image explicitly. Tag \"alpine\" with a specific vers; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "grpc/grpc",
+    "scannedAt": "2026-02-18T09:19:08.576809+00:00Z",
+    "dockerfiles": 201,
+    "totalIssues": 4221,
+    "severities": {
+      "error": 20,
+      "warning": 2200,
+      "info": 2001,
+      "style": 0
+    },
+    "notableFindings": "DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install clang` use `apt-get; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "envoyproxy/gateway",
+    "scannedAt": "2026-02-18T09:19:12.222186+00:00Z",
+    "dockerfiles": 9,
+    "totalIssues": 36,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 19,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3006: Always tag the version of an image explicitly. Tag \"gcr.io/distroless/static-deb; DV1006: No USER instruction found. Container will run as root by default.; DV1008: COPY . copies the entire build context. Consider copying only needed files for b",
+    "improvements": []
+  },
+  {
+    "repo": "dapr/dapr",
+    "scannedAt": "2026-02-18T09:19:17.452403+00:00Z",
+    "dockerfiles": 19,
+    "totalIssues": 108,
+    "severities": {
+      "error": 4,
+      "warning": 35,
+      "info": 69,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3000: Use absolute WORKDIR; DV1006: No USER instruction found. Container will run as root by default.; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "rabbitmq/rabbitmq-server",
+    "scannedAt": "2026-02-18T09:19:20.159002+00:00Z",
+    "dockerfiles": 5,
+    "totalIssues": 29,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"nodered/node-red-docker\" wit; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DL3013: Pin versions in pip. Instead of `pip install django` use `pip install django==<v; DL3042: Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>",
+    "improvements": []
+  },
+  {
+    "repo": "apache/spark",
+    "scannedAt": "2026-02-18T09:19:27.704635+00:00Z",
+    "dockerfiles": 22,
+    "totalIssues": 752,
+    "severities": {
+      "error": 0,
+      "warning": 559,
+      "info": 193,
+      "style": 0
+    },
+    "notableFindings": "DL3013: Pin versions in pip. Instead of `pip install notebook` use `pip install notebook; DL3013: Pin versions in pip. Instead of `pip install jupyterlab` use `pip install jupyte; DL3042: Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3008: Pin versions in apt-get install. Instead of `apt-get install openjdk-17-jre` use",
+    "improvements": []
+  },
+  {
+    "repo": "apache/cassandra",
+    "scannedAt": "2026-02-18T09:19:30.122103+00:00Z",
+    "dockerfiles": 3,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 9,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install python3-minimal` us; DV1007: apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*` in the same RUN ins; DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install python3.11-minimal`",
+    "improvements": []
+  },
+  {
+    "repo": "typesense/typesense",
+    "scannedAt": "2026-02-18T09:19:33.564297+00:00Z",
+    "dockerfiles": 11,
+    "totalIssues": 281,
+    "severities": {
+      "error": 1,
+      "warning": 178,
+      "info": 102,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install software-properties; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install locales` use `apt-g; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "chroma-core/chroma",
+    "scannedAt": "2026-02-18T09:19:36.535376+00:00Z",
+    "dockerfiles": 7,
+    "totalIssues": 113,
+    "severities": {
+      "error": 4,
+      "warning": 66,
+      "info": 43,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3013: Pin versions in pip. Instead of `pip install setuptools` use `pip install setupt; DL3013: Pin versions in pip. Instead of `pip install pip` use `pip install pip==<version; DL3013: Pin versions in pip. Instead of `pip install bandit` use `pip install bandit==<v; DL3042: Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>",
+    "improvements": []
+  },
+  {
+    "repo": "mudler/LocalAI",
+    "scannedAt": "2026-02-18T09:19:39.150380+00:00Z",
+    "dockerfiles": 7,
+    "totalIssues": 156,
+    "severities": {
+      "error": 1,
+      "warning": 101,
+      "info": 54,
+      "style": 0
+    },
+    "notableFindings": "DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install wget` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install espeak-ng` use `apt; DL3008: Pin versions in apt-get install. Instead of `apt-get install libgomp1` use `apt-",
+    "improvements": []
+  },
+  {
+    "repo": "prefecthq/prefect",
+    "scannedAt": "2026-02-18T09:19:42.796849+00:00Z",
+    "dockerfiles": 11,
+    "totalIssues": 90,
+    "severities": {
+      "error": 1,
+      "warning": 44,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install wget` use `apt-get ",
+    "improvements": []
+  },
+  {
+    "repo": "mlflow/mlflow",
+    "scannedAt": "2026-02-18T09:19:47.159511+00:00Z",
+    "dockerfiles": 13,
+    "totalIssues": 139,
+    "severities": {
+      "error": 1,
+      "warning": 85,
+      "info": 53,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3013: Pin versions in pip. Instead of `pip install protobuf` use `pip install protobuf; DL3013: Pin versions in pip. Instead of `pip install packaging` use `pip install packagi; DL3042: Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "anchore/grype",
+    "scannedAt": "2026-02-18T09:19:51.713127+00:00Z",
+    "dockerfiles": 17,
+    "totalIssues": 57,
+    "severities": {
+      "error": 9,
+      "warning": 20,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "anchore/syft",
+    "scannedAt": "2026-02-18T09:20:10.282351+00:00Z",
+    "dockerfiles": 85,
+    "totalIssues": 513,
+    "severities": {
+      "error": 22,
+      "warning": 270,
+      "info": 221,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DV1006: No USER instruction found. Container will run as root by default.; DL3029: Do not use --platform flag with FROM; DL3045: COPY to a relative destination without WORKDIR set. Use absolute paths or set WO; DL3008: Pin versions in apt-get install. Instead of `apt-get install less` use `apt-get ",
+    "improvements": []
+  },
+  {
+    "repo": "semgrep/semgrep",
+    "scannedAt": "2026-02-18T09:20:31.752490+00:00Z",
+    "dockerfiles": 97,
+    "totalIssues": 232,
+    "severities": {
+      "error": 4,
+      "warning": 123,
+      "info": 105,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add build-base` use `apk add build-base; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add make` use `apk add make=<version>`; DL3018: Pin versions in apk add. Instead of `apk add rsync` use `apk add rsync=<version>",
+    "improvements": []
+  },
+  {
+    "repo": "trufflesecurity/trufflehog",
+    "scannedAt": "2026-02-18T09:20:33.972893+00:00Z",
+    "dockerfiles": 3,
+    "totalIssues": 46,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add openssh-client` use `apk add openss",
+    "improvements": []
+  },
+  {
+    "repo": "external-secrets/external-secrets",
+    "scannedAt": "2026-02-18T09:20:36.483952+00:00Z",
+    "dockerfiles": 7,
+    "totalIssues": 46,
+    "severities": {
+      "error": 6,
+      "warning": 27,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3040: dnf clean all missing after dnf command; DL3041: Specify version with dnf install -y glibc-<version>; DL3041: Specify version with dnf install -y tzdata-<version>; DL3041: Specify version with dnf install -y ca-certificates-<version>",
+    "improvements": []
+  },
+  {
+    "repo": "bitnami-labs/sealed-secrets",
+    "scannedAt": "2026-02-18T09:20:38.452614+00:00Z",
+    "dockerfiles": 3,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "none",
+    "improvements": []
+  },
+  {
+    "repo": "authelia/authelia",
+    "scannedAt": "2026-02-18T09:20:41.904802+00:00Z",
+    "dockerfiles": 11,
+    "totalIssues": 27,
+    "severities": {
+      "error": 1,
+      "warning": 16,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add gcc` use `apk add gcc=<version>`; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "verdaccio/verdaccio",
+    "scannedAt": "2026-02-18T09:20:49.583404+00:00Z",
+    "dockerfiles": 28,
+    "totalIssues": 151,
+    "severities": {
+      "error": 16,
+      "warning": 53,
+      "info": 82,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add openssl` use `apk add openssl=<vers; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add wget` use `apk add wget=<version>`; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3018: Pin versions in apk add. Instead of `apk add openssl` use `apk add openssl=<vers",
+    "improvements": []
+  },
+  {
+    "repo": "projectcalico/calico",
+    "scannedAt": "2026-02-18T09:20:58.873916+00:00Z",
+    "dockerfiles": 34,
+    "totalIssues": 231,
+    "severities": {
+      "error": 0,
+      "warning": 140,
+      "info": 91,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${CALICO_BASE}\" with a speci; DL3006: Always tag the version of an image explicitly. Tag \"${UBI_IMAGE}\" with a specifi; DL3006: Always tag the version of an image explicitly. Tag \"${CALICO_BASE}\" with a speci; DL3006: Always tag the version of an image explicitly. Tag \"${CALICO_BASE}\" with a speci; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "emissary-ingress/emissary",
+    "scannedAt": "2026-02-18T09:21:02.675130+00:00Z",
+    "dockerfiles": 10,
+    "totalIssues": 116,
+    "severities": {
+      "error": 12,
+      "warning": 69,
+      "info": 35,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${envoy}\" with a specific ve; DL3006: Always tag the version of an image explicitly. Tag \"${builderbase}\" with a speci; DL3006: Always tag the version of an image explicitly. Tag \"${builderbase}\" with a speci; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "Kong/kong",
+    "scannedAt": "2026-02-18T09:21:05.065274+00:00Z",
+    "dockerfiles": 4,
+    "totalIssues": 52,
+    "severities": {
+      "error": 0,
+      "warning": 30,
+      "info": 22,
+      "style": 0
+    },
+    "notableFindings": "DL3002: Last USER should not be root; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DV2008: apt-get update and apt-get install should be in the same RUN instruction to prev; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install unzip` use `apt-get",
+    "improvements": []
+  },
+  {
+    "repo": "apache/apisix",
+    "scannedAt": "2026-02-18T09:21:07.725334+00:00Z",
+    "dockerfiles": 6,
+    "totalIssues": 92,
+    "severities": {
+      "error": 0,
+      "warning": 58,
+      "info": 34,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install sudo` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install make` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install gcc` use `apt-get i",
+    "improvements": []
+  },
+  {
+    "repo": "TykTechnologies/tyk",
+    "scannedAt": "2026-02-18T09:21:10.393525+00:00Z",
+    "dockerfiles": 8,
+    "totalIssues": 87,
+    "severities": {
+      "error": 6,
+      "warning": 41,
+      "info": 40,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install zlib1g-dev` use `ap; DL3008: Pin versions in apt-get install. Instead of `apt-get install libncurses5-dev` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install libgdbm-dev` use `a",
+    "improvements": []
+  },
+  {
+    "repo": "concourse/concourse",
+    "scannedAt": "2026-02-18T09:21:12.830170+00:00Z",
+    "dockerfiles": 3,
+    "totalIssues": 29,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${base_image}\" with a specif; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install vim` use `apt-get i",
+    "improvements": []
+  },
+  {
+    "repo": "werf/werf",
+    "scannedAt": "2026-02-18T09:21:23.045785+00:00Z",
+    "dockerfiles": 45,
+    "totalIssues": 430,
+    "severities": {
+      "error": 20,
+      "warning": 212,
+      "info": 198,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us",
+    "improvements": []
+  },
+  {
+    "repo": "GoogleContainerTools/skaffold",
+    "scannedAt": "2026-02-18T09:22:06.259746+00:00Z",
+    "dockerfiles": 201,
+    "totalIssues": 918,
+    "severities": {
+      "error": 12,
+      "warning": 545,
+      "info": 361,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "tilt-dev/tilt",
+    "scannedAt": "2026-02-18T09:22:18.528302+00:00Z",
+    "dockerfiles": 52,
+    "totalIssues": 334,
+    "severities": {
+      "error": 29,
+      "warning": 167,
+      "info": 138,
+      "style": 0
+    },
+    "notableFindings": "DV1003: Avoid piping curl/wget output directly to a shell. Download first, verify, then ; DV3015: Piping curl/wget to shell without checksum verification. Download first, verify,; DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install jq` use `apt-get in; DL3008: Pin versions in apt-get install. Instead of `apt-get install liblz4-tool` use `a",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/waypoint",
+    "scannedAt": "2026-02-18T09:22:20.888050+00:00Z",
+    "dockerfiles": 4,
+    "totalIssues": 65,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 43,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add gcc` use `apk add gcc=<version>`; DL3018: Pin versions in apk add. Instead of `apk add libc-dev` use `apk add libc-dev=<ve",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/boundary",
+    "scannedAt": "2026-02-18T09:22:26.430370+00:00Z",
+    "dockerfiles": 8,
+    "totalIssues": 96,
+    "severities": {
+      "error": 21,
+      "warning": 48,
+      "info": 27,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add wget` use `apk add wget=<version>`; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add dumb-init` use `apk add dumb-init=<; DL3018: Pin versions in apk add. Instead of `apk add gnupg` use `apk add gnupg=<version>; DL3018: Pin versions in apk add. Instead of `apk add libcap` use `apk add libcap=<versio",
+    "improvements": []
+  },
+  {
+    "repo": "kedacore/keda",
+    "scannedAt": "2026-02-18T09:22:30.412323+00:00Z",
+    "dockerfiles": 8,
+    "totalIssues": 38,
+    "severities": {
+      "error": 2,
+      "warning": 8,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3004: Do not use sudo as it leads to unpredictable behavior. Use the USER instruction ; DL3008: Pin versions in apt-get install. Instead of `apt-get install sudo` use `apt-get ; DV3011: Avoid using sudo in Dockerfiles. RUN instructions run as root by default. sudo a; DL3003: Use WORKDIR to switch to a directory",
+    "improvements": []
+  },
+  {
+    "repo": "snyk/cli",
+    "scannedAt": "2026-02-18T09:22:33.959941+00:00Z",
+    "dockerfiles": 7,
+    "totalIssues": 115,
+    "severities": {
+      "error": 9,
+      "warning": 73,
+      "info": 33,
+      "style": 0
+    },
+    "notableFindings": "DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DV2008: apt-get update and apt-get install should be in the same RUN instruction to prev; DL3008: Pin versions in apt-get install. Instead of `apt-get install sudo` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install musl-tools` use `ap; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i",
+    "improvements": []
+  },
+  {
+    "repo": "JetBrains/TeamCity-docker-images",
+    "scannedAt": "2026-02-18T09:22:54.040253+00:00Z",
+    "dockerfiles": 77,
+    "totalIssues": 931,
+    "severities": {
+      "error": 30,
+      "warning": 482,
+      "info": 419,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"${teamCityImage}\" with a spe; DL3006: Always tag the version of an image explicitly. Tag \"${teamCityImage}\" with a spe; DL3006: Always tag the version of an image explicitly. Tag \"${teamcityAgentImage}\" with ; DL3008: Pin versions in apt-get install. Instead of `apt-get install sudo` use `apt-get ; DL3006: Always tag the version of an image explicitly. Tag \"${ubuntuImage}\" with a speci",
+    "improvements": []
+  },
+  {
+    "repo": "jenkinsci/docker",
+    "scannedAt": "2026-02-18T09:22:58.244283+00:00Z",
+    "dockerfiles": 13,
+    "totalIssues": 119,
+    "severities": {
+      "error": 0,
+      "warning": 63,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add gnupg` use `apk add gnupg=<version>; DL3018: Pin versions in apk add. Instead of `apk add jq` use `apk add jq=<version>`; DL3018: Pin versions in apk add. Instead of `apk add curl` use `apk add curl=<version>`; DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`",
+    "improvements": []
+  },
+  {
+    "repo": "zabbix/zabbix-docker",
+    "scannedAt": "2026-02-18T09:23:18.654177+00:00Z",
+    "dockerfiles": 90,
+    "totalIssues": 237,
+    "severities": {
+      "error": 12,
+      "warning": 88,
+      "info": 137,
+      "style": 0
+    },
+    "notableFindings": "DV3017: Suspicious external URL with imperative context in LABEL. This may indicate a pr; DL3045: COPY to a relative destination without WORKDIR set. Use absolute paths or set WO; DL3045: COPY to a relative destination without WORKDIR set. Use absolute paths or set WO; DL3045: COPY to a relative destination without WORKDIR set. Use absolute paths or set WO; DL3000: Use absolute WORKDIR",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/node_exporter",
+    "scannedAt": "2026-02-18T09:23:20.212172+00:00Z",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.",
+    "improvements": []
+  },
+  {
+    "repo": "thanos-io/thanos",
+    "scannedAt": "2026-02-18T09:23:22.553271+00:00Z",
+    "dockerfiles": 5,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add alpine-sdk` use `apk add alpine-sdk; DV1008: COPY . copies the entire build context. Consider copying only needed files for b",
+    "improvements": []
+  },
+  {
+    "repo": "cortexproject/cortex",
+    "scannedAt": "2026-02-18T09:23:28.508083+00:00Z",
+    "dockerfiles": 18,
+    "totalIssues": 126,
+    "severities": {
+      "error": 7,
+      "warning": 57,
+      "info": 62,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install file` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install gettext` use `apt-g; DL3008: Pin versions in apt-get install. Instead of `apt-get install jq` use `apt-get in",
+    "improvements": []
+  },
+  {
+    "repo": "VictoriaMetrics/VictoriaMetrics",
+    "scannedAt": "2026-02-18T09:23:34.166191+00:00Z",
+    "dockerfiles": 20,
+    "totalIssues": 122,
+    "severities": {
+      "error": 0,
+      "warning": 87,
+      "info": 35,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"$base_image\" with a specific; DV1006: No USER instruction found. Container will run as root by default.; DL3045: COPY to a relative destination without WORKDIR set. Use absolute paths or set WO; DL3006: Always tag the version of an image explicitly. Tag \"$certs_image\" with a specifi; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce",
+    "improvements": []
+  },
+  {
+    "repo": "clickhouse/ClickHouse",
+    "scannedAt": "2026-02-18T09:23:45.906892+00:00Z",
+    "dockerfiles": 43,
+    "totalIssues": 667,
+    "severities": {
+      "error": 9,
+      "warning": 397,
+      "info": 261,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install software-properties; DV1007: apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*` in the same RUN ins; DL3008: Pin versions in apt-get install. Instead of `apt-get install binutils-dev` use `; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us",
+    "improvements": []
+  },
+  {
+    "repo": "timescale/timescaledb-docker",
+    "scannedAt": "2026-02-18T09:23:47.197322+00:00Z",
+    "dockerfiles": 1,
+    "totalIssues": 28,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add git` use `apk add git=<version>`; DL3018: Pin versions in apk add. Instead of `apk add gcc` use `apk add gcc=<version>`; DL3018: Pin versions in apk add. Instead of `apk add musl-dev` use `apk add musl-dev=<ve; DL3006: Always tag the version of an image explicitly. Tag \"${PREV_IMAGE}\" with a specif; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "milvus-io/milvus",
+    "scannedAt": "2026-02-18T09:23:53.210596+00:00Z",
+    "dockerfiles": 23,
+    "totalIssues": 384,
+    "severities": {
+      "error": 8,
+      "warning": 241,
+      "info": 135,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3040: dnf clean all missing after dnf command; DL3041: Specify version with dnf install -y wget-<version>; DL3041: Specify version with dnf install -y g++-<version>; DL3041: Specify version with dnf install -y gcc-<version>",
+    "improvements": []
+  },
+  {
+    "repo": "apache/druid",
+    "scannedAt": "2026-02-18T09:23:56.815073+00:00Z",
+    "dockerfiles": 8,
+    "totalIssues": 89,
+    "severities": {
+      "error": 12,
+      "warning": 49,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DL3029: Do not use --platform flag with FROM; DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DL3006: Always tag the version of an image explicitly. Tag \"gcr.io/distroless/java$JDK_V; DL3006: Always tag the version of an image explicitly. Tag \"$DRUID_RELEASE\" with a speci; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "trinodb/trino",
+    "scannedAt": "2026-02-18T09:23:59.157490+00:00Z",
+    "dockerfiles": 1,
+    "totalIssues": 51,
+    "severities": {
+      "error": 0,
+      "warning": 42,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DL3007: Using latest is prone to errors. Pin the version explicitly.; DL3006: Always tag the version of an image explicitly. Tag \"redhat/ubi10\" with a specifi; DL3040: dnf clean all missing after dnf command; DL3041: Specify version with dnf install -y /tmp/overlay-<version>",
+    "improvements": []
+  },
+  {
+    "repo": "strimzi/strimzi-kafka-operator",
+    "scannedAt": "2026-02-18T09:24:02.746621+00:00Z",
+    "dockerfiles": 6,
+    "totalIssues": 24,
+    "severities": {
+      "error": 1,
+      "warning": 5,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3007: Using latest is prone to errors. Pin the version explicitly.; DL3002: Last USER should not be root; DV1003: Avoid piping curl/wget output directly to a shell. Download first, verify, then ; DL3007: Using latest is prone to errors. Pin the version explicitly.; DL3007: Using latest is prone to errors. Pin the version explicitly.",
+    "improvements": []
+  },
+  {
+    "repo": "confluentinc/cp-docker-images",
+    "scannedAt": "2026-02-18T09:24:09.152778+00:00Z",
+    "dockerfiles": 24,
+    "totalIssues": 249,
+    "severities": {
+      "error": 1,
+      "warning": 121,
+      "info": 127,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV2005: MAINTAINER is deprecated. Use LABEL maintainer=\"name\" instead.; DL3008: Pin versions in apt-get install. Instead of `apt-get install apt-transport-https; DL3008: Pin versions in apt-get install. Instead of `apt-get install software-properties; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ",
+    "improvements": []
+  },
+  {
+    "repo": "wurstmeister/kafka-docker",
+    "scannedAt": "2026-02-18T09:24:10.462652+00:00Z",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install jq` use `apt-get in; DL3008: Pin versions in apt-get install. Instead of `apt-get install net-tools` use `apt; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install wget` use `apt-get ",
+    "improvements": []
+  },
+  {
+    "repo": "bitnami/containers",
+    "scannedAt": "2026-02-18T09:25:06.623264+00:00Z",
+    "dockerfiles": 260,
+    "totalIssues": 1781,
+    "severities": {
+      "error": 3,
+      "warning": 508,
+      "info": 1270,
+      "style": 0
+    },
+    "notableFindings": "DL3003: Use WORKDIR to switch to a directory; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DL3003: Use WORKDIR to switch to a directory; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DL3003: Use WORKDIR to switch to a directory",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-wireguard",
+    "scannedAt": "2026-02-18T09:25:08.173698+00:00Z",
+    "dockerfiles": 2,
+    "totalIssues": 34,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add bc` use `apk add bc=<version>`; DL3018: Pin versions in apk add. Instead of `apk add coredns` use `apk add coredns=<vers; DL3018: Pin versions in apk add. Instead of `apk add grep` use `apk add grep=<version>`; DL3018: Pin versions in apk add. Instead of `apk add iproute2` use `apk add iproute2=<ve",
+    "improvements": []
+  },
+  {
+    "repo": "pi-hole/docker-pi-hole",
+    "scannedAt": "2026-02-18T09:25:09.443676+00:00Z",
+    "dockerfiles": 1,
+    "totalIssues": 34,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add bash-completion` use `apk add bash-; DL3018: Pin versions in apk add. Instead of `apk add bind-tools` use `apk add bind-tools; DL3018: Pin versions in apk add. Instead of `apk add binutils` use `apk add binutils=<ve; DL3018: Pin versions in apk add. Instead of `apk add coreutils` use `apk add coreutils=<",
+    "improvements": []
+  },
+  {
+    "repo": "tailscale/tailscale",
+    "scannedAt": "2026-02-18T09:25:12.445108+00:00Z",
+    "dockerfiles": 4,
+    "totalIssues": 67,
+    "severities": {
+      "error": 0,
+      "warning": 38,
+      "info": 29,
+      "style": 0
+    },
+    "notableFindings": "DV1008: COPY . copies the entire build context. Consider copying only needed files for b; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add iptables` use `apk add iptables=<ve; DL3018: Pin versions in apk add. Instead of `apk add iproute2` use `apk add iproute2=<ve",
+    "improvements": []
+  },
+  {
+    "repo": "netbirdio/netbird",
+    "scannedAt": "2026-02-18T09:25:16.517044+00:00Z",
+    "dockerfiles": 12,
+    "totalIssues": 94,
+    "severities": {
+      "error": 0,
+      "warning": 38,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV2001: apt-get update should be combined with apt-get install in the same RUN instructi; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add bash` use `apk add bash=<version>`; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce",
+    "improvements": []
+  },
+  {
+    "repo": "filebrowser/filebrowser",
+    "scannedAt": "2026-02-18T09:25:18.558046+00:00Z",
+    "dockerfiles": 3,
+    "totalIssues": 25,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce; DL3018: Pin versions in apk add. Instead of `apk add mailcap` use `apk add mailcap=<vers; DL3018: Pin versions in apk add. Instead of `apk add tini-static` use `apk add tini-stat; DV1006: No USER instruction found. Container will run as root by default.; DL3018: Pin versions in apk add. Instead of `apk add ca-certificates` use `apk add ca-ce",
+    "improvements": []
+  },
+  {
+    "repo": "nextcloud/docker",
+    "scannedAt": "2026-02-18T09:25:24.320069+00:00Z",
+    "dockerfiles": 22,
+    "totalIssues": 327,
+    "severities": {
+      "error": 0,
+      "warning": 215,
+      "info": 112,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.",
+    "improvements": []
+  },
+  {
+    "repo": "localstack/localstack",
+    "scannedAt": "2026-02-18T09:25:27.755033+00:00Z",
+    "dockerfiles": 2,
+    "totalIssues": 71,
+    "severities": {
+      "error": 15,
+      "warning": 42,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install curl` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install gnupg` use `apt-get; DL3008: Pin versions in apt-get install. Instead of `apt-get install git` use `apt-get i; DL3008: Pin versions in apt-get install. Instead of `apt-get install make` use `apt-get ",
+    "improvements": []
+  },
+  {
+    "repo": "testcontainers/testcontainers-java",
+    "scannedAt": "2026-02-18T09:25:31.538107+00:00Z",
+    "dockerfiles": 10,
+    "totalIssues": 44,
+    "severities": {
+      "error": 4,
+      "warning": 17,
+      "info": 23,
+      "style": 0
+    },
+    "notableFindings": "DL3006: Always tag the version of an image explicitly. Tag \"postgres\" with a specific ve; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DV1006: No USER instruction found. Container will run as root by default.; DL3020: Use COPY instead of ADD for files and folders",
+    "improvements": []
+  },
+  {
+    "repo": "vectordotdev/vector",
+    "files": 13,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 41,
+      "info": 53,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. Heavy DV1009 digest pinning (19x), DV1006 no USER (12x). DV2002 correctly flags dist-upgrade in regression/Dockerfile. DL3002 last USER root in collector.Dockerfile legitimate."
+  },
+  {
+    "repo": "kubevela/kubevela",
+    "files": 5,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "info": 10,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (12x). DV4004 ARG after ENV (2x) legitimate. Standard Go Alpine multi-stage builds."
+  },
+  {
+    "repo": "apache/solr",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 5,
+      "info": 7,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Template Dockerfiles (*.header.template). DL3006 on $BASE_IMAGE and _REPLACE_BASE_IMAGE_ template placeholders - legitimate (no version in FROM). DV1003 curl|sh legitimate."
   }
 ]

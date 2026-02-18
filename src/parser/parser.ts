@@ -143,9 +143,17 @@ function parseArgArgs(args: string, line: number): ArgInstruction {
   const trimmed = args.trim();
   const eqIdx = trimmed.indexOf('=');
   if (eqIdx > 0) {
+    let defaultValue = trimmed.slice(eqIdx + 1);
+    // Strip surrounding quotes (e.g. ARG FOO="" or ARG FOO='bar') so rules see the actual value
+    if (
+      (defaultValue.startsWith('"') && defaultValue.endsWith('"')) ||
+      (defaultValue.startsWith("'") && defaultValue.endsWith("'"))
+    ) {
+      defaultValue = defaultValue.slice(1, -1);
+    }
     return {
       type: 'ARG', raw: `ARG ${args}`, line, arguments: args, flags: {},
-      name: trimmed.slice(0, eqIdx), defaultValue: trimmed.slice(eqIdx + 1),
+      name: trimmed.slice(0, eqIdx), defaultValue,
     };
   }
   return { type: 'ARG', raw: `ARG ${args}`, line, arguments: args, flags: {}, name: trimmed };
