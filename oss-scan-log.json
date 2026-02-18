@@ -2630,5 +2630,120 @@
     },
     "notableFindings": "DV1003 false positive on sha256sum verify patterns now fixed",
     "improvements": []
+  },
+  {
+    "repo": "influxdata/telegraf",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "Minor DL3057/DV1006 findings, all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "quay/quay",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 37,
+    "severities": {
+      "error": 1,
+      "warning": 15,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "DL3044 legitimate: ENV PATH=$PATH self-reference in same statement",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-collector-contrib",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 21,
+    "totalIssues": 87,
+    "severities": {
+      "error": 2,
+      "warning": 33,
+      "info": 51,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY in test/example Dockerfiles, legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "siderolabs/talos",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 108,
+    "severities": {
+      "error": 0,
+      "warning": 80,
+      "info": 22,
+      "style": 0
+    },
+    "notableFindings": "DL3006 was producing 116 FPs on ARG PKG_*=scratch patterns and platform-parameterized stage refs like FROM init-build-${TARGETARCH}; both fixed",
+    "improvements": [
+      "Fixed DL3006: ARG defaulting to 'scratch' no longer flagged as untagged image",
+      "Fixed DL3006: platform-parameterized stage refs (FROM stage-${TARGETARCH}) now skip when arch-specific aliases exist"
+    ]
+  },
+  {
+    "repo": "kubernetes-sigs/kind",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 68,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 38,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate, no FPs",
+    "improvements": []
+  },
+  {
+    "repo": "nats-io/nats-docker",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 27,
+    "totalIssues": 117,
+    "severities": {
+      "error": 0,
+      "warning": 57,
+      "info": 60,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning and DL3057 HEALTHCHECK warnings across many versioned Dockerfiles",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/blackbox_exporter",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 3,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "Minimal findings, clean Dockerfile",
+    "improvements": []
+  },
+  {
+    "repo": "operator-framework/operator-sdk",
+    "scannedAt": "2026-02-19T08:06:49+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 38,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 30,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
   }
 ]

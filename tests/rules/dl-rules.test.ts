@@ -107,6 +107,42 @@ describe('DL3006 - Tag version explicitly', () => {
   it('skips scratch', () => {
     expect(hasRule(lintDockerfile('FROM scratch'), 'DL3006')).toBe(false);
   });
+  it('skips ARG that defaults to scratch (parameterized FROM scratch pattern)', () => {
+    // Common in BuildKit-based Dockerfiles (e.g., siderolabs/talos) where ARGs default to
+    // scratch and are overridden via --build-arg at build time
+    expect(hasRule(lintDockerfile('ARG BASE_IMG=scratch\nFROM ${BASE_IMG}'), 'DL3006')).toBe(false);
+  });
+  it('skips multiple ARGs defaulting to scratch', () => {
+    const df = [
+      'ARG PKG_FOO=scratch',
+      'ARG PKG_BAR=scratch',
+      'FROM ${PKG_FOO} AS foo',
+      'FROM ${PKG_BAR} AS bar',
+    ].join('\n');
+    expect(hasRule(lintDockerfile(df), 'DL3006')).toBe(false);
+  });
+  it('skips platform-parameterized stage refs using TARGETARCH (multi-arch build pattern)', () => {
+    // Pattern: FROM init-build-${TARGETARCH} selects from init-build-amd64 or init-build-arm64
+    const df = [
+      'FROM ubuntu:22.04 AS base',
+      'FROM base AS init-build-amd64',
+      'RUN echo amd64',
+      'FROM base AS init-build-arm64',
+      'RUN echo arm64',
+      'FROM init-build-${TARGETARCH} AS init-build',
+      'RUN echo done',
+    ].join('\n');
+    expect(hasRule(lintDockerfile(df), 'DL3006')).toBe(false);
+  });
+  it('skips platform-parameterized stage refs using TARGETOS+TARGETARCH', () => {
+    const df = [
+      'FROM ubuntu:22.04 AS base',
+      'FROM base AS app-linux-amd64',
+      'FROM base AS app-linux-arm64',
+      'FROM app-${TARGETOS}-${TARGETARCH} AS app',
+    ].join('\n');
+    expect(hasRule(lintDockerfile(df), 'DL3006')).toBe(false);
+  });
   it('skips internal stage aliases', () => {
     expect(hasRule(lintDockerfile('FROM golang:1.21 AS gobuild\nRUN go build\nFROM gobuild\nRUN echo hi'), 'DL3006')).toBe(false);
   });
