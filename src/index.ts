@@ -5,9 +5,10 @@ import { parse } from './parser/parser';
 import { lint } from './engine/linter';
 import { loadConfig } from './engine/config';
 import { formatTTY } from './formatter/tty';
-import { formatJSON } from './formatter/json';
-import { formatSARIF } from './formatter/sarif';
+import { formatJSON, formatJSONBatch } from './formatter/json';
+import { formatSARIF, formatSARIFBatch } from './formatter/sarif';
 import { fetchDockerfiles } from './github';
+import { Violation } from './rules/types';
 
 const VERSION = '0.1.0';
 
@@ -44,6 +45,12 @@ interface CLIOptions {
   githubRef?: string;
   githubBranch?: string;
   files: string[];
+}
+
+interface ProcessResult {
+  filename: string;
+  violations: Violation[];
+  exitCode: number;
 }
 
 function parseArgs(args: string[]): CLIOptions {
@@ -94,29 +101,36 @@ function parseArgs(args: string[]): CLIOptions {
 }
 
 function processContent(
-  content: string, filename: string, format: string,
-  noColor: boolean, config: any, trustedRegistries: string[]
-): number {
+  content: string, filename: string, config: any, trustedRegistries: string[]
+): ProcessResult {
   const ast = parse(content);
   const violations = lint(ast, { config, trustedRegistries, filePath: filename });
 
-  switch (format) {
-    case 'json':
-      console.log(formatJSON(violations, filename));
-      break;
-    case 'sarif':
-      console.log(formatSARIF(violations, filename));
-      break;
-    default:
-      console.log(formatTTY(violations, filename, !noColor && process.stdout.isTTY !== false));
-      break;
-  }
-
   const hasErrors = violations.some(v => v.severity === 'error');
   const hasWarnings = violations.some(v => v.severity === 'warning');
-  if (hasErrors) return 2;
-  if (hasWarnings) return 1;
-  return 0;
+  let exitCode = 0;
+  if (hasErrors) exitCode = 2;
+  else if (hasWarnings) exitCode = 1;
+
+  return { filename, violations, exitCode };
+}
+
+function outputResults(
+  results: ProcessResult[], format: string, noColor: boolean
+): void {
+  switch (format) {
+    case 'json':
+      console.log(formatJSONBatch(results));
+      break;
+    case 'sarif':
+      console.log(formatSARIFBatch(results));
+      break;
+    default:
+      for (const result of results) {
+        console.log(formatTTY(result.violations, result.filename, !noColor && process.stdout.isTTY !== false));
+      }
+      break;
+  }
 }
 
 async function handleGitHub(
@@ -124,13 +138,16 @@ async function handleGitHub(
   noColor: boolean, config: any, trustedRegistries: string[]
 ): Promise<number> {
   const entries = await fetchDockerfiles(ref, branch);
-  let maxExit = 0;
+  const results: ProcessResult[] = [];
+  
   for (const entry of entries) {
     const filename = `github:${ref}/${entry.path}`;
-    const result = processContent(entry.content, filename, format, noColor, config, trustedRegistries);
-    maxExit = Math.max(maxExit, result);
+    const result = processContent(entry.content, filename, config, trustedRegistries);
+    results.push(result);
   }
-  return maxExit;
+  
+  outputResults(results, format, noColor);
+  return Math.max(...results.map(r => r.exitCode), 0);
 }
 
 function main(): void {
@@ -166,8 +183,9 @@ function main(): void {
 
   if (opts.useStdin) {
     const content = fs.readFileSync(0, 'utf-8');
-    const result = processContent(content, '<stdin>', opts.format, opts.noColor, config, opts.trustedRegistries);
-    process.exit(result);
+    const result = processContent(content, '<stdin>', config, opts.trustedRegistries);
+    outputResults([result], opts.format, opts.noColor);
+    process.exit(result.exitCode);
   }
 
   if (opts.files.length === 0) {
@@ -175,7 +193,9 @@ function main(): void {
     process.exit(2);
   }
 
+  const results: ProcessResult[] = [];
   let maxExit = 0;
+  
   for (const file of opts.files) {
     if (!fs.existsSync(file)) {
       console.error(`Error: File not found: ${file}`);
@@ -183,10 +203,12 @@ function main(): void {
       continue;
     }
     const content = fs.readFileSync(file, 'utf-8');
-    const result = processContent(content, file, opts.format, opts.noColor, config, opts.trustedRegistries);
-    maxExit = Math.max(maxExit, result);
+    const result = processContent(content, file, config, opts.trustedRegistries);
+    results.push(result);
+    maxExit = Math.max(maxExit, result.exitCode);
   }
-
+  
+  outputResults(results, opts.format, opts.noColor);
   process.exit(maxExit);
 }
 
