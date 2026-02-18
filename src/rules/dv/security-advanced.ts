@@ -96,7 +96,10 @@ export const DV3005: Rule = {
   id: 'DV3005', severity: 'error',
   description: 'Do not COPY/ADD GPG private keys.',
   check(ctx) {
-    const gpgPattern = /(?:\.gpg|\.pgp|secring|private-keys)/i;
+    // Match private key indicators; plain .gpg/.pgp files are commonly public verification keyrings
+    // Flag: secring, private-keys, secret*.gpg, *.sec.gpg
+    // Skip: docker.gpg, hashicorp.gpg, nodesource.gpg etc. (public keyrings for package verification)
+    const gpgPattern = /(?:secring|private-keys|secret[^/]*\.(?:gpg|pgp)|\.sec\.(?:gpg|pgp))/i;
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {

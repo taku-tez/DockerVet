@@ -691,5 +691,144 @@
   },
   "elastic/elasticsearch",
   "verdaccio/verdaccio",
-  "coder/code-server"
+  "coder/code-server",
+  {
+    "repo": "meilisearch/meilisearch",
+    "files": 1,
+    "date": "2026-02-17",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "infos": 4
+    },
+    "notes": "Clean scan, no FP. Standard Rust multi-stage build with Alpine."
+  },
+  {
+    "repo": "dokku/dokku",
+    "files": 36,
+    "date": "2026-02-17",
+    "findings": {
+      "errors": 9,
+      "warnings": 97,
+      "infos": 92,
+      "style": 1
+    },
+    "notes": "Large test fixture collection. DV1001 correctly flags GITHUB_TOKEN in test ARG. All findings legitimate."
+  },
+  {
+    "repo": "questdb/questdb",
+    "files": 3,
+    "date": "2026-02-17",
+    "findings": {
+      "errors": 1,
+      "warnings": 13,
+      "infos": 8
+    },
+    "notes": "Clean scan, no FP. Multi-arch build with debian/ubi/fedora bases."
+  },
+  {
+    "repo": "temporalio/temporal",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 4,
+      "infos": 5,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Minimal Alpine-based Dockerfiles with standard DL3018 apk pinning warnings."
+  },
+  {
+    "repo": "pulumi/pulumi",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 3,
+      "infos": 8,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1003 correctly flags curl|sh pattern. DV4010 recursive chown warning legitimate."
+  },
+  {
+    "repo": "cloudflare/cloudflared",
+    "files": 2,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 21,
+      "infos": 6,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (15x) in build Dockerfile. DV4009 correctly flags chmod 777."
+  },
+  {
+    "repo": "vitessio/vitess",
+    "files": 29,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 137,
+      "infos": 174,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. Large repo with many docker/ Dockerfiles for different components. Heavy DL3008 apt pinning (58x), DL3029 platform flags (27x cross-compilation)."
+  },
+  {
+    "repo": "pingcap/tidb",
+    "files": 5,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 3,
+      "warnings": 38,
+      "infos": 28,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD for local files, DL3004 sudo usage in patch-go Dockerfile. All findings legitimate."
+  },
+  {
+    "repo": "ollama/ollama",
+    "files": 1,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 0,
+      "warnings": 54,
+      "infos": 31,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Single large Dockerfile with multi-stage multi-arch build. Heavy DL3045 COPY without WORKDIR (16x), DL3041 dnf pinning, DL3040 dnf cache."
+  },
+  {
+    "repo": "hashicorp/consul",
+    "files": 8,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 38,
+      "infos": 36
+    },
+    "notes": "Clean scan, no FP. DV1003 correctly flags curl|sh in Dockerfile. Heavy DL3018 apk pinning (27x). Build/dev Dockerfiles with expected DV1006."
+  },
+  {
+    "repo": "aquasecurity/trivy",
+    "files": 12,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 1,
+      "warnings": 25,
+      "infos": 23
+    },
+    "notes": "Clean scan, no FP. DL3020 correctly flags ADD in sad-path Dockerfile. Heavy DV1009 digest pinning (13x). DV1006 on build/test Dockerfiles (expected)."
+  },
+  {
+    "repo": "wagoodman/dive",
+    "files": 5,
+    "date": "2026-02-18",
+    "findings": {
+      "errors": 6,
+      "warnings": 6,
+      "infos": 17
+    },
+    "notes": "Clean scan, no FP. DL3020 correctly flags ADD usage across all Dockerfiles (6x). Simple Go multi-stage builds."
+  }
 ]

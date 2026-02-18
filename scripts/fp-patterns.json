@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "patterns": {
+    "directoryExclusions": {
+      "DL3057": {
+        "description": "HEALTHCHECK missing - FP in non-production Dockerfiles",
+        "directories": [
+          "testdata/", "test-framework/", "e2e-tests/", ".devcontainer/",
+          "RELEASING/", "hack/", "contrib/", "packaging/", "benchmarks/",
+          "examples/", "tools/", "scripts/", "build/", "ci/", "data/", "devenv/"
+        ]
+      },
+      "DV4005": {
+        "description": "No CMD/ENTRYPOINT - FP in builder/utility Dockerfiles",
+        "directories": [
+          "build/", "data/", "ci/", "scripts/", "tests/", "docker-examples/", "devenv/"
+        ]
+      },
+      "DV1001": {
+        "description": "Hardcoded secrets - FP in test fixtures",
+        "directories": [
+          "testdata/", "test-framework/", "e2e-tests/", "fixtures/", "__tests__/"
+        ]
+      }
+    },
+    "filenameExclusions": {
+      "DL3057": {
+        "description": "HEALTHCHECK missing - FP for CI/build/dev Dockerfiles",
+        "exact": [
+          "Dockerfile.make", "Dockerfile.ci", "Dockerfile.build",
+          "Dockerfile.lint", "Dockerfile.test", "Dockerfile.dev",
+          "Dockerfile.tilt", "Dockerfile.ui.tilt",
+          "dev.Dockerfile", "build.Dockerfile"
+        ],
+        "suffixes": [".binary"]
+      },
+      "DV4005": {
+        "description": "No CMD/ENTRYPOINT - FP for binary builder Dockerfiles",
+        "exact": [],
+        "suffixes": [".binary"]
+      }
+    },
+    "contextualRules": {
+      "DV1006": {
+        "description": "Distroless/chainguard base images via stage alias → FP",
+        "conditions": [
+          {
+            "type": "messageMatch",
+            "pattern": "distroless|chainguard|static-debian|nonroot",
+            "classification": "fp"
+          },
+          {
+            "type": "messageMatch",
+            "pattern": "stage alias|AS \\w+",
+            "classification": "candidate"
+          }
+        ]
+      },
+      "DV1009": {
+        "description": "Various FP scenarios for COPY instruction analysis",
+        "conditions": [
+          {
+            "type": "messageMatch",
+            "pattern": "<<EOF|<<-?\\w+|heredoc",
+            "classification": "fp"
+          },
+          {
+            "type": "messageMatch",
+            "pattern": "\\{\\{\\s*\\w+|Jinja2|template",
+            "classification": "fp"
+          },
+          {
+            "type": "messageMatch",
+            "pattern": "stage alias|--from=\\w+",
+            "classification": "fp"
+          },
+          {
+            "type": "messageMatch",
+            "pattern": "\\$\\{?ARG|\\$\\{?\\w+",
+            "classification": "candidate"
+          }
+        ]
+      },
+      "DL3001": {
+        "description": "Invalid CMD - BuildKit mount FP",
+        "conditions": [
+          {
+            "type": "messageMatch",
+            "pattern": "--mount=type=cache|--mount=type=",
+            "classification": "fp"
+          }
+        ]
+      },
+      "DL3006": {
+        "description": "FROM tag - stage aliases and ARG vars FP",
+        "conditions": [
+          {
+            "type": "messageMatch",
+            "pattern": "\\$\\{?\\w+|ARG|stage alias|AS \\w+",
+            "classification": "fp"
+          },
+          {
+            "type": "messageMatch",
+            "pattern": "internal stage|--from=",
+            "classification": "fp"
+          }
+        ]
+      },
+      "DL3018": {
+        "description": "apk add --no-cache - inline comments FP",
+        "conditions": [
+          {
+            "type": "messageMatch",
+            "pattern": "#|comment|inline comment",
+            "classification": "fp"
+          }
+        ]
+      },
+      "DL3028": {
+        "description": "gem install version - -v flag FP",
+        "conditions": [
+          {
+            "type": "messageMatch",
+            "pattern": "-v\\s+[\\d.]+|--version",
+            "classification": "fp"
+          }
+        ]
+      }
+    }
+  }
+}
