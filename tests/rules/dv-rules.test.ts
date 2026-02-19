@@ -80,6 +80,17 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('ARG AUTH_TOKEN=abc123xyz\nFROM ubuntu:20.04'), 'DV1001')).toBe(true);
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV API_SECRET=mysecret'), 'DV1001')).toBe(true);
   });
+  it('does not flag library names that contain "token" as a compound syllable', () => {
+    // TIKTOKEN is a BPE tokenizer library, not a security token
+    expect(hasRule(lintDockerfile('ARG USE_TIKTOKEN_ENCODING_NAME="cl100k_base"\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV TIKTOKEN_ENCODING_NAME=cl100k_base'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV TIKTOKEN_CACHE_DIR=/tmp/tiktoken'), 'DV1001')).toBe(false);
+  });
+  it('still flags standalone TOKEN and compound security token names', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV MY_TOKEN=abc123'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('ARG API_TOKEN=mykey\nFROM ubuntu:20.04'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV GITHUB_TOKEN=ghp_abc123'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

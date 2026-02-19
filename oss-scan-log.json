@@ -3259,5 +3259,75 @@
     },
     "notableFindings": "Minimal findings, very clean Dockerfile",
     "improvements": []
+  },
+  {
+    "repo": "dagster-io/dagster",
+    "scannedAt": "2026-02-19T20:03:09+09:00",
+    "dockerfiles": 28,
+    "totalIssues": 342,
+    "severities": {
+      "error": 8,
+      "warning": 239,
+      "info": 94,
+      "style": 0
+    },
+    "notableFindings": "DL3021 COPY multi-arg in ECS example; DV1001 POSTGRES_PASSWORD=postgres in example (legitimate); DV1003 curl|sh",
+    "improvements": []
+  },
+  {
+    "repo": "triton-inference-server/server",
+    "scannedAt": "2026-02-19T20:03:09+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 205,
+    "severities": {
+      "error": 1,
+      "warning": 165,
+      "info": 38,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh in docs Dockerfile; heavy DL3008 apt pinning warnings",
+    "improvements": []
+  },
+  {
+    "repo": "invoke-ai/InvokeAI",
+    "scannedAt": "2026-02-19T20:03:09+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "apache/beam",
+    "scannedAt": "2026-02-19T20:03:09+09:00",
+    "dockerfiles": 41,
+    "totalIssues": 581,
+    "severities": {
+      "error": 28,
+      "warning": 309,
+      "info": 227,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo in GitHub Actions self-hosted runner Dockerfiles; DL3020 ADD; DV1003 curl|sh — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "apache/arrow",
+    "scannedAt": "2026-02-19T20:03:09+09:00",
+    "dockerfiles": 74,
+    "totalIssues": 1414,
+    "severities": {
+      "error": 5,
+      "warning": 1067,
+      "info": 336,
+      "style": 0
+    },
+    "notableFindings": "DV3002 SSH private key in binary release Dockerfile; DV1003 curl|sh; DL3020 — all legitimate",
+    "improvements": []
   }
 ]

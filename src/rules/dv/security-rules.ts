@@ -1,7 +1,10 @@
 import { Rule, Violation } from '../types';
 import { EnvInstruction, ArgInstruction, CopyInstruction, UserInstruction } from '../../parser/types';
 
-const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|access_key|access_token|auth_token|token|private_key|encryption_key|signing_key|credentials?)/i;
+// 'token' uses a word-boundary guard so that library names containing 'token'
+// as a compound syllable (e.g. TIKTOKEN, BITTOKEN) don't trigger false positives.
+// auth_token / access_token are kept as explicit patterns for clarity.
+const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|access_key|access_token|auth_token|(?<![a-zA-Z])token(?![a-zA-Z])|private_key|encryption_key|signing_key|credentials?)/i;
 // Docker secrets convention: ENV vars ending in _FILE point to file paths, not actual secrets
 const FILE_PATH_SUFFIX = /_FILE$/i;
 // Values that look like file paths (not actual secrets)
