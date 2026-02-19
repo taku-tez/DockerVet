@@ -133,7 +133,12 @@ function parseEnvArgs(args: string, line: number): EnvInstruction {
     // Old form: ENV KEY VALUE
     const spaceIdx = trimmed.indexOf(' ');
     if (spaceIdx > 0) {
-      pairs.push({ key: trimmed.slice(0, spaceIdx), value: trimmed.slice(spaceIdx + 1).trim() });
+      let val = trimmed.slice(spaceIdx + 1).trim();
+      // Strip surrounding quotes (e.g. ENV API_TOKEN "" should yield empty string)
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      pairs.push({ key: trimmed.slice(0, spaceIdx), value: val });
     }
   }
   return { type: 'ENV', raw: `ENV ${args}`, line, arguments: args, flags: {}, pairs };

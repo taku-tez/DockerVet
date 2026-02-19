@@ -95,6 +95,13 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('ARG API_TOKEN=mykey\nFROM ubuntu:20.04'), 'DV1001')).toBe(true);
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV GITHUB_TOKEN=ghp_abc123'), 'DV1001')).toBe(true);
   });
+
+  it('does not flag ENV with empty quoted value (runtime placeholder)', () => {
+    // keptn pattern: ENV API_TOKEN "" — empty string = runtime override expected
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV API_TOKEN ""'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV DB_PASSWORD \'\''), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SECRET_KEY ""'), 'DV1001')).toBe(false);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

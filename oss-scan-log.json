@@ -3329,5 +3329,147 @@
     },
     "notableFindings": "DV3002 SSH private key in binary release Dockerfile; DV1003 curl|sh; DL3020 — all legitimate",
     "improvements": []
+  },
+  {
+    "repo": "opencontainers/distribution-spec",
+    "scannedAt": "2026-02-19T23:02:53+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 1,
+      "warning": 3,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD instead of COPY; DL3018 unpinned apk; DL3019 missing clean — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "abiosoft/colima",
+    "scannedAt": "2026-02-19T23:02:53+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK; DV4005, DV1005, DV1008 — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "openservicemesh/osm",
+    "scannedAt": "2026-02-19T23:02:53+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 97,
+    "severities": {
+      "error": 0,
+      "warning": 51,
+      "info": 46,
+      "style": 0
+    },
+    "notableFindings": "DL3006 untagged ARG-based images (no defaults); DL3033 unpinned yum; DV1006 running as root — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/mimir",
+    "scannedAt": "2026-02-19T23:07:27+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 134,
+    "severities": {
+      "error": 3,
+      "warning": 59,
+      "info": 72,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt; DV1003 curl|sh in build image; DV1006 root; DL3020 ADD — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/agent",
+    "scannedAt": "2026-02-19T23:07:27+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 129,
+    "severities": {
+      "error": 2,
+      "warning": 55,
+      "info": 72,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest; DL3008 unpinned apt; DV1003 curl|sh in build-image; DV4003 — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "elastic/beats",
+    "scannedAt": "2026-02-19T23:07:27+09:00",
+    "dockerfiles": 71,
+    "totalIssues": 430,
+    "severities": {
+      "error": 27,
+      "warning": 188,
+      "info": 214,
+      "style": 1
+    },
+    "notableFindings": "DL3020 ADD (26); DL3008 unpinned apt; DV1006 root — all legitimate; DV1001 _meta/ FPs fixed",
+    "improvements": [
+      "DV1001: skip _meta/ test fixture directories"
+    ]
+  },
+  {
+    "repo": "wandb/wandb",
+    "scannedAt": "2026-02-19T23:07:27+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 41,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3018 unpinned apk; DL3013 apt-get; DL3008 — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "kubeflow/pipelines",
+    "scannedAt": "2026-02-19T23:07:27+09:00",
+    "dockerfiles": 32,
+    "totalIssues": 407,
+    "severities": {
+      "error": 12,
+      "warning": 217,
+      "info": 167,
+      "style": 11
+    },
+    "notableFindings": "DL3008 unpinned apt; DL3020 ADD; DL3000 relative WORKDIR; DV1003 — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/packer",
+    "scannedAt": "2026-02-19T23:07:27+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 33,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3018 unpinned apk; DL3007 latest tag; DL3057 — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "elastic/logstash",
+    "scannedAt": "2026-02-19T23:07:47+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018 unpinned apk; DV4010 chown -R; DV1004 no multi-stage; DL3007 latest tag — all legitimate",
+    "improvements": []
   }
 ]
