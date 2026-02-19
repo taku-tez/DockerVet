@@ -16,7 +16,8 @@ const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+|[\w.-]+\.[a-zA-Z]{2,5})$/;
 const BOOL_OR_INT_VALUE = /^(0|1|true|false|yes|no|on|off|\d+)$/i;
 
 // DV1001: Hardcoded secrets in ENV/ARG
-const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__)(?:[/\\]|$)/i;
+// _meta directories are module test fixtures (e.g. elastic/beats) where dummy credentials are expected
+const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__|_meta)(?:[/\\]|$)/i;
 export const DV1001: Rule = {
   id: 'DV1001', severity: 'error',
   description: 'Secrets should not be hardcoded in ENV or ARG instructions',

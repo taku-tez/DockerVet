@@ -50,6 +50,10 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('skips e2e-tests/ directory', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV DB_PASSWORD=dummy', undefined, 'e2e-tests/Dockerfile'), 'DV1001')).toBe(false);
   });
+  it('skips _meta/ directory (elastic/beats module test fixture pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM mysql:8.0\nENV MYSQL_ROOT_PASSWORD test', undefined, 'metricbeat/module/mysql/_meta/Dockerfile'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV CEPH_DEMO_ACCESS_KEY demo\nENV CEPH_DEMO_SECRET_KEY demo', undefined, 'metricbeat/module/ceph/_meta/Dockerfile.nautilus'), 'DV1001')).toBe(false);
+  });
   it('skips ENV with file path value (docker-selenium FP)', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SE_JAVA_SSL_TRUST_STORE_PASSWORD="/opt/selenium/secrets/server.pass"'), 'DV1001')).toBe(false);
   });
