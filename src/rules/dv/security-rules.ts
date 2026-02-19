@@ -7,6 +7,10 @@ const FILE_PATH_SUFFIX = /_FILE$/i;
 // Values that look like file paths (not actual secrets)
 // Match absolute paths, ./relative paths, or bare filenames with an extension (e.g. google_credentials.json)
 const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+|[\w.-]+\.[a-zA-Z]{2,5})$/;
+// Boolean/integer values are configuration flags, not secrets.
+// e.g. SCCACHE_S3_NO_CREDENTIALS=0 means "disable credential usage", not a credential value.
+// Real secrets are non-trivial strings, not simple 0/1/true/false toggles.
+const BOOL_OR_INT_VALUE = /^(0|1|true|false|yes|no|on|off|\d+)$/i;
 
 // DV1001: Hardcoded secrets in ENV/ARG
 const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__)(?:[/\\]|$)/i;
@@ -22,14 +26,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value)) {
+            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue)) {
+          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue)) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -37,7 +41,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue)) {
+      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue)) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }

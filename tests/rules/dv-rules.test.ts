@@ -68,6 +68,18 @@ describe('DV1001 - Hardcoded secrets', () => {
   it('flags ARG with quoted non-empty secret value', () => {
     expect(hasRule(lintDockerfile('FROM golang:1.25\nARG PRIVATE_KEY="realvalue123"'), 'DV1001')).toBe(true);
   });
+  it('does not flag ARG with boolean/integer value (config flag, not secret)', () => {
+    // SCCACHE_S3_NO_CREDENTIALS=0 means "disable credential usage" - a boolean config flag
+    expect(hasRule(lintDockerfile('ARG SCCACHE_S3_NO_CREDENTIALS=0\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('ARG USE_CREDENTIALS=1\nFROM ubuntu:20.04'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SKIP_TOKEN_VALIDATION=true'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV REQUIRE_AUTH_TOKEN=false'), 'DV1001')).toBe(false);
+  });
+  it('still flags ARG/ENV with non-boolean secret values', () => {
+    // Real secrets are non-trivial strings
+    expect(hasRule(lintDockerfile('ARG AUTH_TOKEN=abc123xyz\nFROM ubuntu:20.04'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV API_SECRET=mysecret'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

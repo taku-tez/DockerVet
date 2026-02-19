@@ -3159,5 +3159,105 @@
     },
     "notableFindings": "Clean Dockerfiles, all findings legitimate",
     "improvements": []
+  },
+  {
+    "repo": "ToolJet/ToolJet",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 14,
+    "totalIssues": 412,
+    "severities": {
+      "error": 20,
+      "warning": 171,
+      "info": 221,
+      "style": 0
+    },
+    "notableFindings": "DV1001: placeholder secrets in cypress test Dockerfile (legit); DV3014: hardcoded DB conn string; DV3006: unauthenticated package flags",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/oncall",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 40,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "tensorflow/tensorflow",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 38,
+    "totalIssues": 671,
+    "severities": {
+      "error": 25,
+      "warning": 360,
+      "info": 286,
+      "style": 0
+    },
+    "notableFindings": "DL3020 x23 in CI build Dockerfiles; DV3006 unauthenticated pkg flags",
+    "improvements": []
+  },
+  {
+    "repo": "pytorch/pytorch",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 529,
+    "severities": {
+      "error": 23,
+      "warning": 346,
+      "info": 160,
+      "style": 0
+    },
+    "notableFindings": "DV1001 FP: SCCACHE_S3_NO_CREDENTIALS=0 (boolean config flag); fixed by BOOL_OR_INT_VALUE filter",
+    "improvements": [
+      "Fixed: DV1001 now skips boolean/integer ARG defaults (0,1,true,false,yes,no) — these are config flags, not secrets"
+    ]
+  },
+  {
+    "repo": "huggingface/transformers",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 19,
+    "totalIssues": 652,
+    "severities": {
+      "error": 3,
+      "warning": 486,
+      "info": 163,
+      "style": 0
+    },
+    "notableFindings": "DL3000 relative WORKDIR in custom-tokenizers.dockerfile (legitimate); DV1003 curl|sh",
+    "improvements": []
+  },
+  {
+    "repo": "ray-project/ray",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 52,
+    "totalIssues": 384,
+    "severities": {
+      "error": 13,
+      "warning": 174,
+      "info": 192,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo in doc/CI Dockerfiles; DV1003 curl|sh for rustup install",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-go",
+    "scannedAt": "2026-02-19T17:03:45+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "Minimal findings, very clean Dockerfile",
+    "improvements": []
   }
 ]
