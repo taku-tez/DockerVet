@@ -3471,5 +3471,147 @@
     },
     "notableFindings": "DL3018 unpinned apk; DV4010 chown -R; DV1004 no multi-stage; DL3007 latest tag — all legitimate",
     "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-collector",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo",
+    "improvements": []
+  },
+  {
+    "repo": "redis/redis",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo",
+    "improvements": []
+  },
+  {
+    "repo": "mongodb/mongo",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 295,
+    "severities": {
+      "error": 0,
+      "warning": 136,
+      "info": 158,
+      "style": 1
+    },
+    "notableFindings": "DL3008 unpinned apt; DV1009 no digest; DV1006 root; DL3015/DL3009 apt cleanup — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "kubeflow/kubeflow",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo",
+    "improvements": []
+  },
+  {
+    "repo": "kata-containers/kata-containers",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 44,
+    "totalIssues": 512,
+    "severities": {
+      "error": 8,
+      "warning": 286,
+      "info": 217,
+      "style": 1
+    },
+    "notableFindings": "DV1003 curl|sh install scripts (legitimate); DL3008 unpinned apt; DV1006 root — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "firecracker-microvm/firecracker",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 36,
+    "severities": {
+      "error": 2,
+      "warning": 20,
+      "info": 13,
+      "style": 1
+    },
+    "notableFindings": "DV1003 curl|sh; DL3003 cd instead of WORKDIR; DV3008 git clone; DL3020 ADD — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "keptn/keptn",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 166,
+    "severities": {
+      "error": 1,
+      "warning": 85,
+      "info": 80,
+      "style": 0
+    },
+    "notableFindings": "DL3018 unpinned apk; DV1009 no digest; DL3020 ADD; DV1001 FP on API_TOKEN=\"\" fixed by parser quote-strip",
+    "improvements": [
+      "Fixed DV1001 FP: strip quotes from old-form ENV values (ENV KEY \"\" now correctly treated as empty)"
+    ]
+  },
+  {
+    "repo": "bentoml/BentoML",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt; DV1009 no digest; DV4007; DL3029 — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "feast-dev/feast",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 19,
+    "totalIssues": 171,
+    "severities": {
+      "error": 5,
+      "warning": 90,
+      "info": 76,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest; DL3045 COPY without WORKDIR; DL3057; DV1003 gitpod curl|sh (dev env); DL3042 pip cache — all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "spring-projects/spring-boot",
+    "scannedAt": "2026-02-20T02:01:56+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest; DL3003 cd; DL3057; DV1006 root — all legitimate",
+    "improvements": []
   }
 ]
