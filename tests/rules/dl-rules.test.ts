@@ -11,6 +11,15 @@ describe('DL3000 - Absolute WORKDIR', () => {
   it('allows variable WORKDIR', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR $HOME'), 'DL3000')).toBe(false);
   });
+  it('does not flag quoted absolute WORKDIR (e.g. WORKDIR "/app")', () => {
+    // Quoted paths like WORKDIR "/go/src/github.com/project" are absolute but
+    // the parser previously kept the quotes, causing / check to fail on leading "
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR "/app"'), 'DL3000')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR "/go/src/github.com/project"'), 'DL3000')).toBe(false);
+  });
+  it('still flags quoted relative WORKDIR', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR "app"'), 'DL3000')).toBe(true);
+  });
 });
 
 describe('DL3001 - Inappropriate commands', () => {

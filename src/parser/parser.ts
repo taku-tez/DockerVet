@@ -201,7 +201,12 @@ function parseInstruction(value: string, line: number): DockerfileInstruction {
     case 'ARG': return parseArgArgs(args, line);
     case 'LABEL': return parseLabelArgs(args, line);
     case 'USER': return { type, raw: `USER ${args}`, line, arguments: args, flags: {}, user: args.trim() } as UserInstruction;
-    case 'WORKDIR': return { type, raw: `WORKDIR ${args}`, line, arguments: args, flags: {}, path: args.trim() } as WorkdirInstruction;
+    case 'WORKDIR': {
+      // Strip surrounding quotes from the path (e.g. WORKDIR "/app" -> /app)
+      const rawPath = args.trim();
+      const unquotedPath = /^["'](.+)["']$/.test(rawPath) ? rawPath.slice(1, -1) : rawPath;
+      return { type, raw: `WORKDIR ${args}`, line, arguments: args, flags: {}, path: unquotedPath } as WorkdirInstruction;
+    }
     case 'ONBUILD': {
       const inner = parseInstruction(args.trim(), line);
       return { type: 'ONBUILD', raw: value, line, arguments: args, flags: {}, innerInstruction: inner };

@@ -2903,5 +2903,133 @@
     },
     "notableFindings": "DL3008 apt pinning, DL3057 HEALTHCHECK missing — all legitimate",
     "improvements": []
+  },
+  {
+    "repo": "kubeovn/kube-ovn",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 275,
+    "severities": {
+      "error": 45,
+      "warning": 177,
+      "info": 52,
+      "style": 0
+    },
+    "notableFindings": "DL3020 x45: all ADD vs COPY in dist/images Dockerfiles, legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "open-policy-agent/gatekeeper",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 39,
+    "severities": {
+      "error": 1,
+      "warning": 13,
+      "info": 25,
+      "style": 0
+    },
+    "notableFindings": "DV1003: curl|sh for Docker install in test image (legitimate)",
+    "improvements": []
+  },
+  {
+    "repo": "kubernetes/autoscaler",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 50,
+    "severities": {
+      "error": 0,
+      "warning": 19,
+      "info": 30,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate, no FPs",
+    "improvements": []
+  },
+  {
+    "repo": "kubernetes-sigs/cluster-api",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "Minimal findings, clean Dockerfiles",
+    "improvements": []
+  },
+  {
+    "repo": "volcano-sh/volcano",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 94,
+    "severities": {
+      "error": 8,
+      "warning": 41,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo usage + DL3020 ADD vs COPY in example/installer Dockerfiles",
+    "improvements": []
+  },
+  {
+    "repo": "duplicati/duplicati",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 47,
+    "severities": {
+      "error": 0,
+      "warning": 27,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "syncthing/syncthing",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 54,
+    "severities": {
+      "error": 0,
+      "warning": 33,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "kubernetes-sigs/kustomize",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 114,
+    "severities": {
+      "error": 1,
+      "warning": 56,
+      "info": 50,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY in kustomize.Dockerfile",
+    "improvements": []
+  },
+  {
+    "repo": "photoprism/photoprism",
+    "scannedAt": "2026-02-19T11:03:51+09:00",
+    "dockerfiles": 45,
+    "totalIssues": 365,
+    "severities": {
+      "error": 2,
+      "warning": 129,
+      "info": 234,
+      "style": 0
+    },
+    "notableFindings": "WORKDIR \"/quoted/path\" caused 28 DL3000 FPs; fixed by stripping quotes in parser",
+    "improvements": [
+      "Fixed: parser now strips surrounding quotes from WORKDIR path (DL3000 FP on quoted absolute paths)"
+    ]
   }
 ]
