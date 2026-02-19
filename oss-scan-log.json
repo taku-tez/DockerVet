@@ -3031,5 +3031,133 @@
     "improvements": [
       "Fixed: parser now strips surrounding quotes from WORKDIR path (DL3000 FP on quoted absolute paths)"
     ]
+  },
+  {
+    "repo": "docker/cli",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 97,
+    "severities": {
+      "error": 1,
+      "warning": 60,
+      "info": 36,
+      "style": 0
+    },
+    "notableFindings": "man/Dockerfile.5.md (man page) was being scanned as Dockerfile; fixed by adding doc extension exclusion",
+    "improvements": [
+      "Fixed: .md/.rst/.txt/.adoc/.html/.yaml/.json files excluded from Dockerfile detection (doc FP)"
+    ]
+  },
+  {
+    "repo": "containers/buildah",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 251,
+    "totalIssues": 1293,
+    "severities": {
+      "error": 67,
+      "warning": 552,
+      "info": 661,
+      "style": 0
+    },
+    "notableFindings": "DL3020 x65 in tests/bud/ test fixtures — intentional ADD usage to test buildah ADD behavior, legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "containers/crun",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 303,
+    "severities": {
+      "error": 3,
+      "warning": 239,
+      "info": 61,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo + DL3020 + DV1003 curl|sh in test Dockerfiles, all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "openshift/origin",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 34,
+    "totalIssues": 164,
+    "severities": {
+      "error": 27,
+      "warning": 67,
+      "info": 69,
+      "style": 0
+    },
+    "notableFindings": "DL3020 x26 in test/extended/testdata/ test Dockerfiles; DV3018 plaintext passwd",
+    "improvements": []
+  },
+  {
+    "repo": "k0sproject/k0s",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 14,
+    "totalIssues": 217,
+    "severities": {
+      "error": 7,
+      "warning": 131,
+      "info": 79,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY in main Dockerfile and inttest fixtures",
+    "improvements": []
+  },
+  {
+    "repo": "cri-o/cri-o",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 4,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh pattern, legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "containerd/nerdctl",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 74,
+    "severities": {
+      "error": 2,
+      "warning": 39,
+      "info": 31,
+      "style": 0
+    },
+    "notableFindings": "DL3020 + DV1003, legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "slimtoolkit/slim",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 27,
+    "severities": {
+      "error": 1,
+      "warning": 11,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY, legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "aquasecurity/tfsec",
+    "scannedAt": "2026-02-19T14:04:17+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "Clean Dockerfiles, all findings legitimate",
+    "improvements": []
   }
 ]

@@ -108,6 +108,21 @@ describe('isDockerfile', () => {
     expect(isDockerfile('Dockerfile.template')).toBe(false);
     expect(isDockerfile('weave-kube/Dockerfile.template')).toBe(false);
   });
+
+  it('rejects documentation files (man pages, markdown, etc.)', () => {
+    // Dockerfile.5.md is the Dockerfile man page, not an actual Dockerfile
+    expect(isDockerfile('Dockerfile.5.md')).toBe(false);
+    expect(isDockerfile('man/Dockerfile.5.md')).toBe(false);
+    expect(isDockerfile('Dockerfile.md')).toBe(false);
+    expect(isDockerfile('Dockerfile.rst')).toBe(false);
+    expect(isDockerfile('Dockerfile.txt')).toBe(false);
+    expect(isDockerfile('Dockerfile.adoc')).toBe(false);
+  });
+
+  it('rejects data/config files that start with Dockerfile.', () => {
+    expect(isDockerfile('Dockerfile.yaml')).toBe(false);
+    expect(isDockerfile('Dockerfile.json')).toBe(false);
+  });
 });
 
 // Note: vendor/ and node_modules/ path filtering is tested via VENDOR_PATH_PATTERN
