@@ -102,6 +102,22 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV DB_PASSWORD \'\''), 'DV1001')).toBe(false);
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SECRET_KEY ""'), 'DV1001')).toBe(false);
   });
+
+  it('does not flag angle-bracket placeholder values used as required build stubs', () => {
+    // twentyhq/twenty pattern: ENV KEYSTATIC_GITHUB_CLIENT_SECRET="<fake build value>"
+    // These are explicit placeholder stubs required by Next.js build but not real secrets.
+    expect(hasRule(lintDockerfile('FROM node:24-alpine\nENV KEYSTATIC_GITHUB_CLIENT_SECRET="<fake build value>"'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM node:24-alpine\nENV MY_SECRET="<placeholder>"'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM node:24-alpine\nENV API_KEY="<your-api-key-here>"'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM node:24-alpine\nARG SIGNING_SECRET=<fake build value>\nFROM node:24-alpine'), 'DV1001')).toBe(false);
+  });
+
+  it('still flags values that look like real secrets even if they contain placeholder-like words', () => {
+    // "admin", "password", "Passw0rd" are real default credentials, not placeholders
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV COUCHDB_PASSWORD=admin'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SA_PASSWORD=Passw0rd'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV POSTHOG_TOKEN=phc_bIjZL7oh2GEUd2vqvTBH8WvrX0fWTFQMs6H5KQxiUxU'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {
