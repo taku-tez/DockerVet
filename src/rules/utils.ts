@@ -5,7 +5,9 @@ import { RuleContext, Violation, Severity } from './types';
 import { Stage, DockerfileInstruction } from '../parser/types';
 
 /** Archive file extensions pattern */
-export const ARCHIVE_PATTERN = /\.(tar|tar\.gz|tgz|tar\.bz2|tar\.xz|zip)$/i;
+// Docker's ADD only auto-extracts tar-based archives (not zip).
+// .zip files should remain as COPY since ADD will NOT extract them.
+export const ARCHIVE_PATTERN = /\.(tar|tar\.gz|tgz|tar\.bz2|tar\.xz|tar\.zst)$/i;
 
 /** URL prefix check */
 export function isUrl(s: string): boolean {

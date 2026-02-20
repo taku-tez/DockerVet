@@ -222,6 +222,14 @@ describe('DL3010 - Use ADD for archives', () => {
   it('passes COPY of regular file', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY app.js /opt/'), 'DL3010')).toBe(false);
   });
+  it('does NOT flag COPY of .zip (Docker ADD cannot auto-extract zip files)', () => {
+    // apache/pulsar FP: COPY exclamation.zip — Docker ADD does not extract zip, only tar archives.
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY example.zip /opt/'), 'DL3010')).toBe(false);
+  });
+  it('still flags COPY of tar archives (ADD can extract these)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY bundle.tar.xz /opt/'), 'DL3010')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY dist.tgz /opt/'), 'DL3010')).toBe(true);
+  });
 });
 
 describe('DL3011 - Valid UNIX ports', () => {
@@ -341,6 +349,11 @@ describe('DL3020 - Use COPY instead of ADD', () => {
   });
   it('passes ADD with archive', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nADD archive.tar.gz /opt/'), 'DL3020')).toBe(false);
+  });
+  it('flags ADD with .zip (ADD cannot extract zip; use COPY + unzip instead)', () => {
+    // Docker ADD only auto-extracts tar archives. For zip files, ADD is no different from COPY,
+    // so DL3020 should still fire to encourage explicit COPY + unzip.
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nADD bundle.zip /opt/'), 'DL3020')).toBe(true);
   });
   it('passes ADD with ARG variable that defaults to a URL', () => {
     const df = 'ARG DIST=https://example.com/app.tar.gz\nFROM ubuntu:20.04\nADD $DIST /opt/';

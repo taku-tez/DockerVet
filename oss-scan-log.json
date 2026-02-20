@@ -3759,7 +3759,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 2,
     "totalIssues": 12,
-    "severities": { "error": 4, "warning": 2, "info": 6, "style": 0 },
+    "severities": {
+      "error": 4,
+      "warning": 2,
+      "info": 6,
+      "style": 0
+    },
     "notableFindings": "DL3020 ADD vs COPY (4x), DV1009 no digest, DL3057, DV1006 — all legitimate.",
     "improvements": []
   },
@@ -3768,7 +3773,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 1,
     "totalIssues": 7,
-    "severities": { "error": 3, "warning": 1, "info": 3, "style": 0 },
+    "severities": {
+      "error": 3,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
     "notableFindings": "DL3020 ADD vs COPY (3x), DV1009, DL3057, DV1006 — all legitimate.",
     "improvements": []
   },
@@ -3777,7 +3787,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 6,
     "totalIssues": 12,
-    "severities": { "error": 0, "warning": 4, "info": 8, "style": 0 },
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 8,
+      "style": 0
+    },
     "notableFindings": "DL3057 no HEALTHCHECK (5x), DV3019 downloaded script without checksum in init/Dockerfile — legitimate installer. DL3018 apk pinning.",
     "improvements": []
   },
@@ -3786,7 +3801,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 1,
     "totalIssues": 1,
-    "severities": { "error": 0, "warning": 0, "info": 1, "style": 0 },
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 1,
+      "style": 0
+    },
     "notableFindings": "DL3057 no HEALTHCHECK — minimal clean distroless-based Dockerfile.",
     "improvements": []
   },
@@ -3795,7 +3815,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 2,
     "totalIssues": 49,
-    "severities": { "error": 0, "warning": 31, "info": 18, "style": 0 },
+    "severities": {
+      "error": 0,
+      "warning": 31,
+      "info": 18,
+      "style": 0
+    },
     "notableFindings": "DL3008 unpinned apt (22x), DL3016 unpinned npm install (2x) — all legitimate.",
     "improvements": []
   },
@@ -3804,16 +3829,28 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 4,
     "totalIssues": 59,
-    "severities": { "error": 1, "warning": 23, "info": 33, "style": 2 },
+    "severities": {
+      "error": 1,
+      "warning": 23,
+      "info": 33,
+      "style": 2
+    },
     "notableFindings": "FP found: DV1001 flagged KEYSTATIC_GITHUB_CLIENT_SECRET/KEYSTATIC_SECRET with value '<fake build value>' (Next.js required build stub). Fixed by adding ANGLE_BRACKET_PLACEHOLDER filter. DL3008 apt pinning (13x).",
-    "improvements": ["Fixed DV1001: skip angle-bracket placeholder values like '<fake build value>' (required Next.js build stubs, e.g. twentyhq/twenty)"]
+    "improvements": [
+      "Fixed DV1001: skip angle-bracket placeholder values like '<fake build value>' (required Next.js build stubs, e.g. twentyhq/twenty)"
+    ]
   },
   {
     "repo": "windmill-labs/windmill",
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 8,
     "totalIssues": 221,
-    "severities": { "error": 7, "warning": 141, "info": 71, "style": 2 },
+    "severities": {
+      "error": 7,
+      "warning": 141,
+      "info": 71,
+      "style": 2
+    },
     "notableFindings": "DL3008 unpinned apt (53x), DL3033 unpinned yum (40x) across Rust cross-compilation Dockerfiles, DL3027 use of apt instead of apt-get — all legitimate.",
     "improvements": []
   },
@@ -3822,7 +3859,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 3,
     "totalIssues": 50,
-    "severities": { "error": 1, "warning": 28, "info": 21, "style": 0 },
+    "severities": {
+      "error": 1,
+      "warning": 28,
+      "info": 21,
+      "style": 0
+    },
     "notableFindings": "DL3008 unpinned apt (19x), DL3027 use of apt (3x), DV3019 downloaded script without checksum, DV4004 ARG after ENV — all legitimate.",
     "improvements": []
   },
@@ -3831,7 +3873,12 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 7,
     "totalIssues": 141,
-    "severities": { "error": 11, "warning": 89, "info": 35, "style": 6 },
+    "severities": {
+      "error": 11,
+      "warning": 89,
+      "info": 35,
+      "style": 6
+    },
     "notableFindings": "DV1001 correctly flags COUCHDB_PASSWORD=admin, SA_PASSWORD=Passw0rd (test MSSQL), POSTHOG_TOKEN=phc_... (hardcoded analytics token). DL3008 apt/apk pinning heavy. All legitimate.",
     "improvements": []
   },
@@ -3840,8 +3887,155 @@
     "scannedAt": "2026-02-20T08:02:00+09:00",
     "dockerfiles": 2,
     "totalIssues": 27,
-    "severities": { "error": 0, "warning": 12, "info": 13, "style": 2 },
+    "severities": {
+      "error": 0,
+      "warning": 12,
+      "info": 13,
+      "style": 2
+    },
     "notableFindings": "DL3008 unpinned apt (6x), DV1009 no digest (5x), DV4008 TODO comment in Dockerfile, DV4012 consecutive COPY — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "Graylog2/graylog2-server",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 1
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest, DL3009 apt cleanup missing, DV4012 consecutive COPY — all legitimate. Clean single-stage Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/skywalking",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 137,
+    "severities": {
+      "error": 5,
+      "warning": 49,
+      "info": 83,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (25x), DL3057 no HEALTHCHECK (23x), DV1006 root (22x), DV3020 ADD remote URL without checksum (6x), DL3028 gem version pinning (in fluentd Dockerfile), DV4011 relative WORKDIR 'skywalking' — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "requarks/wiki",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 51,
+    "severities": {
+      "error": 0,
+      "warning": 33,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (22x), DL3008 apt pinning (9x), DV1009 no digest (6x), DV4010 chown -R (2x) — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "chatwoot/chatwoot",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 74,
+    "severities": {
+      "error": 1,
+      "warning": 45,
+      "info": 27,
+      "style": 1
+    },
+    "notableFindings": "DL3018 apk pinning (30x), DL3028 gem version pinning (4x), DV1003 curl|sh in Dockerfile.base, DV3008 git clone, DV3019 downloaded script without checksum — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "aquasecurity/kube-bench",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 42,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 27,
+      "style": 0
+    },
+    "notableFindings": "FP found: DV3017 flagged label-schema.org multi-pair LABEL where description='Run the CIS Kubernetes Benchmark tests' and url='https://...' are separate keys. Fixed by requiring imperative verb + URL to appear within same label value. DV2010 apk upgrade, DV3017 now 0 findings.",
+    "improvements": [
+      "Fixed DV3017: check per-label-value proximity instead of full concatenated LABEL text — prevents FPs from standard label-schema.org metadata blocks"
+    ]
+  },
+  {
+    "repo": "jitsi/docker-jitsi-meet",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 142,
+    "severities": {
+      "error": 0,
+      "warning": 86,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (66x), DL3001 vim in RUN for unstable builds (conditional), DV2002 dist-upgrade, DV3020 ADD remote URL, DV3019 downloaded script — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "makeplane/plane",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 124,
+    "severities": {
+      "error": 1,
+      "warning": 74,
+      "info": 49,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (47x), DV1009 no digest (22x), DV1006 root (12x), DV2010 apk upgrade (in api Dockerfile), DV4009 chmod 777 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "novuhq/novu",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 97,
+    "severities": {
+      "error": 1,
+      "warning": 48,
+      "info": 40,
+      "style": 8
+    },
+    "notableFindings": "DL3008 apt pinning (17x), DL3018 apk pinning (17x), DL3016 npm pinning (11x), DV1003 curl|sh in node Dockerfile, DV3008 git clone — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gravitee-io/gravitee-api-management",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 40,
+    "severities": {
+      "error": 2,
+      "warning": 9,
+      "info": 27,
+      "style": 2
+    },
+    "notableFindings": "DV4003 no WORKDIR (9x), DL3057 no HEALTHCHECK (7x), DV1009 no digest (7x), DL3020 ADD vs COPY (2x) — all legitimate. Clean Java/Alpine Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "kubescape/kubescape",
+    "scannedAt": "2026-02-20T11:05:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest, DV4004 ARG after ENV — all legitimate. Very clean distroless-based Dockerfiles.",
     "improvements": []
   }
 ]
