@@ -11,7 +11,8 @@ export const DL3000: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type === 'WORKDIR') {
           const w = inst as WorkdirInstruction;
-          if (!w.path.startsWith('/') && !w.path.startsWith('$')) {
+          // Unix absolute paths start with /; Windows absolute paths start with drive letter (C:/ or C:\)
+          if (!w.path.startsWith('/') && !w.path.startsWith('$') && !/^[A-Za-z]:[/\\]/.test(w.path)) {
             violations.push({ rule: 'DL3000', severity: 'error', message: 'Use absolute WORKDIR', line: inst.line });
           }
         }

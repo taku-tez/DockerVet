@@ -20,6 +20,11 @@ describe('DL3000 - Absolute WORKDIR', () => {
   it('still flags quoted relative WORKDIR', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR "app"'), 'DL3000')).toBe(true);
   });
+  it('does not flag Windows absolute WORKDIR (C:/path)', () => {
+    // Windows Dockerfiles use drive letter paths which are absolute but don't start with /
+    expect(hasRule(lintDockerfile('FROM mcr.microsoft.com/windows/nanoserver:ltsc2022\nWORKDIR C:/spire'), 'DL3000')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM mcr.microsoft.com/windows/nanoserver:ltsc2022\nWORKDIR C:\\app'), 'DL3000')).toBe(false);
+  });
 });
 
 describe('DL3001 - Inappropriate commands', () => {

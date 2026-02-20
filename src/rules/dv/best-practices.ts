@@ -305,7 +305,9 @@ export const DV4011: Rule = {
           dir = dir.slice(1, -1);
         }
         // Allow variable references like $HOME or ${APP_DIR}
+        // Allow Unix absolute paths (/app) and Windows absolute paths (C:/app, C:\app)
         if (dir.startsWith('$') || dir.startsWith('/')) continue;
+        if (/^[A-Za-z]:[/\\]/.test(dir)) continue;  // Windows drive letter path (e.g. C:/spire)
         violations.push({ rule: 'DV4011', severity: 'warning', message: `WORKDIR "${dir}" is a relative path. Use an absolute path for predictable behavior.`, line: inst.line });
       }
     }

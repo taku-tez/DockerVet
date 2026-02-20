@@ -235,6 +235,11 @@ describe('DV4011 - WORKDIR relative path', () => {
   it('passes quoted absolute path (single quotes)', () => {
     expect(hasRule(lintDockerfile("FROM ubuntu\nWORKDIR '/app'"), 'DV4011')).toBe(false);
   });
+  it('does not flag Windows absolute WORKDIR (C:/path) — drive letter is absolute', () => {
+    // Windows Dockerfiles use C:/path patterns which are absolute but don't start with /
+    expect(hasRule(lintDockerfile('FROM mcr.microsoft.com/windows/nanoserver:ltsc2022\nWORKDIR C:/spire'), 'DV4011')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM mcr.microsoft.com/windows/nanoserver:ltsc2022\nWORKDIR C:\\app'), 'DV4011')).toBe(false);
+  });
 });
 
 describe('DV4012 - consecutive COPY instructions', () => {
