@@ -230,8 +230,17 @@ describe('DV3014 - hardcoded database connection strings', () => {
   it('flags redis connection string', () => {
     expect(hasRule(lintDockerfile('FROM node\nENV REDIS_URL=redis://user:pw@redis.host:6379'), 'DV3014')).toBe(true);
   });
-  it('flags JDBC connection string', () => {
-    expect(hasRule(lintDockerfile('FROM openjdk\nENV JDBC_URL=jdbc:postgresql://db:5432/myapp'), 'DV3014')).toBe(true);
+  it('flags JDBC connection string with embedded credentials (@ syntax)', () => {
+    expect(hasRule(lintDockerfile('FROM openjdk\nENV JDBC_URL=jdbc:postgresql://user:secret@db:5432/myapp'), 'DV3014')).toBe(true);
+  });
+  it('flags JDBC connection string with password in query string', () => {
+    expect(hasRule(lintDockerfile('FROM openjdk\nENV JDBC_URL=jdbc:mysql://db:3306/myapp?user=foo&password=bar'), 'DV3014')).toBe(true);
+  });
+  it('does NOT flag bare JDBC URL without embedded credentials', () => {
+    // thingsboard FP: SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/thingsboard
+    // A bare JDBC URL with only host:port/db is not a secret — credentials are supplied separately.
+    expect(hasRule(lintDockerfile('FROM openjdk\nENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/thingsboard'), 'DV3014')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM openjdk\nENV JDBC_URL=jdbc:postgresql://db:5432/myapp'), 'DV3014')).toBe(false);
   });
   it('passes variable reference', () => {
     expect(hasRule(lintDockerfile('FROM node\nENV DATABASE_URL=${DB_URL}'), 'DV3014')).toBe(false);

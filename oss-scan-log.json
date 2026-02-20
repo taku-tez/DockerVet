@@ -4037,5 +4037,147 @@
     },
     "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest, DV4004 ARG after ENV — all legitimate. Very clean distroless-based Dockerfiles.",
     "improvements": []
+  },
+  {
+    "repo": "dokploy/dokploy",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 107,
+    "severities": {
+      "error": 3,
+      "warning": 62,
+      "info": 42,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (41x), DV3003 COPY .env file into image (1x, legitimate warning), DV4008 TODO comment in monitoring Dockerfile — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gotenberg/gotenberg",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 112,
+    "severities": {
+      "error": 0,
+      "warning": 92,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (92x across many packages), DV3019 downloaded scripts without checksum (3x) — all legitimate. Chromium/Firefox installation heavy.",
+    "improvements": []
+  },
+  {
+    "repo": "livekit/livekit",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest, DL3057 no HEALTHCHECK, DV1006 root — clean minimal Go distroless Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "logto-io/logto",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (4x), DV1009 no digest, DV1005/DV1008 broad COPY — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cerbos/cerbos",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 8,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DV3010 VOLUME on /tmp (informational), DV1009, DL3018 apk, DL3057 — all legitimate. Clean distroless-based images.",
+    "improvements": []
+  },
+  {
+    "repo": "earthly/earthly",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 35,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (8x), DV1006 root (7x), DL3007 latest in test fixtures, DV3019 downloaded script, DL3025 CMD args notation — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "zalando/postgres-operator",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 40,
+    "severities": {
+      "error": 1,
+      "warning": 24,
+      "info": 14,
+      "style": 1
+    },
+    "notableFindings": "DL3008 unpinned apt (11x), DL3057 no HEALTHCHECK (4x), DV4003 no WORKDIR — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-baseimage-ubuntu",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 52,
+    "severities": {
+      "error": 0,
+      "warning": 36,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DV3020 ADD with remote URL (16x) — linuxserver pattern of downloading versioned s6-overlay releases and runtime scripts via ADD without --checksum. DL3018 apk pinning. All technically correct findings.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/pulsar",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 189,
+    "severities": {
+      "error": 6,
+      "warning": 128,
+      "info": 51,
+      "style": 4
+    },
+    "notableFindings": "FP found: DL3010 flagged COPY exclamation.zip as 'Use ADD for extracting archives' — but Docker ADD does NOT auto-extract .zip files (only tar archives). Fixed by removing .zip from ARCHIVE_PATTERN. DL3018 apk pinning (98x) dominant.",
+    "improvements": [
+      "Fixed DL3010/DL3020: remove .zip from ARCHIVE_PATTERN — Docker ADD cannot auto-extract zip files, only tar-based archives (.tar, .tar.gz, .tgz, .tar.bz2, .tar.xz, .tar.zst)"
+    ]
+  },
+  {
+    "repo": "nginx/kubernetes-ingress",
+    "scannedAt": "2026-02-20T14:02:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 126,
+    "severities": {
+      "error": 7,
+      "warning": 72,
+      "info": 47,
+      "style": 0
+    },
+    "notableFindings": "DV4003 no WORKDIR (30x), DL3018 apk pinning (23x), DV3020 ADD remote URL without checksum (19x — NGINX repo configs/keys downloaded without --checksum), DL3041 — all legitimate findings.",
+    "improvements": []
   }
 ]

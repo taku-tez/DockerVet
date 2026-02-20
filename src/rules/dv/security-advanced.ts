@@ -276,8 +276,12 @@ export const DV3014: Rule = {
   description: 'Hardcoded database connection string detected.',
   check(ctx) {
     const dbPatterns = [
+      // URI with embedded credentials: scheme://user:pass@host or scheme://user@host
       /(?:mysql|mariadb|postgres(?:ql)?|mongodb(?:\+srv)?|redis|amqp|mssql):\/\/[^${\s]+@[^\s]+/i,
-      /jdbc:(?:mysql|postgresql|oracle|sqlserver|mariadb):\/\/[^\s]+/i,
+      // JDBC URL with embedded credentials (@ syntax) or password in query string.
+      // Bare JDBC URLs like jdbc:postgresql://localhost:5432/db (no credentials) are NOT flagged.
+      /jdbc:(?:mysql|postgresql|oracle|sqlserver|mariadb):\/\/[^${\s]*(?:@[^\s]+|[?&](?:password|passwd|pwd|secret)=[^&\s]+)/i,
+      // ADO.NET / SQL Server connection string with password field
       /Server\s*=\s*[^;]+;\s*(?:Database|Initial Catalog)\s*=\s*[^;]+;\s*(?:User\s*Id|Uid)\s*=\s*[^;]+;\s*(?:Password|Pwd)\s*=\s*[^${\s;]+/i,
     ];
     const violations: Violation[] = [];
