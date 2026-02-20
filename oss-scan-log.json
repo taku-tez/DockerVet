@@ -3753,5 +3753,95 @@
     },
     "notableFindings": "DV1009 no digest (6x), DV4003 no WORKDIR (4x), DV3008 git clone (1x), DV4010 chown -R (2x) — all legitimate. Clean multi-stage Go/Rust/Ubuntu builds.",
     "improvements": []
+  },
+  {
+    "repo": "ory/kratos",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 12,
+    "severities": { "error": 4, "warning": 2, "info": 6, "style": 0 },
+    "notableFindings": "DL3020 ADD vs COPY (4x), DV1009 no digest, DL3057, DV1006 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "ory/oathkeeper",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": { "error": 3, "warning": 1, "info": 3, "style": 0 },
+    "notableFindings": "DL3020 ADD vs COPY (3x), DV1009, DL3057, DV1006 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "fission/fission",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 12,
+    "severities": { "error": 0, "warning": 4, "info": 8, "style": 0 },
+    "notableFindings": "DL3057 no HEALTHCHECK (5x), DV3019 downloaded script without checksum in init/Dockerfile — legitimate installer. DL3018 apk pinning.",
+    "improvements": []
+  },
+  {
+    "repo": "openfga/openfga",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 1,
+    "severities": { "error": 0, "warning": 0, "info": 1, "style": 0 },
+    "notableFindings": "DL3057 no HEALTHCHECK — minimal clean distroless-based Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "activepieces/activepieces",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 49,
+    "severities": { "error": 0, "warning": 31, "info": 18, "style": 0 },
+    "notableFindings": "DL3008 unpinned apt (22x), DL3016 unpinned npm install (2x) — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "twentyhq/twenty",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 59,
+    "severities": { "error": 1, "warning": 23, "info": 33, "style": 2 },
+    "notableFindings": "FP found: DV1001 flagged KEYSTATIC_GITHUB_CLIENT_SECRET/KEYSTATIC_SECRET with value '<fake build value>' (Next.js required build stub). Fixed by adding ANGLE_BRACKET_PLACEHOLDER filter. DL3008 apt pinning (13x).",
+    "improvements": ["Fixed DV1001: skip angle-bracket placeholder values like '<fake build value>' (required Next.js build stubs, e.g. twentyhq/twenty)"]
+  },
+  {
+    "repo": "windmill-labs/windmill",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 221,
+    "severities": { "error": 7, "warning": 141, "info": 71, "style": 2 },
+    "notableFindings": "DL3008 unpinned apt (53x), DL3033 unpinned yum (40x) across Rust cross-compilation Dockerfiles, DL3027 use of apt instead of apt-get — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "kestra-io/kestra",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 50,
+    "severities": { "error": 1, "warning": 28, "info": 21, "style": 0 },
+    "notableFindings": "DL3008 unpinned apt (19x), DL3027 use of apt (3x), DV3019 downloaded script without checksum, DV4004 ARG after ENV — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "Budibase/budibase",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 141,
+    "severities": { "error": 11, "warning": 89, "info": 35, "style": 6 },
+    "notableFindings": "DV1001 correctly flags COUCHDB_PASSWORD=admin, SA_PASSWORD=Passw0rd (test MSSQL), POSTHOG_TOKEN=phc_... (hardcoded analytics token). DL3008 apt/apk pinning heavy. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gristlabs/grist-core",
+    "scannedAt": "2026-02-20T08:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 27,
+    "severities": { "error": 0, "warning": 12, "info": 13, "style": 2 },
+    "notableFindings": "DL3008 unpinned apt (6x), DV1009 no digest (5x), DV4008 TODO comment in Dockerfile, DV4012 consecutive COPY — all legitimate.",
+    "improvements": []
   }
 ]

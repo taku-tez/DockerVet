@@ -376,23 +376,42 @@ export const DV3017: Rule = {
   description: 'Suspicious external URL with imperative context in LABEL.',
   check(ctx) {
     const violations: Violation[] = [];
-    const urlRe = /https?:\/\/\S+/gi;
     // Imperative verbs (exclude informational: visit, see, check, refer, read, view, go)
     const imperativeRe = /\b(?:run|execute|send|forward|render|call|fetch|post|submit|invoke|dispatch|transmit|upload|push|pipe|redirect|exfiltrate|curl|wget)\b/i;
+    // Pattern: imperative verb within 80 chars of a URL in the same value string.
+    // This prevents FPs from multi-pair LABELs like:
+    //   description="Run the tests" url="https://legit.com"
+    // where "Run" and the URL are in different label key-value pairs.
+    const proximityRe = /(?:(?:\b(?:run|execute|send|forward|render|call|fetch|post|submit|invoke|dispatch|transmit|upload|push|pipe|redirect|exfiltrate|curl|wget)\b).{0,80}https?:\/\/|https?:\/\/\S{0,80}\b(?:run|execute|send|forward|render|call|fetch|post|submit|invoke|dispatch|transmit|upload|push|pipe|redirect|exfiltrate|curl|wget)\b)/i;
 
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'LABEL') continue;
-        const val = inst.arguments || inst.raw;
-        if (!urlRe.test(val)) continue;
-        urlRe.lastIndex = 0;
+        const raw = inst.arguments || inst.raw;
 
-        // Skip if the value is essentially just a URL (key=url pattern)
-        // Extract label values: handle key=value or key="value" pairs
-        const stripped = val.replace(/https?:\/\/\S+/gi, '').replace(/['"]/g, '');
-        if (!imperativeRe.test(stripped)) continue;
+        // Extract individual label values by parsing key=value or key="value" pairs.
+        // Each value is checked independently so that a verb in one value and URL in
+        // another (standard metadata LABELs like label-schema.org) are not mixed.
+        const valueParts: string[] = [];
+        // Match quoted values: ="..." or ='...'
+        const quotedRe = /=["']([^"']+)["']/g;
+        let m: RegExpExecArray | null;
+        while ((m = quotedRe.exec(raw)) !== null) valueParts.push(m[1]);
+        // Match unquoted values (after = until whitespace or end): =value
+        const unquotedRe = /=([^\s"'][^\s\\]*)/g;
+        while ((m = unquotedRe.exec(raw)) !== null) valueParts.push(m[1]);
 
-        violations.push({ rule: 'DV3017', severity: 'warning', message: 'Suspicious external URL with imperative context in LABEL. This may indicate a prompt injection or data exfiltration attempt.', line: inst.line });
+        // Check each individual value for the proximity pattern
+        let flagged = false;
+        for (const v of valueParts) {
+          if (proximityRe.test(v)) { flagged = true; break; }
+        }
+        // If no values were extracted (e.g. unquoted single value), fall back to full raw check
+        if (!flagged && valueParts.length === 0 && proximityRe.test(raw)) flagged = true;
+
+        if (flagged && imperativeRe.test(raw)) {
+          violations.push({ rule: 'DV3017', severity: 'warning', message: 'Suspicious external URL with imperative context in LABEL. This may indicate a prompt injection or data exfiltration attempt.', line: inst.line });
+        }
       }
     }
     return violations;
