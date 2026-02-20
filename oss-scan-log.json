@@ -4885,5 +4885,145 @@
     "improvements": [
       "Fixed DV4011/DL3000: Windows drive-letter WORKDIR paths (e.g. C:/spire, C:\\app) now correctly recognized as absolute paths"
     ]
+  },
+  {
+    "repo": "airbytehq/airbyte",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 29,
+    "totalIssues": 334,
+    "severities": {
+      "error": 3,
+      "warning": 166,
+      "info": 146,
+      "style": 19
+    },
+    "notableFindings": "DL3008(44) apt pinning, DL3042(41) pip cache, DL3057(28) no HEALTHCHECK, DV1006(23) root, DV1009(23) no digest — all legitimate across connector/server Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "coder/code-server",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 42,
+    "severities": {
+      "error": 0,
+      "warning": 29,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3008(15) apt pinning, DL3041(11) dnf pinning, DV3013(3) setuid bit in Dockerfile/Dockerfile.fedora/Dockerfile.opensuse (legitimate for sudo-less code-server operation). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 2,
+      "style": 1
+    },
+    "notableFindings": "DV2009 SHELL /busybox/sh warning, DV4003 no WORKDIR, DL3057 no HEALTHCHECK — all legitimate. Very clean minimal distroless-based operator image.",
+    "improvements": []
+  },
+  {
+    "repo": "kubearmor/KubeArmor",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 105,
+    "severities": {
+      "error": 5,
+      "warning": 48,
+      "info": 52,
+      "style": 0
+    },
+    "notableFindings": "DL3008(19) apt pinning, DL3018(12) apk pinning, DV1009(12) no digest, DL3006(6) untagged redhat/ubi9-minimal (no version tag) — all legitimate. Security enforcement tool with UBI-based images.",
+    "improvements": []
+  },
+  {
+    "repo": "openziti/ziti",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 34,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 24,
+      "style": 5
+    },
+    "notableFindings": "DL3057(6) no HEALTHCHECK, DV1009(6) no digest, DV4012(5) consecutive COPY, DV4010(4) chown -R — all legitimate. Clean minimal Go Alpine Dockerfiles for ZeroTrust networking.",
+    "improvements": []
+  },
+  {
+    "repo": "fluent/fluent-operator",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 41,
+    "severities": {
+      "error": 0,
+      "warning": 21,
+      "info": 19,
+      "style": 1
+    },
+    "notableFindings": "DL3028(16) gem version pinning across Fluent Bit plugin Dockerfiles, DV1009(10) no digest — all legitimate. Operator Dockerfiles with Ruby gem dependencies.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-jellyfin",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3008(10) apt pinning, DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. LinuxServer.io Jellyfin media server Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "openreplay/openreplay",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 24,
+    "totalIssues": 276,
+    "severities": {
+      "error": 4,
+      "warning": 174,
+      "info": 89,
+      "style": 9
+    },
+    "notableFindings": "DV1001 correctly flags JWT_SECRET=\"SECRET\" and JWT_SPOT_SECRET=\"SECRET\" in backend/Dockerfile (hardcoded weak default JWT secret, true positive). DL3018(79) apk pinning, DV1009(31) no digest. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "nhost/nhost",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 7,
+    "severities": {
+      "error": 1,
+      "warning": 2,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY, DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. Minimal Hasura/backend Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "appsmithorg/appsmith",
+    "scannedAt": "2026-02-21T07:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 43,
+    "severities": {
+      "error": 0,
+      "warning": 24,
+      "info": 19,
+      "style": 0
+    },
+    "notableFindings": "DL3008(10) apt pinning, DV1006(5) root, DV1009(5) no digest, DL3057(4) no HEALTHCHECK — all legitimate. Low-code app builder with Java/nginx Dockerfiles.",
+    "improvements": []
   }
 ]
