@@ -5,8 +5,12 @@ import { EnvInstruction, ArgInstruction, CopyInstruction, UserInstruction } from
 // as a compound syllable (e.g. TIKTOKEN, BITTOKEN) don't trigger false positives.
 // auth_token / access_token are kept as explicit patterns for clarity.
 const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|access_key|access_token|auth_token|(?<![a-zA-Z])token(?![a-zA-Z])|private_key|encryption_key|signing_key|credentials?)/i;
-// Docker secrets convention: ENV vars ending in _FILE point to file paths, not actual secrets
-const FILE_PATH_SUFFIX = /_FILE$/i;
+// Docker secrets convention: ENV vars ending in _FILE point to file paths, not actual secrets.
+// Similarly, _URL / _ENDPOINT / _ADDR / _HOST suffixes indicate configuration endpoints, not secret values.
+// e.g. ANCHORE_FEEDS_TOKEN_URL stores an OAuth endpoint URL, not the token itself.
+const FILE_PATH_SUFFIX = /(?:_FILE|_URL|_ENDPOINT|_ADDR|_HOST)$/i;
+// HTTP(S) URL values are configuration endpoints, not secrets (even if the key name looks like a secret).
+const HTTP_URL_VALUE = /^https?:\/\//i;
 // Values that look like file paths (not actual secrets)
 // Match absolute paths, ./relative paths, or bare filenames with an extension (e.g. google_credentials.json)
 const FILE_PATH_VALUE = /^(?:\/[\w./-]+|\.\/[\w./-]+|[\w.-]+\.[a-zA-Z]{2,5})$/;
@@ -36,14 +40,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value)) {
+            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value) && !HTTP_URL_VALUE.test(pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue)) {
+          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue) && !HTTP_URL_VALUE.test(a.defaultValue)) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -51,7 +55,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue)) {
+      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue) && !HTTP_URL_VALUE.test(arg.defaultValue)) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }

@@ -118,6 +118,25 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SA_PASSWORD=Passw0rd'), 'DV1001')).toBe(true);
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV POSTHOG_TOKEN=phc_bIjZL7oh2GEUd2vqvTBH8WvrX0fWTFQMs6H5KQxiUxU'), 'DV1001')).toBe(true);
   });
+
+  it('does not flag _URL/_ENDPOINT/_ADDR/_HOST suffixed vars (these store endpoints, not secrets)', () => {
+    // anchore-engine FP: ANCHORE_FEEDS_TOKEN_URL stores an OAuth endpoint URL, not a token.
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV ANCHORE_FEEDS_TOKEN_URL="https://ancho.re/oauth/token"'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV OAUTH_TOKEN_URL=https://auth.example.com/token'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_SECRET_ENDPOINT=https://api.example.com/secret'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV AUTH_SECRET_HOST=auth.example.com'), 'DV1001')).toBe(false);
+  });
+
+  it('does not flag ENV/ARG whose value is an HTTP(S) URL', () => {
+    // An HTTP URL value is a configuration endpoint, not a secret credential.
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV AUTH_TOKEN_ENDPOINT=https://auth.example.com/v1/token'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG API_TOKEN_URL=https://api.example.com\nFROM ubuntu'), 'DV1001')).toBe(false);
+  });
+
+  it('still flags real token/password values that happen to be non-URL strings', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV OAUTH_TOKEN=abc123secretvalue'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_SECRET_KEY=mysupersecretkey'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

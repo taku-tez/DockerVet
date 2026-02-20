@@ -4179,5 +4179,147 @@
     },
     "notableFindings": "DV4003 no WORKDIR (30x), DL3018 apk pinning (23x), DV3020 ADD remote URL without checksum (19x — NGINX repo configs/keys downloaded without --checksum), DL3041 — all legitimate findings.",
     "improvements": []
+  },
+  {
+    "repo": "hyperledger/fabric",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 85,
+    "severities": {
+      "error": 3,
+      "warning": 34,
+      "info": 48,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (22x), DV1009 no digest (8x), DV4003 no WORKDIR (8x), DL3009 apt lists cleanup — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "falcosecurity/falcosidekick",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 2,
+      "style": 1
+    },
+    "notableFindings": "DL3018 apk pinning (3x), DL3057 no HEALTHCHECK, DV1005/DV1008 broad COPY — all legitimate. Clean minimal Go image.",
+    "improvements": []
+  },
+  {
+    "repo": "thingsboard/thingsboard",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 64,
+    "severities": {
+      "error": 0,
+      "warning": 19,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "FP found: DV3014 flagged SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/thingsboard as hardcoded DB connection string — but bare JDBC URL without credentials is not sensitive. Fixed JDBC pattern to require embedded credentials (@ or password= in query). DL3057 (13x), DV4003 (11x), DV2012 || true (9x) — all legitimate.",
+    "improvements": [
+      "Fixed DV3014: JDBC URL pattern now requires embedded credentials (@ syntax or ?password= query param) to avoid flagging bare host:port/db URLs"
+    ]
+  },
+  {
+    "repo": "emqx/emqx",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 23,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV3004 COPY cert files (ca.crt, server.crt, server.key) into CI test LDAP/pgsql containers — legitimate test infrastructure. DL3057 (6x), DV4003 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "robusta-dev/robusta",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 34,
+    "severities": {
+      "error": 1,
+      "warning": 21,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (11x), DL3013 pip pinning (4x), DV3004 COPY cert file — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/activemq",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 1,
+      "warning": 0,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (1x), DL3057 no HEALTHCHECK, DV1009, DV4003 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-python",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 2,
+      "warning": 1,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DV1001 ENV MYSQL_ROOT_PASSWORD=root in docs/examples/sqlcommenter/books_database/Dockerfile — hardcoded example DB credential, legitimate finding even in docs. DL3020, DV1006 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openfaas/openfaas-cloud",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 36,
+    "severities": {
+      "error": 3,
+      "warning": 8,
+      "info": 20,
+      "style": 5
+    },
+    "notableFindings": "DV1009 no digest (10x), DL3018 apk pinning (6x), DV4012 consecutive COPY — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/snmp_exporter",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK (2x), DV1006 root (2x), DL3007 latest, DL3008 — all legitimate. Clean Go builder Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "chaos-mesh/chaos-mesh",
+    "scannedAt": "2026-02-20T17:02:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 165,
+    "severities": {
+      "error": 5,
+      "warning": 79,
+      "info": 81,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (47x), DV1009 no digest (13x), DV4003 no WORKDIR (10x), DV1006 root (9x) — all legitimate across test/build Dockerfiles.",
+    "improvements": []
   }
 ]
