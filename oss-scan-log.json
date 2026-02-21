@@ -5307,5 +5307,145 @@
     "improvements": [
       "Fixed DV1001: Added INSTRUCTIONAL_PLACEHOLDER regex to skip values like 'change_this_to_something_unique', 'replace_me_*', 'your_*_here' — explicit user-facing placeholder instructions"
     ]
+  },
+  {
+    "repo": "Sonarr/Sonarr",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 51,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 23,
+      "style": 0
+    },
+    "notableFindings": "DL3008(22) apt pinning, DL3015(4) no --no-install-recommends, DV2004(4) dnf module, DL3057(3) no HEALTHCHECK — all legitimate across multi-arch .NET Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "advplyr/audiobookshelf",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 19,
+    "severities": {
+      "error": 1,
+      "warning": 11,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018(8) apk pinning, DV1009(4) no digest, DV1006(2) root — all legitimate. Alpine Node.js audiobook server.",
+    "improvements": []
+  },
+  {
+    "repo": "ajnart/homarr",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 6,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DV1001 on NEXTAUTH_SECRET=NOT_IN_USE_BECAUSE_JWTS_ARE_UNUSED — borderline TP: value is self-documenting but still a hardcoded non-empty string for a secret-named var. DL3027 apt vs apt-get, DL3008(2) apt pinning — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gethomepage/homepage",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1009(3) no digest, DL3018(3) apk pinning, DV1006 root — all legitimate. Clean minimal Next.js Alpine Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "Tautulli/Tautulli",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DV1006 root, DV1009 no digest, DV1005/DV1008 broad COPY — all legitimate. Minimal Python Plex analytics Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "bastienwirtz/homer",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DV1009(2) no digest, DL3018(2) apk pinning, DV1005/DV1008 broad COPY — all legitimate. Ultra-minimal Vue.js dashboard Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "recyclarr/recyclarr",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3018(5) apk pinning, DV1009(2) no digest, DL3057 no HEALTHCHECK, DV4003 no WORKDIR — all legitimate. .NET Alpine Dockerfile for Sonarr/Radarr config tool.",
+    "improvements": []
+  },
+  {
+    "repo": "overleaf/overleaf",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 90,
+    "totalIssues": 597,
+    "severities": {
+      "error": 36,
+      "warning": 261,
+      "info": 299,
+      "style": 1
+    },
+    "notableFindings": "DL3020(34) ADD vs COPY (errors), DV1003(2) curl|sh installers, DV1009(90) no digest dominant across 90 service Dockerfiles — all legitimate. Large Node.js monorepo.",
+    "improvements": []
+  },
+  {
+    "repo": "hedgedoc/hedgedoc",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018(6) apk pinning, DV1009(2) no digest, DV4003(2) no WORKDIR, DV1005/DV1008(2) broad COPY — all legitimate. Node.js collaborative markdown editor.",
+    "improvements": []
+  },
+  {
+    "repo": "mattermost/calls-offloader",
+    "scannedAt": "2026-02-21T16:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest, DV1005/DV1008 broad COPY, DL3057 no HEALTHCHECK — all legitimate. Minimal Go Dockerfile for WebRTC calls offloading.",
+    "improvements": []
   }
 ]
