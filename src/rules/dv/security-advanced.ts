@@ -302,16 +302,22 @@ export const DV3014: Rule = {
 };
 
 // DV3015: Downloading scripts and piping to shell without checksum verification
+// Note: DV1003 already fires as an error for the same curl|sh patterns (sh/bash/zsh/ksh/dash/source).
+// DV3015 skips those to avoid double-reporting — it only fires for shells not covered by DV1003 (e.g. ash).
 export const DV3015: Rule = {
   id: 'DV3015', severity: 'warning',
   description: 'Avoid piping curl/wget output to shell without checksum verification.',
   check(ctx) {
     const pipeToShell = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|dash|ash)/;
+    // DV1003 covers sh|bash|zsh|ksh|dash|source as an error; avoid double-reporting on same line
+    const dv1003Pattern = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source)\b/;
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
         if (pipeToShell.test(inst.arguments)) {
+          // Skip if DV1003 already fires on this instruction (prevents error+warning duplicate)
+          if (dv1003Pattern.test(inst.arguments)) continue;
           if (!/sha256sum|sha512sum|shasum|gpg\s+--verify|md5sum/.test(inst.arguments)) {
             violations.push({ rule: 'DV3015', severity: 'warning', message: 'Piping curl/wget to shell without checksum verification. Download first, verify, then execute.', line: inst.line });
           }

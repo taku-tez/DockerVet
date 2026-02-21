@@ -348,11 +348,21 @@ describe('DV3018 - chpasswd plaintext password', () => {
 });
 
 describe('DV3015 - curl/wget pipe to shell', () => {
-  it('flags curl piped to bash', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/install.sh | bash'), 'DV3015')).toBe(true);
+  it('does not duplicate DV1003: curl|bash is already flagged by DV1003 (error), DV3015 stays silent', () => {
+    // DV1003 fires as an error for curl|bash — DV3015 must not double-report the same line
+    const result = lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/install.sh | bash');
+    expect(hasRule(result, 'DV1003')).toBe(true);  // DV1003 fires as error
+    expect(hasRule(result, 'DV3015')).toBe(false); // DV3015 must NOT double-report
   });
-  it('flags wget piped to sh', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN wget -qO- https://example.com/setup.sh | sh'), 'DV3015')).toBe(true);
+  it('does not duplicate DV1003: wget|sh is already flagged by DV1003, DV3015 stays silent', () => {
+    const result = lintDockerfile('FROM ubuntu\nRUN wget -qO- https://example.com/setup.sh | sh');
+    expect(hasRule(result, 'DV1003')).toBe(true);
+    expect(hasRule(result, 'DV3015')).toBe(false);
+  });
+  it('flags curl piped to ash (not covered by DV1003, only by DV3015)', () => {
+    // ash is in DV3015 but not in DV1003 — DV3015 should fire here
+    const result = lintDockerfile('FROM alpine\nRUN curl -fsSL https://example.com/install.sh | ash');
+    expect(hasRule(result, 'DV3015')).toBe(true);
   });
   it('passes when checksum is verified', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -fsSL https://example.com/install.sh -o install.sh && sha256sum -c checksums && bash install.sh'), 'DV3015')).toBe(false);
