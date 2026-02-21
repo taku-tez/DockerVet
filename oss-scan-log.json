@@ -5447,5 +5447,149 @@
     },
     "notableFindings": "DV1009 no digest, DV1005/DV1008 broad COPY, DL3057 no HEALTHCHECK — all legitimate. Minimal Go Dockerfile for WebRTC calls offloading.",
     "improvements": []
+  },
+  {
+    "repo": "lycheeorg/lychee",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1006 root, DV4009 chmod 777 (excessive permissions), DV1005/DV1008 broad COPY — all legitimate. PHP photo gallery app.",
+    "improvements": []
+  },
+  {
+    "repo": "AnalogJ/scrutiny",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 45,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 21,
+      "style": 1
+    },
+    "notableFindings": "DL3008(17) apt pinning, DV1009(8) no digest, DL3015(4) no --no-install-recommends, DV2004(4) — all legitimate. Go-based hard drive monitoring app.",
+    "improvements": []
+  },
+  {
+    "repo": "hay-kot/homebox",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 29,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3018(9) apk pinning, DV1009(7) no digest, DV1006(2) root, DL3016(2), DL3019(2) — all legitimate. Go home inventory management app.",
+    "improvements": []
+  },
+  {
+    "repo": "seanmorley15/AdventureLog",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 37,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DL3008(14) apt pinning, DV1009(4) no digest, DL3013(3) pip pinning, DL3057(3) no HEALTHCHECK, DV4007(2) — all legitimate. Django travel logging app.",
+    "improvements": []
+  },
+  {
+    "repo": "ItzCrazyKns/Perplexica",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 44,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3008(23) apt pinning, DV1009(4) no digest, DL3015(4) no --no-install-recommends, DV2004(4) — all legitimate. AI-powered search engine app.",
+    "improvements": []
+  },
+  {
+    "repo": "khoj-ai/khoj",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 67,
+    "severities": {
+      "error": 1,
+      "warning": 42,
+      "info": 22,
+      "style": 2
+    },
+    "notableFindings": "DV1003 curl|sh in .devcontainer (dev environment install script, legitimate). DL3008(26) apt pinning, DV1009(7) no digest. FP fixed: DV3015 no longer double-fires with DV1003 on same line.",
+    "improvements": [
+      "DV3015 de-duplication fix applied: no longer double-reports with DV1003 on same curl|sh line"
+    ]
+  },
+  {
+    "repo": "danny-avila/LibreChat",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 9,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018(6) apk pinning, DV1006(2) root, DV1009(2) no digest, DL3057(2) no HEALTHCHECK — all legitimate. ChatGPT clone with Alpine Node.js images.",
+    "improvements": []
+  },
+  {
+    "repo": "binary-husky/gpt_academic",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3042(2) pip cache, DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest, DV4002 consecutive RUN — all legitimate. Python academic GPT assistant.",
+    "improvements": []
+  },
+  {
+    "repo": "arc53/DocsGPT",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 30,
+    "severities": {
+      "error": 2,
+      "warning": 11,
+      "info": 17,
+      "style": 0
+    },
+    "notableFindings": "DV1003(2) curl|sh in devcontainer + app Dockerfile (legitimate tool install patterns). FP fixed: DV3015 no longer double-fires with DV1003 on same lines. DV1009(4) no digest, DL3008(3).",
+    "improvements": [
+      "DV3015 de-duplication fix applied: no longer double-reports with DV1003 on same curl|sh line"
+    ]
+  },
+  {
+    "repo": "Significant-Gravitas/AutoGPT",
+    "scannedAt": "2026-02-21T19:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 85,
+    "severities": {
+      "error": 1,
+      "warning": 45,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DL3008(34) apt pinning, DL3015(8) no --no-install-recommends, DV2004(8), DV1009(7), DL3044(1) ENV self-reference — all legitimate. Python AutoGPT agent framework.",
+    "improvements": []
   }
 ]
