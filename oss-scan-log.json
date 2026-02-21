@@ -5025,5 +5025,145 @@
     },
     "notableFindings": "DL3008(10) apt pinning, DV1006(5) root, DV1009(5) no digest, DL3057(4) no HEALTHCHECK — all legitimate. Low-code app builder with Java/nginx Dockerfiles.",
     "improvements": []
+  },
+  {
+    "repo": "penpot/penpot",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 100,
+    "severities": {
+      "error": 1,
+      "warning": 21,
+      "info": 76,
+      "style": 2
+    },
+    "notableFindings": "DL3003(16) cd instead of WORKDIR + DV3019(16) downloaded scripts without checksums in devenv/gitpod Dockerfiles (dev env, legitimate). DL3006 untagged gitpod/workspace-postgres base. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "botpress/botpress",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1009(2) no digest, DV4002 consecutive RUN, DL3057 no HEALTHCHECK — all legitimate. Clean minimal Node.js Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "parse-community/parse-server",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018(3) apk pinning (build-base, git, python3), DV1009(2) no digest, DL3057 — all legitimate. Standard Alpine Node.js build image.",
+    "improvements": []
+  },
+  {
+    "repo": "huginn/huginn",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3006 on ghcr.io/huginn/huginn-single-process without version tag (self-referential base, legitimate warning). DL3057(3) no HEALTHCHECK, DV1009(3), DV4004(3) ARG after ENV — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "owncloud/ocis",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 75,
+    "severities": {
+      "error": 0,
+      "warning": 53,
+      "info": 22,
+      "style": 0
+    },
+    "notableFindings": "DL3018(48) apk pinning across OwnCloud Infinite Scale service Dockerfiles, DV1009(9) no digest, DL3057(6) — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "standardnotes/server",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 69,
+    "severities": {
+      "error": 0,
+      "warning": 32,
+      "info": 37,
+      "style": 0
+    },
+    "notableFindings": "DL3018(14) apk pinning, DL3057(9) no HEALTHCHECK, DV1006(9) root, DV1009(9) no digest, DV1005(9) broad COPY — all legitimate across 9 microservice Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "cryptpad/cryptpad",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3018(6) apk pinning, DV1009(2) no digest, DV1005/DV1008 broad COPY, DV4002 consecutive RUN — all legitimate. Minimal Node.js Alpine Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "bookstackapp/BookStack",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 37,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3008(22) apt pinning (PHP/Apache packages), DL3015(2) no --no-install-recommends, DL3057(2) no HEALTHCHECK — all legitimate. PHP Laravel app image.",
+    "improvements": []
+  },
+  {
+    "repo": "wallabag/wallabag",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 45,
+    "severities": {
+      "error": 1,
+      "warning": 28,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh pattern (golang install via official script, legitimate but flagged). DL3008(24) apt pinning, DL3006 golang without tag — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "tubearchivist/tubearchivist",
+    "scannedAt": "2026-02-21T10:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 28,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 12,
+      "style": 3
+    },
+    "notableFindings": "DL3008(6) apt pinning, DV1009(5) no digest, DV4003(3) no WORKDIR, DL3013(3) pip pinning, DV4012(3) consecutive COPY — all legitimate. YouTube archive app.",
+    "improvements": []
   }
 ]
