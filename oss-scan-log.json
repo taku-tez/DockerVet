@@ -5591,5 +5591,145 @@
     },
     "notableFindings": "DL3008(34) apt pinning, DL3015(8) no --no-install-recommends, DV2004(8), DV1009(7), DL3044(1) ENV self-reference — all legitimate. Python AutoGPT agent framework.",
     "improvements": []
+  },
+  {
+    "repo": "element-hq/synapse",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 44,
+    "severities": {
+      "error": 2,
+      "warning": 26,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DV1003(2) curl|sh in docker/ Dockerfiles (legitimate Rust/Go toolchain install), DL3008(18) apt pinning, DV1009(6) no digest, DV4003(3) no WORKDIR — all legitimate. Matrix homeserver.",
+    "improvements": []
+  },
+  {
+    "repo": "mautrix/whatsapp",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 25,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018(22) apk pinning dominant, DV1009(2) no digest, DV1006(2) root — all legitimate. Clean minimal Alpine Go Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "mautrix/telegram",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 44,
+    "severities": {
+      "error": 0,
+      "warning": 39,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018(37) apk pinning across multi-stage Python build, DV4001(2) multiple package install RUN — all legitimate. Python Telegram bridge.",
+    "improvements": []
+  },
+  {
+    "repo": "FlareSolverr/FlareSolverr",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3008(10) apt pinning, DV1009(2) no digest, DV4003 no WORKDIR, DL3009 apt-get clean, DL3057 no HEALTHCHECK — all legitimate. Selenium-based CAPTCHA solver.",
+    "improvements": []
+  },
+  {
+    "repo": "dgtlmoon/changedetection.io",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 26,
+    "severities": {
+      "error": 0,
+      "warning": 21,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3008(20) apt pinning dominant, DV1009(2) no digest, DL3009 apt-get clean, DV4004 ARG after ENV, DL3057 — all legitimate. Web content change detection app.",
+    "improvements": []
+  },
+  {
+    "repo": "mickael-kerjean/filestash",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DL3006 on alpine/git without version tag, DV3008 git clone may embed credentials (legitimate finding), DL3008(5) apt pinning, DV1009(3) — all legitimate. File manager app.",
+    "improvements": []
+  },
+  {
+    "repo": "AlexxIT/go2rtc",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3018(11) apk pinning across 3 Dockerfiles, DV1009(6) no digest, DV1005/DV1008(3) broad COPY, DL3057(3) — all legitimate. Go WebRTC/RTSP server.",
+    "improvements": []
+  },
+  {
+    "repo": "akhilrex/podgrab",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 7,
+      "style": 1
+    },
+    "notableFindings": "DL3018(3) apk pinning, DV1009(2) no digest, DL3019(2) apt-get update without install, DV4012 consecutive COPY — all legitimate. Go podcast downloader.",
+    "improvements": []
+  },
+  {
+    "repo": "RSS-Bridge/rss-bridge",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 37,
+    "severities": {
+      "error": 0,
+      "warning": 25,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DV3020(2) ADD with remote URL without checksum in .devcontainer (legitimate warning), DL3008(17) apt pinning, DV1006(2) root — all legitimate. PHP RSS/Atom bridge.",
+    "improvements": []
+  },
+  {
+    "repo": "miniflux/v2",
+    "scannedAt": "2026-02-21T22:57:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 40,
+    "severities": {
+      "error": 4,
+      "warning": 16,
+      "info": 17,
+      "style": 3
+    },
+    "notableFindings": "DL3020(4) ADD vs COPY errors, DV1009(7) no digest, DL3018(5) apk pinning, DV4003(3) no WORKDIR — all legitimate. Go RSS reader.",
+    "improvements": []
   }
 ]
