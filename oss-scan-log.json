@@ -5165,5 +5165,147 @@
     },
     "notableFindings": "DL3008(6) apt pinning, DV1009(5) no digest, DV4003(3) no WORKDIR, DL3013(3) pip pinning, DV4012(3) consecutive COPY — all legitimate. YouTube archive app.",
     "improvements": []
+  },
+  {
+    "repo": "actualbudget/actual",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 45,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 28,
+      "style": 2
+    },
+    "notableFindings": "DV1009(7) no digest, DL3008(5) apt pinning, DL3015(5) no --no-install-recommends, DV2004(5) dnf module, DL3018(5) apk pinning — all legitimate across multi-arch JS Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "Mailu/Mailu",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 189,
+    "severities": {
+      "error": 0,
+      "warning": 136,
+      "info": 49,
+      "style": 4
+    },
+    "notableFindings": "DL3018(84) apk pinning across 16 service Dockerfiles, DL3006(14) FROM base without version tag (internal multi-image build system where 'base' is always built first), DV1009(17) no digest — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "simple-login/app",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 23,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3008(13) apt pinning, DV1009(2) no digest, DL3003 cd, DL3029, DL3057 — all legitimate. Python Flask email alias service.",
+    "improvements": []
+  },
+  {
+    "repo": "sissbruecker/linkding",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 64,
+    "severities": {
+      "error": 0,
+      "warning": 38,
+      "info": 26,
+      "style": 0
+    },
+    "notableFindings": "DL3018(25) apk pinning, DV1009(8) no digest, DL3019(3) apt-get update without install, DV2001(3) — all legitimate. Django bookmark manager.",
+    "improvements": []
+  },
+  {
+    "repo": "Stirling-Tools/Stirling-PDF",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 514,
+    "severities": {
+      "error": 7,
+      "warning": 439,
+      "info": 52,
+      "style": 16
+    },
+    "notableFindings": "DL3008(291) apt pinning dominant across 9 PDF tool Dockerfiles, DL3045(58) relative COPY, DV1003(7) curl|sh (tool installers), DL3018(46) apk pinning — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "leantime/leantime",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 25,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018(24) apk pinning, DV1009(2) no digest, DV4010(2) chown -R, DV4013 pecl pinning — all legitimate. PHP project management app.",
+    "improvements": []
+  },
+  {
+    "repo": "illacloud/illa-builder",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 4,
+      "warning": 4,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3020(4) ADD vs COPY (errors), DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. Low-code builder app.",
+    "improvements": []
+  },
+  {
+    "repo": "portainer/agent",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 9,
+      "style": 9
+    },
+    "notableFindings": "DV4012(9) consecutive COPY, DV1009(4) no digest, DL3057(3) no HEALTHCHECK, DV4004(2) ARG after ENV — all legitimate. Minimal Go Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "alexta69/metube",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 26,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3008(18) apt pinning, DV1009(3) no digest, DL3009 apt-get clean, DL3057 no HEALTHCHECK, DV1006 root — all legitimate. YouTube downloader app.",
+    "improvements": []
+  },
+  {
+    "repo": "kimai/kimai",
+    "scannedAt": "2026-02-21T13:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 94,
+    "severities": {
+      "error": 1,
+      "warning": 58,
+      "info": 35,
+      "style": 0
+    },
+    "notableFindings": "FP found: DV1001 flagging APP_SECRET=change_this_to_something_unique — value is a placeholder instruction, not a real secret. Fixed. DV3014 on DATABASE_URL with embedded kimai:kimai credentials is a true positive (remains). DL3018(38) apk pinning, DV4003(16) no WORKDIR — all legitimate.",
+    "improvements": [
+      "Fixed DV1001: Added INSTRUCTIONAL_PLACEHOLDER regex to skip values like 'change_this_to_something_unique', 'replace_me_*', 'your_*_here' — explicit user-facing placeholder instructions"
+    ]
   }
 ]
