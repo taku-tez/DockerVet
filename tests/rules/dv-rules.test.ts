@@ -137,6 +137,20 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nENV OAUTH_TOKEN=abc123secretvalue'), 'DV1001')).toBe(true);
     expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_SECRET_KEY=mysupersecretkey'), 'DV1001')).toBe(true);
   });
+
+  it('does not flag instructional placeholder values that tell users to change the value', () => {
+    // kimai pattern: ENV APP_SECRET=change_this_to_something_unique — clearly a placeholder instruction
+    expect(hasRule(lintDockerfile('FROM php:8.3-fpm\nENV APP_SECRET=change_this_to_something_unique'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_SECRET=change_this_value'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV MY_SECRET=change-this-to-your-secret'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV DB_PASSWORD=replace_me_with_real_password'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG AUTH_TOKEN=change_this\nFROM ubuntu'), 'DV1001')).toBe(false);
+  });
+
+  it('still flags non-instructional values even if they contain change-like words', () => {
+    // Real secrets shouldn't be skipped just because they happen to contain "change"
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_SECRET=mySuperChange123'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {

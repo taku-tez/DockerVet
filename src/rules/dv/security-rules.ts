@@ -24,6 +24,9 @@ const ANGLE_BRACKET_PLACEHOLDER = /^<[^>]+>$/;
 // Common placeholder keyword strings that indicate "fill this in" rather than a real secret.
 // NOTE: deliberately excludes common real-secret values like "password", "secret", "admin" etc.
 const PLACEHOLDER_KEYWORD = /^(?:placeholder|changeme|change_me|change-me|example|dummy|todo|fixme|x{3,}|n\/a|none|null|empty|fake|sample)$/i;
+// Instructional placeholder values that explicitly tell users to change the value.
+// e.g. "change_this_to_something_unique" (kimai), "your_secret_here", "replace_me_with_something"
+const INSTRUCTIONAL_PLACEHOLDER = /^change[_-]?(?:this|me|it)|^replace[_-]?(?:me|this|it)|^your[_-].+[_-]here$|^set[_-].+[_-]here$/i;
 
 // DV1001: Hardcoded secrets in ENV/ARG
 // _meta directories are module test fixtures (e.g. elastic/beats) where dummy credentials are expected
@@ -40,14 +43,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value) && !HTTP_URL_VALUE.test(pair.value)) {
+            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value) && !INSTRUCTIONAL_PLACEHOLDER.test(pair.value) && !HTTP_URL_VALUE.test(pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue) && !HTTP_URL_VALUE.test(a.defaultValue)) {
+          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(a.defaultValue) && !HTTP_URL_VALUE.test(a.defaultValue)) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -55,7 +58,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue) && !HTTP_URL_VALUE.test(arg.defaultValue)) {
+      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(arg.defaultValue) && !HTTP_URL_VALUE.test(arg.defaultValue)) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }
