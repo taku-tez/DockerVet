@@ -106,6 +106,14 @@ describe('DL3004 - No sudo', () => {
   it('flags sudo command even when also installed as package', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y sudo && sudo chmod 777 /tmp'), 'DL3004')).toBe(true);
   });
+  it('does NOT flag sudo appearing only in a path (chown/chmod /usr/bin/sudo)', () => {
+    // FP fix: chmod/chown referencing /usr/bin/sudo path — sudo is not invoked as a command here
+    expect(hasRule(lintDockerfile('FROM archlinux\nRUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo'), 'DL3004')).toBe(false);
+  });
+  it('flags sudo command even when path reference is also present on same line', () => {
+    // When both a path reference AND a sudo command appear, the command invocation should still fire
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN chmod 4755 /usr/bin/sudo && sudo apt-get update'), 'DL3004')).toBe(true);
+  });
 });
 
 describe('DL3006 - Tag version explicitly', () => {

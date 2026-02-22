@@ -170,7 +170,8 @@ describe('DV3011 - sudo usage', () => {
   it('passes installing sudo package', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y sudo'), 'DV3011')).toBe(false);
   });
-  it('suppresses when USER is non-root before sudo (puppeteer/ray pattern)', () => {
+  it('suppresses when USER is non-root before sudo (makepkg/devcontainer pattern)', () => {
+    // Non-root using sudo is common in devcontainers/makepkg; DL3004 already errors on it
     expect(hasRule(lintDockerfile('FROM ubuntu\nUSER appuser\nRUN sudo rm -rf /tmp/cache'), 'DV3011')).toBe(false);
   });
   it('still flags sudo when USER is root', () => {

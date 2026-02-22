@@ -190,6 +190,10 @@ export const DV3009: Rule = {
 };
 
 // DV3011: sudo usage in RUN
+// Note: This complements DL3004 (error) for sudo usage. Both may fire on the same line;
+// DL3004 fires for all contexts, DV3011 is user-context-aware (only fires for root).
+// Non-root USER context using sudo is considered a legitimate pattern (e.g., makepkg,
+// gitpod devcontainers) — DL3004 already handles the error-level finding for those cases.
 export const DV3011: Rule = {
   id: 'DV3011', severity: 'warning',
   description: 'Avoid using sudo in Dockerfiles. RUN instructions already execute as root.',
@@ -204,7 +208,8 @@ export const DV3011: Rule = {
         if (inst.type !== 'RUN') continue;
         // Match sudo but not "apt-get install sudo" or "apk add sudo"
         if (/(?:^|&&|\|\||;)\s*sudo\s/.test(inst.arguments) || /^\s*sudo\s/.test(inst.arguments)) {
-          // If running as non-root user, sudo is legitimate
+          // If running as non-root user, sudo is legitimate (e.g., makepkg, devcontainer patterns)
+          // DL3004 already fires as an error for these cases
           if (currentUser !== 'root' && currentUser !== '0') continue;
           violations.push({ rule: 'DV3011', severity: 'warning', message: 'Avoid using sudo in Dockerfiles. RUN instructions run as root by default. sudo adds unnecessary attack surface.', line: inst.line });
         }
