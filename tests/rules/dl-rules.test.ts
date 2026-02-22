@@ -396,6 +396,13 @@ describe('DL3021 - COPY multiple sources needs / dest', () => {
   it('handles COPY --link with multiple sources and ./ dest', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY --link ["a.txt", "b.txt", "c.txt", "./"]'), 'DL3021')).toBe(false);
   });
+  it('skips check when destination is a shell variable ($VAR)', () => {
+    // Cannot determine variable value at lint time — suppress to avoid false positives
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nARG DEST=/app/\nCOPY a.txt b.txt $DEST'), 'DL3021')).toBe(false);
+  });
+  it('skips check when destination is a braced shell variable (${VAR})', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nARG DEPLOYDIR=/data/deploy\nCOPY *.sh *.conf ${DEPLOYDIR}'), 'DL3021')).toBe(false);
+  });
 });
 
 describe('DL3023 - COPY --from self-reference', () => {

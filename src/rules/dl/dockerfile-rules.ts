@@ -107,7 +107,11 @@ export const DL3021: Rule = {
     for (const type of ['COPY', 'ADD'] as const) {
       forEachInstruction(ctx, type, (inst) => {
         const c = inst as CopyInstruction;
-        if (c.sources.length > 1 && !c.destination.endsWith('/') && c.destination !== '.' && c.destination !== './') {
+        // Skip check when destination is a shell variable (e.g. $DEPLOYDIR, ${DIR}) —
+        // the variable's value cannot be determined at lint time, so we cannot know if it
+        // will expand to a path ending with '/' or to an existing directory.
+        const destIsVar = c.destination.startsWith('$');
+        if (c.sources.length > 1 && !destIsVar && !c.destination.endsWith('/') && c.destination !== '.' && c.destination !== './') {
           violations.push({ rule: 'DL3021', severity: 'error', message: 'COPY with more than 2 arguments requires the last argument to end with /', line: inst.line });
         }
       });
