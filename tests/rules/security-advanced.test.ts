@@ -26,6 +26,16 @@ describe('DV3002 - SSH keys', () => {
   it('passes normal COPY', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY app.js /app/'), 'DV3002')).toBe(false);
   });
+  it('does NOT flag id_rsa.pub (public key, safe to copy for authorized_keys)', () => {
+    // FP fix: juicedata/juicefs pattern — COPY id_rsa.pub for test SSH server authorized_keys
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY id_rsa.pub /home/user/.ssh/authorized_keys'), 'DV3002')).toBe(false);
+  });
+  it('does NOT flag id_ed25519.pub (public key)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY id_ed25519.pub /root/.ssh/authorized_keys'), 'DV3002')).toBe(false);
+  });
+  it('still flags id_rsa without .pub extension even if similar names present', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY id_rsa /root/.ssh/id_rsa'), 'DV3002')).toBe(true);
+  });
 });
 
 describe('DV3003 - .env file', () => {

@@ -30,17 +30,22 @@ export const DV3001: Rule = {
 };
 
 // DV3002: SSH private key COPY/ADD
+// Note: .pub files (public keys like id_rsa.pub) are explicitly excluded — copying a
+// public key into authorized_keys is a legitimate pattern for test SSH servers.
 export const DV3002: Rule = {
   id: 'DV3002', severity: 'error',
   description: 'Do not COPY/ADD SSH private keys into the image.',
   check(ctx) {
-    const sshKeys = /(?:id_rsa|id_dsa|id_ecdsa|id_ed25519|\.ssh\/)/i;
+    // Match private key filenames but NOT .pub files (public keys are safe to copy)
+    const sshPrivateKey = /(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)(?!\.pub\b)/i;
+    // Also match .ssh/ directory copies (entire directory likely contains private keys/config)
+    const sshDir = /\.ssh\//i;
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
         const c = inst as CopyInstruction;
-        if (c.sources.some(s => sshKeys.test(s))) {
+        if (c.sources.some(s => sshPrivateKey.test(s) || sshDir.test(s))) {
           violations.push({ rule: 'DV3002', severity: 'error', message: 'Do not COPY/ADD SSH private keys. Use SSH mount or build secrets.', line: inst.line });
         }
       }
