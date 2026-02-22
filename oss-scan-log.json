@@ -6403,5 +6403,137 @@
     },
     "notableFindings": "DV1009 no digest (5x), DV1006 root (3x), DV4003 no WORKDIR (2x), DL3018 apk pinning (2x) \u2014 all legitimate. Go webhook gateway.",
     "improvements": []
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 92,
+    "severities": {
+      "error": 1,
+      "warning": 46,
+      "info": 45
+    },
+    "notableFindings": "DV1003 curl|sh in Dockerfile.linux (install tooling for cross-compilation) \u2014 legitimate. DL3008 apt pinning (17x), DL3041 pip --index-url (7x), DL3057 (6x) \u2014 all legitimate. Rust multi-arch build.",
+    "improvements": []
+  },
+  {
+    "repo": "risingwavelabs/risingwave",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 242,
+    "severities": {
+      "error": 19,
+      "warning": 105,
+      "info": 115
+    },
+    "notableFindings": "DV1003 curl|sh for NVM/tool installs (6x), DL3020 ADD instead of COPY for local dirs (10x in sink/connector Dockerfiles) \u2014 all legitimate. Rust streaming SQL engine with 15 Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "neondatabase/neon",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 371,
+    "severities": {
+      "error": 3,
+      "warning": 235,
+      "info": 121
+    },
+    "notableFindings": "DV1003 curl|sh, DL3004 sudo, DV3018 chpasswd plaintext in compute-node.Dockerfile \u2014 all legitimate. Heavy DL3008 apt (138x) and DL3003 cd in RUN (60x) across 13 Dockerfiles. Serverless Postgres.",
+    "improvements": []
+  },
+  {
+    "repo": "scylladb/scylladb",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 24,
+    "severities": {
+      "error": 2,
+      "warning": 10,
+      "info": 12
+    },
+    "notableFindings": "DL3020 ADD instead of COPY (2x in Dockerfile.in) \u2014 legitimate (local files copied without tar extraction). DL3025, DL3003 \u2014 all legitimate. C++ NoSQL database.",
+    "improvements": []
+  },
+  {
+    "repo": "yugabyte/yugabyte-db",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 27,
+    "totalIssues": 508,
+    "severities": {
+      "error": 16,
+      "warning": 325,
+      "info": 165
+    },
+    "notableFindings": "DV3018 chpasswd plaintext (2x), DL3004 sudo (6x across Debian/RHEL variants), DV1003 curl|sh (5x across multi-distro Dockerfiles), DL3020 ADD (2x) \u2014 all legitimate. Multi-distro distributed SQL.",
+    "improvements": []
+  },
+  {
+    "repo": "electric-sql/electric",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 89,
+    "severities": {
+      "error": 0,
+      "warning": 49,
+      "info": 26
+    },
+    "notableFindings": "DL3008 apt pinning (36x), DV4012 consecutive COPY (14x, style), DL3015 no-install-recommends (8x) \u2014 all legitimate. Clean Elixir/Phoenix sync platform.",
+    "improvements": []
+  },
+  {
+    "repo": "ariga/atlas",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 1,
+      "warning": 1,
+      "info": 3
+    },
+    "notableFindings": "DV1001 ENV MYSQL_ROOT_PASSWORD=pass in .github/ops/mysql/Dockerfile (hardcoded test credential) \u2014 legitimate finding even in CI context. DV4003, DL3057 \u2014 all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "paradedb/paradedb",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 55,
+    "severities": {
+      "error": 1,
+      "warning": 34,
+      "info": 17
+    },
+    "notableFindings": "DV1003 curl|sh for extension installs, DV3008 git clone (3x), DL3008 apt pinning (30x), DV4012 consecutive COPY \u2014 all legitimate. Postgres-based analytics platform.",
+    "improvements": []
+  },
+  {
+    "repo": "StarRocks/StarRocks",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 277,
+    "severities": {
+      "error": 5,
+      "warning": 187,
+      "info": 83
+    },
+    "notableFindings": "DV3006 yum --nogpgcheck (3x in UBI Dockerfiles) \u2014 legitimate security finding. DL3020 ADD (2x). Previously had DL3021 FP on COPY *.sh *.conf $DEPLOYDIR \u2014 fixed by variable-destination suppression. DL3033 yum pinning (53x).",
+    "improvements": [
+      "fix: DL3021 false positive when COPY destination is a shell variable ($VAR) \u2014 suppress lint check when destination starts with '$' since value is unknown at lint time"
+    ]
+  },
+  {
+    "repo": "supabase/realtime",
+    "scannedAt": "2026-02-22T17:04:38.572494+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 26,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 10
+    },
+    "notableFindings": "DL3008 apt pinning (14x), DL3015 no-install-recommends (3x), DV2004 \u2014 all legitimate. Clean Elixir Realtime websocket server.",
+    "improvements": []
   }
 ]

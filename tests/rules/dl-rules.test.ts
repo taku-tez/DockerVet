@@ -166,8 +166,15 @@ describe('DL3006 - Tag version explicitly', () => {
   it('should not warn when ARG default has digest', () => {
     expect(hasRule(lintDockerfile('ARG BASEIMG=gcr.io/distroless/static@sha256:abc123\nFROM ${BASEIMG}'), 'DL3006')).toBe(false);
   });
-  it('should warn when ARG has no default', () => {
-    expect(hasRule(lintDockerfile('ARG BASEIMG\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
+  it('skips bare-variable FROM with no default (caller controls full image spec)', () => {
+    // FROM $build_image / FROM ${BASEIMG} — the variable IS the entire image reference
+    // (including any tag/digest). Hadolint also suppresses in this case.
+    expect(hasRule(lintDockerfile('ARG BASEIMG\nFROM ${BASEIMG}'), 'DL3006')).toBe(false);
+    expect(hasRule(lintDockerfile('ARG build_image\nFROM $build_image AS build'), 'DL3006')).toBe(false);
+  });
+  it('should warn when ARG default is an untagged image', () => {
+    // ARG has a default that lacks a version tag → DL3006 should fire
+    expect(hasRule(lintDockerfile('ARG BASEIMG=ubuntu\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
   });
   it('skips ARG that defaults to a stage alias', () => {
     expect(hasRule(lintDockerfile('ARG GO_IMAGE=go-builder-base\nFROM golang:1.25-alpine AS go-builder-base\nRUN echo build\nFROM ${GO_IMAGE}'), 'DL3006')).toBe(false);

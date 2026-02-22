@@ -64,6 +64,11 @@ export const DL3006: Rule = {
               if (defaultVal.toLowerCase() === 'scratch') continue;
               // Skip if default value (alone) references a stage alias
               if (stageAliases.has(defaultVal.toLowerCase())) continue;
+            } else if (!argDef || !(argDef as any).defaultValue) {
+              // The ENTIRE image is a single bare variable with no known default (e.g. FROM $build_image).
+              // The variable holds the full image ref including any tag/digest; we cannot
+              // check it statically. Suppress to match Hadolint's behaviour and avoid FPs.
+              if (/^\$\{?[A-Za-z_][A-Za-z0-9_]*\}?$/.test(f.image)) continue;
             }
           }
           // Try substituting ALL variables in the image string with their ARG defaults;
