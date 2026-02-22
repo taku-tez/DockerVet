@@ -6927,5 +6927,147 @@
     },
     "notableFindings": "DL3020 ADD for local scripts (6x) — legitimate (`ADD resource/*.sh /usr/local/bin/`). DL3008 apt (60x), DL3045 COPY relative (10x), DV1006 (8x), DV4009 (5x). Apache OLAP database.",
     "improvements": []
+  },
+  {
+    "repo": "appflowy-io/AppFlowy",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 6,
+      "warning": 3,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3004(5) sudo in non-root makepkg builder (legitimate), DV1003 curl|sh for rustup, DV1009(2), DL3003 — all legitimate. FP fix applied: DL3004 no longer fires on chown/chmod /usr/bin/sudo path references.",
+    "improvements": [
+      "fix: DL3004 no longer fires on 'chown/chmod /usr/bin/sudo' path references (hasSudoCommand() replaces \\bsudo\\b — only matches sudo as command invocation, not path component)"
+    ]
+  },
+  {
+    "repo": "sigstore/cosign",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest, DV4005 no CMD — all legitimate. Very clean minimal Go/Alpine cosign Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "lm-sys/FastChat",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 9,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3008(3) apt pinning, DL3013(2) pip pinning, DL3042(2) pip no-cache, DL3057, DV1006, DV1009 — all legitimate. Clean Python FastChat serving Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "gravitl/netmaker",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1009(2) no digest, DV1005/DV1008 broad COPY, DL3057, DV1006 — all legitimate. Minimal Go WireGuard/mesh network Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "louislam/dockge",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV1009(5) no digest, DL3008(5) apt pinning, DL3057(3), DV1006(3) — all legitimate. Docker compose stack manager with 3 Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "mautic/mautic",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 27,
+    "severities": {
+      "error": 6,
+      "warning": 10,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3004(6)+DV3011(4) sudo in .gitpod.Dockerfile (gitpod devcontainer, legitimate), DL3008(2) apt — all legitimate. Only scanned file is gitpod dev Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "wasp-lang/wasp",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 110,
+    "severities": {
+      "error": 0,
+      "warning": 56,
+      "info": 42,
+      "style": 12
+    },
+    "notableFindings": "DL3018(30) apk pinning, DV4008(24) TODO comments in templates/snapshots, DL3003(16) cd usage — all legitimate. Wasp DSL compiler with generated/template Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "amplication/amplication",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 18,
+    "totalIssues": 150,
+    "severities": {
+      "error": 1,
+      "warning": 62,
+      "info": 87,
+      "style": 0
+    },
+    "notableFindings": "DL3018(33) apk pinning across 18 microservice Dockerfiles, DV1009(22), DL3057(16), DV1006(11) — all legitimate. Large Node.js platform with many Alpine microservice images.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-plex",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 25,
+    "severities": {
+      "error": 0,
+      "warning": 9,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DV1009(4) no digest, DL3008(4) apt pinning, DL3057(2), DV1006(2), DV4003(2) — all legitimate. Standard linuxserver.io Plex media server image.",
+    "improvements": []
+  },
+  {
+    "repo": "umami-software/umami",
+    "scannedAt": "2026-02-23T05:10:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 1,
+      "warning": 5,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DV1009(3) no digest, DL3018(2) apk pinning, DL3016(2) npm pinning, DL3020 ADD vs COPY (error), DV1005/DV1008 broad COPY — all legitimate. Clean Next.js Alpine analytics Dockerfile.",
+    "improvements": []
   }
 ]
