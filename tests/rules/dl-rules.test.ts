@@ -389,6 +389,13 @@ describe('DL3021 - COPY multiple sources needs / dest', () => {
   it('allows ./ as destination', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nWORKDIR /app\nCOPY a.txt b.txt ./'), 'DL3021')).toBe(false);
   });
+  it('handles COPY --link with JSON array destination ./', () => {
+    // --link flag must not be mistakenly captured as consuming the JSON array
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY --link ["pnpm-lock.yaml", "package.json", "./"]'), 'DL3021')).toBe(false);
+  });
+  it('handles COPY --link with multiple sources and ./ dest', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY --link ["a.txt", "b.txt", "c.txt", "./"]'), 'DL3021')).toBe(false);
+  });
 });
 
 describe('DL3023 - COPY --from self-reference', () => {

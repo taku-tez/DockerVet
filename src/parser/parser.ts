@@ -14,7 +14,9 @@ const VALID_INSTRUCTIONS = new Set<string>([
 function parseFlags(args: string): { flags: Record<string, string>; rest: string } {
   const flags: Record<string, string> = {};
   let rest = args;
-  const flagRegex = /^--([a-zA-Z][a-zA-Z0-9-]*)(?:=(\S+)|\s+(?!--)(\S+))?/;
+  // Do not capture space-separated value if next token starts with '[' (JSON array)
+  // since COPY/ADD flags like --link, --mount use no value or use =value syntax
+  const flagRegex = /^--([a-zA-Z][a-zA-Z0-9-]*)(?:=(\S+)|\s+(?!--|\[)(\S+))?/;
 
   while (rest.trim().startsWith('--')) {
     const m = rest.trim().match(flagRegex);
