@@ -7069,5 +7069,147 @@
     },
     "notableFindings": "DV1009(3) no digest, DL3018(2) apk pinning, DL3016(2) npm pinning, DL3020 ADD vs COPY (error), DV1005/DV1008 broad COPY — all legitimate. Clean Next.js Alpine analytics Dockerfile.",
     "improvements": []
+  },
+  {
+    "repo": "infracost/infracost",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 80,
+    "severities": {
+      "error": 0,
+      "warning": 51,
+      "info": 25,
+      "style": 4
+    },
+    "notableFindings": "DL3018(36) apk pinning across 5 Go/Alpine CI Dockerfiles, DV1009(10) no digest, DV1005/DV1008(5 each) broad COPY — all legitimate. Cloud cost estimation tool.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/pinot",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 163,
+    "severities": {
+      "error": 0,
+      "warning": 113,
+      "info": 50,
+      "style": 0
+    },
+    "notableFindings": "DL3008(81) apt pinning dominant across 11 Dockerfiles, DL3033(11) yum pinning, DL3057(10) no HEALTHCHECK, DV1006(9) root — all legitimate. Java real-time OLAP database.",
+    "improvements": []
+  },
+  {
+    "repo": "open-feature/flagd",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DV1009(7) no digest, DL3057(2) no HEALTHCHECK, DV1006, DV4003, DL3013 — all legitimate. Very clean minimal Go feature-flag daemon Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "casdoor/casdoor",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DV1009(4) no digest, DL3018(4) apk pinning, DL3019(4) apk cache, DV4001(3) multiple RUN installs, DL3007(2) latest tag — all legitimate. Go SSO/identity platform.",
+    "improvements": []
+  },
+  {
+    "repo": "juicedata/juicefs",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 80,
+    "severities": {
+      "error": 1,
+      "warning": 43,
+      "info": 36,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh for Rust toolchain in Dockerfile.builder — legitimate. DL3008(15) apt pinning, DV1009(8), DV1006(6). FP fixed: DV3002 no longer fires on COPY id_rsa.pub (public key used for test SSH server authorized_keys).",
+    "improvements": [
+      "fix: DV3002 false positive on SSH public keys — COPY id_rsa.pub now correctly excluded (negative lookahead (?!\\.pub\\b) added to private key pattern)"
+    ]
+  },
+  {
+    "repo": "ente-io/ente",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 78,
+    "severities": {
+      "error": 2,
+      "warning": 38,
+      "info": 36,
+      "style": 2
+    },
+    "notableFindings": "DV1003(2) curl|sh for bun/tool installation in copycat-db and web Dockerfiles — legitimate. DL3018(12) apk pinning, DV1009(7), DL3045(6) COPY without WORKDIR — all legitimate. E2E encrypted cloud storage.",
+    "improvements": []
+  },
+  {
+    "repo": "manticoresoftware/manticoresearch",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 86,
+    "totalIssues": 1096,
+    "severities": {
+      "error": 13,
+      "warning": 568,
+      "info": 515,
+      "style": 0
+    },
+    "notableFindings": "86 cross-platform build Dockerfiles (dist/build_dockers/*) across many architectures and distros. DL3008(343) apt pinning, DL3020(13) ADD vs COPY in build toolchain Dockerfiles, DL3057(86)/DV1006(86)/DV1009(86) — all legitimate. C++ full-text search engine with extensive cross-compile matrix.",
+    "improvements": []
+  },
+  {
+    "repo": "openblocks-dev/openblocks",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 45,
+    "severities": {
+      "error": 3,
+      "warning": 19,
+      "info": 22,
+      "style": 1
+    },
+    "notableFindings": "DV1003(3) curl|sh for NVM/node install across 2 app Dockerfiles — legitimate. DL3008(12) apt pinning, DV1009(8), DL3009(6) apt cleanup — all legitimate. Low-code app builder.",
+    "improvements": []
+  },
+  {
+    "repo": "lowcoder-org/lowcoder",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 60,
+    "severities": {
+      "error": 0,
+      "warning": 27,
+      "info": 33,
+      "style": 0
+    },
+    "notableFindings": "DL3008(20) apt pinning, DV1009(10) no digest, DL3009(8) apt cleanup, DV4003(5) no WORKDIR, DV4002(5) consecutive RUN — all legitimate. Low-code builder (Appsmith fork).",
+    "improvements": []
+  },
+  {
+    "repo": "triggerdotdev/trigger.dev",
+    "scannedAt": "2026-02-23T08:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 36,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "DL3008(9) apt pinning, DL3015(4) no --no-install-recommends, DV2004(4) dnf module, DV1009(3) no digest — all legitimate. Node.js background job platform.",
+    "improvements": []
   }
 ]
