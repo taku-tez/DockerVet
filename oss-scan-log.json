@@ -7637,5 +7637,145 @@
     },
     "notableFindings": "DL3020 ADD vs COPY, DL3008(7) apt pinning, DL3057(3), DV1006(3) root — all legitimate. Kubernetes supply chain choreography tool.",
     "improvements": []
+  },
+  {
+    "repo": "cloudflare/workers-sdk",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3057(6) no HEALTHCHECK, DV1006(6) root, DV1009(6) no digest — all legitimate. 6 CI test Dockerfiles for Cloudflare Workers SDK.",
+    "improvements": []
+  },
+  {
+    "repo": "projectdiscovery/subfinder",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018(3) apk pinning, DV1009(2) no digest, DL3019 apk cache, DV1005/DV1008 broad COPY — all legitimate. Go subdomain enumeration tool.",
+    "improvements": []
+  },
+  {
+    "repo": "projectdiscovery/httpx",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018(7) apk pinning, DV1009(2) no digest, DV1005/DV1008 broad COPY, DL3057 — all legitimate. Go HTTP toolkit.",
+    "improvements": []
+  },
+  {
+    "repo": "bridgecrewio/checkov",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 123,
+    "totalIssues": 1006,
+    "severities": {
+      "error": 57,
+      "warning": 388,
+      "info": 561,
+      "style": 0
+    },
+    "notableFindings": "120/123 Dockerfiles are intentional test fixtures in tests/dockerfile/checks/*/fail/ and tests/secrets/ directories — all errors (DV3006, DV1001, DV3018, DL3000, DL3004) are in test fixtures. Production Dockerfiles (Dockerfile, kubernetes/Dockerfile) have only warnings. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "tenable/terrascan",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 69,
+    "severities": {
+      "error": 18,
+      "warning": 14,
+      "info": 37,
+      "style": 0
+    },
+    "notableFindings": "All 18 DL3020 errors and DL3029 (--platform flag) findings are in test/e2e/test_data/ fixtures for terrascan's own IaC checks — legitimate. DV1009(13) no digest, DV4003(10) — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gruntwork-io/terratest",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 92,
+    "severities": {
+      "error": 3,
+      "warning": 52,
+      "info": 37,
+      "style": 0
+    },
+    "notableFindings": "DL3020(2) ADD vs COPY, DL3004 sudo in test Dockerfile, DL3008(15) apt pinning, DL3033(10) yum pinning, DV1006(10) root — all legitimate. 10 test Dockerfiles for Go infrastructure testing library.",
+    "improvements": []
+  },
+  {
+    "repo": "open-policy-agent/conftest",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 10,
+      "style": 1
+    },
+    "notableFindings": "DL3018(15) apk pinning, DV1009(3), DV4002(2) consecutive RUN — all legitimate. OPA policy testing tool.",
+    "improvements": []
+  },
+  {
+    "repo": "fugue/regula",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest — all legitimate. Near-perfect Go OPA IaC rules Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "snyk/driftctl",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DV1009(2) no digest, DV1005/DV1008 broad COPY, DL3057, DV1006 — all legitimate. Terraform drift detection tool.",
+    "improvements": []
+  },
+  {
+    "repo": "runatlantis/atlantis",
+    "scannedAt": "2026-02-23T20:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 10,
+      "style": 2
+    },
+    "notableFindings": "DV4003(4) no WORKDIR, DV3019(2) downloaded scripts without checksum (Terraform/provider installs in large installer Dockerfile — legitimate install pattern), DV4012(2) consecutive COPY, DV1009 — all legitimate. Terraform PR automation.",
+    "improvements": []
   }
 ]
