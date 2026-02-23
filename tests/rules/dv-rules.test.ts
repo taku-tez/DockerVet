@@ -151,6 +151,19 @@ describe('DV1001 - Hardcoded secrets', () => {
     // Real secrets shouldn't be skipped just because they happen to contain "change"
     expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_SECRET=mySuperChange123'), 'DV1001')).toBe(true);
   });
+
+  it('does not flag self-referential ARG placeholder (value is kebab-case of key)', () => {
+    // Infisical pattern: ARG POSTHOG_API_KEY=posthog-api-key — value is the key name in kebab-case,
+    // clearly a build-time stub (not a real API key)
+    expect(hasRule(lintDockerfile('ARG POSTHOG_API_KEY=posthog-api-key\nFROM ubuntu'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('ARG STRIPE_SECRET_KEY=stripe-secret-key\nFROM ubuntu'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_KEY=api-key'), 'DV1001')).toBe(false);
+  });
+
+  it('still flags ARG where value looks like a real key (not self-referential)', () => {
+    expect(hasRule(lintDockerfile('ARG POSTHOG_API_KEY=phc_realKeyValue123\nFROM ubuntu'), 'DV1001')).toBe(true);
+    expect(hasRule(lintDockerfile('ARG API_KEY=sk-proj-abc123\nFROM ubuntu'), 'DV1001')).toBe(true);
+  });
 });
 
 describe('DV1002 - Privileged operations', () => {
