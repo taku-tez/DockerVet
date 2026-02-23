@@ -346,9 +346,12 @@ export const DV3016: Rule = {
     const violations: Violation[] = [];
 
     // Category A: Command execution patterns (+3)
+    // Note: Avoid overly-broad patterns like /run docker/ or /docker stop/ which match
+    // legitimate OpenShift/UBI label conventions (e.g., run="docker run...", stop="docker stop...").
     const catA = [
-      /execute the command/i, /run the command/i, /run docker/i,
-      /docker\s+(?:stop|exec|rm|ps|kill)/i,
+      /execute the command/i, /run the command/i,
+      // docker exec with a shell is the real injection signal; plain "docker stop/run" in labels is normal UBI convention
+      /docker\s+exec\s+\S+\s+(?:bash|sh|ash|python|perl|ruby|cmd|powershell)/i,
       /capture the output/i, /return only the command output/i,
     ];
     // Category B: AI/MCP prompt injection (+3)

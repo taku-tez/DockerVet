@@ -305,6 +305,16 @@ describe('DV3016 - AI Prompt Injection in LABEL', () => {
   it('passes normal URL label', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL url="https://example.com"'), 'DV3016')).toBe(false);
   });
+  it('passes OpenShift/UBI run and stop labels (FP regression)', () => {
+    // OpenShift UBI convention: run="docker run -d -p 8081:8081 IMAGE" stop="docker stop NAME"
+    // These are legitimate operational labels, not AI prompt injections.
+    expect(hasRule(lintDockerfile(
+      'FROM registry.access.redhat.com/ubi8/ubi-minimal\n' +
+      'LABEL run="docker run -d --name NAME -p 8081:8081 IMAGE" \\\n' +
+      '      stop="docker stop NAME" \\\n' +
+      '      summary="Nexus Repository Manager"'
+    ), 'DV3016')).toBe(false);
+  });
 });
 
 describe('DV3017 - Suspicious URL with imperative context in LABEL', () => {
