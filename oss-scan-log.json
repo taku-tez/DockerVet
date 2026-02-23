@@ -7919,5 +7919,147 @@
     "improvements": [
       "Fixed DV3016 false positive: OpenShift/UBI operational labels (run=\"docker run...\", stop=\"docker stop...\") were incorrectly flagged as AI prompt injection"
     ]
+  },
+  {
+    "repo": "ClickHouse/ClickHouse",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 43,
+    "totalIssues": 654,
+    "severities": {
+      "error": 4,
+      "warning": 392,
+      "info": 254,
+      "style": 4
+    },
+    "notableFindings": "DL3008 unpinned apt (277), DV4003 no WORKDIR (35), DV4001 root user (14), DL3001 vim/ssh in RUN (5)",
+    "improvements": []
+  },
+  {
+    "repo": "opensearch-project/OpenSearch",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 67,
+    "severities": {
+      "error": 1,
+      "warning": 34,
+      "info": 32,
+      "style": 0
+    },
+    "notableFindings": "DL3008/DL3009 unpinned apt, DL3014/DL3015 yum flags, DV2001 apt-get without DEBIAN_FRONTEND",
+    "improvements": []
+  },
+  {
+    "repo": "pinpoint-apm/pinpoint",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3025 CMD not JSON, DV1009 env pin, minimal findings",
+    "improvements": []
+  },
+  {
+    "repo": "spring-projects/spring-petclinic",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 1,
+      "warning": 2,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo, DV3011 sudo, DV1006 no USER",
+    "improvements": []
+  },
+  {
+    "repo": "testcontainers/testcontainers-python",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 44,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 22,
+      "style": 0
+    },
+    "notableFindings": "DL3013 pip upgrade, DL3042 COPY --chown, DV1009 untagged images (11)",
+    "improvements": []
+  },
+  {
+    "repo": "debezium/debezium",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 43,
+    "severities": {
+      "error": 6,
+      "warning": 12,
+      "info": 25,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD (5), DL3013 pip upgrade, DV4002 no HEALTHCHECK, DV3019 curl to shell pipe",
+    "improvements": []
+  },
+  {
+    "repo": "sorintlab/stolon",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 4,
+      "style": 1
+    },
+    "notableFindings": "DV1005/DV1008 missing labels, DV4003 no WORKDIR - minimal findings",
+    "improvements": []
+  },
+  {
+    "repo": "mlocati/docker-php-extension-installer",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "Only DL3057 and DV4005 - very clean Dockerfile",
+    "improvements": []
+  },
+  {
+    "repo": "KubeOperator/KubeOperator",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DL3047 wget without --progress (6), DV2001 apt without DEBIAN_FRONTEND",
+    "improvements": []
+  },
+  {
+    "repo": "microsoft/vscode-dev-containers",
+    "scannedAt": "2026-02-24T02:03:00+09:00",
+    "dockerfiles": 138,
+    "totalIssues": 676,
+    "severities": {
+      "error": 13,
+      "warning": 309,
+      "info": 354,
+      "style": 0
+    },
+    "notableFindings": "676 issues (138 files), DL3016 FP fixed (su -c \"npm install\" trailing quote); DV1006 (129), DV4003 (117), DV1009 (113)",
+    "improvements": [
+      "Fixed DL3016 false positive: npm install inside su -c \"...\" string included trailing quote in package name"
+    ]
   }
 ]
