@@ -216,12 +216,18 @@ describe('DV4010 - chown -R', () => {
   });
 });
 
-describe('DV4011 - WORKDIR relative path', () => {
-  it('flags relative WORKDIR', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR src'), 'DV4011')).toBe(true);
+describe('DV4011 - WORKDIR relative path (deduplicates with DL3000)', () => {
+  // DV4011 is suppressed when DL3000 would also fire (same relative-path condition).
+  // The parser strips surrounding quotes so DL3000 correctly catches all relative paths.
+  // DV4011 avoids double-reporting the same issue at both error (DL3000) and warning levels.
+  it('does NOT fire for relative path (DL3000 handles it as error)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR src'), 'DV4011')).toBe(false);
   });
-  it('flags relative path with subdirectory', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR app/src'), 'DV4011')).toBe(true);
+  it('does NOT fire for relative path with subdirectory (DL3000 handles it)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR app/src'), 'DV4011')).toBe(false);
+  });
+  it('does NOT fire for WORKDIR "./" (DL3000 already fires — warrant-dev/warrant pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR "./"'), 'DV4011')).toBe(false);
   });
   it('passes absolute path', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nWORKDIR /app'), 'DV4011')).toBe(false);
@@ -236,7 +242,6 @@ describe('DV4011 - WORKDIR relative path', () => {
     expect(hasRule(lintDockerfile("FROM ubuntu\nWORKDIR '/app'"), 'DV4011')).toBe(false);
   });
   it('does not flag Windows absolute WORKDIR (C:/path) — drive letter is absolute', () => {
-    // Windows Dockerfiles use C:/path patterns which are absolute but don't start with /
     expect(hasRule(lintDockerfile('FROM mcr.microsoft.com/windows/nanoserver:ltsc2022\nWORKDIR C:/spire'), 'DV4011')).toBe(false);
     expect(hasRule(lintDockerfile('FROM mcr.microsoft.com/windows/nanoserver:ltsc2022\nWORKDIR C:\\app'), 'DV4011')).toBe(false);
   });

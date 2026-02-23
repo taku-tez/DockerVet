@@ -1,6 +1,6 @@
 import { Rule, Violation } from '../types';
 import { forEachInstruction } from '../utils';
-import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction } from '../../parser/types';
+import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction, WorkdirInstruction } from '../../parser/types';
 
 // DV4001: Multiple package install in separate RUNs
 export const DV4001: Rule = {
@@ -291,6 +291,11 @@ export const DV4010: Rule = {
 };
 
 // DV4011: WORKDIR should use absolute paths
+// Note: DL3000 already fires as an error for relative WORKDIR paths. The parser strips
+// surrounding quotes from WORKDIR paths (w.path is always unquoted), so DL3000 correctly
+// catches all relative paths including WORKDIR "./" and WORKDIR 'app'.
+// DV4011 is therefore suppressed when DL3000 would fire, to avoid double-reporting the
+// same issue at both error and warning severity (warrant-dev/warrant pattern).
 export const DV4011: Rule = {
   id: 'DV4011', severity: 'warning',
   description: 'WORKDIR should use an absolute path.',
@@ -299,16 +304,20 @@ export const DV4011: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'WORKDIR') continue;
-        let dir = inst.arguments.trim();
-        // Strip surrounding quotes (single or double)
-        if ((dir.startsWith('"') && dir.endsWith('"')) || (dir.startsWith("'") && dir.endsWith("'"))) {
-          dir = dir.slice(1, -1);
-        }
-        // Allow variable references like $HOME or ${APP_DIR}
-        // Allow Unix absolute paths (/app) and Windows absolute paths (C:/app, C:\app)
-        if (dir.startsWith('$') || dir.startsWith('/')) continue;
-        if (/^[A-Za-z]:[/\\]/.test(dir)) continue;  // Windows drive letter path (e.g. C:/spire)
-        violations.push({ rule: 'DV4011', severity: 'warning', message: `WORKDIR "${dir}" is a relative path. Use an absolute path for predictable behavior.`, line: inst.line });
+        const w = inst as WorkdirInstruction;
+        const dir = w.path; // Parser already strips surrounding quotes
+        // Skip variable references — cannot be resolved at lint time
+        if (dir.startsWith('$')) continue;
+        // Skip absolute paths — Unix (/app) and Windows (C:/app, C:\app)
+        if (dir.startsWith('/')) continue;
+        if (/^[A-Za-z]:[/\\]/.test(dir)) continue;
+        // Skip if DL3000 would also fire on this path (same condition: non-absolute, non-variable,
+        // non-Windows). DL3000 fires as an error; suppress DV4011 to avoid duplicate reporting.
+        // DL3000 condition: !startsWith('/') && !startsWith('$') && !Windows drive
+        // That is exactly the condition above — so all cases reaching here are DL3000 cases.
+        // DV4011 suppresses itself entirely when the parser provides a clean (unquoted) path,
+        // since DL3000 covers all such cases. DV4011 is preserved for potential future edge cases.
+        // Currently: no-op (all relative paths are caught by DL3000 first).
       }
     }
     return violations;
