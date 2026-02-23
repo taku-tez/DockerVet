@@ -280,6 +280,15 @@ describe('DL3013 - Pin pip versions', () => {
   it('passes requirements file', () => {
     expect(hasRule(lintDockerfile('FROM python:3\nRUN pip install -r requirements.txt'), 'DL3013')).toBe(false);
   });
+  it('passes upper-bound constraint (<) - PEP 440', () => {
+    expect(hasRule(lintDockerfile('FROM python:3\nRUN pip install "Cython<3.0"'), 'DL3013')).toBe(false);
+  });
+  it('passes lower-bound constraint (>) - PEP 440', () => {
+    expect(hasRule(lintDockerfile('FROM python:3\nRUN pip install "setuptools>40"'), 'DL3013')).toBe(false);
+  });
+  it('passes exclusion constraint (!=) - PEP 440', () => {
+    expect(hasRule(lintDockerfile('FROM python:3\nRUN pip install "package!=1.5"'), 'DL3013')).toBe(false);
+  });
 });
 
 describe('DL3014 - apt-get -y', () => {

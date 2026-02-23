@@ -89,7 +89,12 @@ export const DL3013: Rule = {
         pkgs.push(t);
       }
       for (const pkg of pkgs) {
-        if (!pkg.includes('==') && !pkg.includes('>=') && !pkg.includes('~=') && !pkg.includes('!=') && !pkg.includes('.txt') && !pkg.includes('.whl') && !pkg.includes('/') && !pkg.startsWith('.') && !pkg.startsWith('$')) {
+        // Strip surrounding quotes (e.g., "Cython<3.0" → Cython<3.0)
+        const cleanPkg = pkg.replace(/^["']|["']$/g, '');
+        // PEP 440 version specifiers: ==, >=, <=, ~=, !=, <, >, as well as extras [...]
+        const hasVersionSpec = cleanPkg.includes('==') || cleanPkg.includes('>=') || cleanPkg.includes('<=') ||
+          cleanPkg.includes('~=') || cleanPkg.includes('!=') || cleanPkg.includes('<') || cleanPkg.includes('>');
+        if (!hasVersionSpec && !cleanPkg.includes('.txt') && !cleanPkg.includes('.whl') && !cleanPkg.includes('/') && !cleanPkg.startsWith('.') && !cleanPkg.startsWith('$')) {
           violations.push({ rule: 'DL3013', severity: 'warning', message: `Pin versions in pip. Instead of \`pip install ${pkg}\` use \`pip install ${pkg}==<version>\``, line: inst.line });
         }
       }
