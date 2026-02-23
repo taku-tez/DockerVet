@@ -418,6 +418,12 @@ describe('DL3021 - COPY multiple sources needs / dest', () => {
   it('skips check when destination is a braced shell variable (${VAR})', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nARG DEPLOYDIR=/data/deploy\nCOPY *.sh *.conf ${DEPLOYDIR}'), 'DL3021')).toBe(false);
   });
+  it('skips check when arguments contain template variables ({{ .Var }} Go template syntax)', () => {
+    // konveyor/move2kube pattern: COPY --from=builder /{{ .AppName }}/bin/{{ .AppName }} /bin/{{ .AppName }}
+    // Template variables with spaces confuse the parser into counting extra arguments
+    expect(hasRule(lintDockerfile('FROM ubi8\nCOPY --from=builder /{{ .AppName }}/bin/{{ .AppName }} /bin/{{ .AppName }}'), 'DL3021')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCOPY {{ .Src }} {{ .Dest }}'), 'DL3021')).toBe(false);
+  });
 });
 
 describe('DL3023 - COPY --from self-reference', () => {

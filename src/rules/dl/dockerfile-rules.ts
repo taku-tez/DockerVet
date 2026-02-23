@@ -111,7 +111,11 @@ export const DL3021: Rule = {
         // the variable's value cannot be determined at lint time, so we cannot know if it
         // will expand to a path ending with '/' or to an existing directory.
         const destIsVar = c.destination.startsWith('$');
-        if (c.sources.length > 1 && !destIsVar && !c.destination.endsWith('/') && c.destination !== '.' && c.destination !== './') {
+        // Skip check when any argument contains a template variable ({{ .Var }} syntax) —
+        // template files (Go, Jinja2, etc.) may have {{ .AppName }} in paths which the
+        // parser splits on spaces, causing spurious multi-source counts (konveyor/move2kube pattern).
+        const hasTemplateVar = c.sources.some(s => s.includes('{{')) || c.destination.includes('{{');
+        if (c.sources.length > 1 && !destIsVar && !hasTemplateVar && !c.destination.endsWith('/') && c.destination !== '.' && c.destination !== './') {
           violations.push({ rule: 'DL3021', severity: 'error', message: 'COPY with more than 2 arguments requires the last argument to end with /', line: inst.line });
         }
       });
