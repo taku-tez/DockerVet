@@ -7777,5 +7777,147 @@
     },
     "notableFindings": "DV4003(4) no WORKDIR, DV3019(2) downloaded scripts without checksum (Terraform/provider installs in large installer Dockerfile — legitimate install pattern), DV4012(2) consecutive COPY, DV1009 — all legitimate. Terraform PR automation.",
     "improvements": []
+  },
+  {
+    "repo": "kubesphere/kubesphere",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 39,
+    "severities": {
+      "error": 2,
+      "warning": 14,
+      "info": 22,
+      "style": 1
+    },
+    "notableFindings": "DL3020 ADD usage, DV1009 ENV ordering issues",
+    "improvements": []
+  },
+  {
+    "repo": "openfaas/faas-netes",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DV4010 health check missing, DV4002 no non-root user",
+    "improvements": []
+  },
+  {
+    "repo": "aquasecurity/kube-hunter",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk without pinning (8 instances), DV2010 pip without pinning",
+    "improvements": []
+  },
+  {
+    "repo": "notaryproject/notary",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 103,
+    "severities": {
+      "error": 2,
+      "warning": 59,
+      "info": 42,
+      "style": 0
+    },
+    "notableFindings": "DL3008/DL3018 unpinned pkgs, DV4004 ARG after ENV, DV4005 no CMD/ENTRYPOINT in final stage",
+    "improvements": []
+  },
+  {
+    "repo": "ceph/ceph",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 97,
+    "severities": {
+      "error": 0,
+      "warning": 55,
+      "info": 39,
+      "style": 3
+    },
+    "notableFindings": "DL3008 unpinned apt packages, DV4001/DV4003 root user, DL3040/DL3041 dnf without pinning",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-java",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3013 pip upgrade, DL3042 COPY --chown, minimal findings",
+    "improvements": []
+  },
+  {
+    "repo": "go-gitea/gitea",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 52,
+    "severities": {
+      "error": 0,
+      "warning": 37,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk without pinning (31 instances), DV3009 EXPOSE 22 SSH",
+    "improvements": []
+  },
+  {
+    "repo": "elastic/beats",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 71,
+    "totalIssues": 428,
+    "severities": {
+      "error": 27,
+      "warning": 186,
+      "info": 214,
+      "style": 1
+    },
+    "notableFindings": "428 total (71 Dockerfiles), DL3020 ADD usage (26), DV1009 env before ARG (72), DV4003 root user (34)",
+    "improvements": []
+  },
+  {
+    "repo": "gogs/gogs",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 35,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk without pinning (23 instances), DV3009 EXPOSE 22 SSH (2 instances)",
+    "improvements": []
+  },
+  {
+    "repo": "sonatype/docker-nexus3",
+    "scannedAt": "2026-02-23T23:03:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 44,
+    "severities": {
+      "error": 4,
+      "warning": 16,
+      "info": 24,
+      "style": 0
+    },
+    "notableFindings": "DV3016 FP on UBI run/stop labels - fixed; DV2011 apk update redundant, DL3006 SHELL missing",
+    "improvements": [
+      "Fixed DV3016 false positive: OpenShift/UBI operational labels (run=\"docker run...\", stop=\"docker stop...\") were incorrectly flagged as AI prompt injection"
+    ]
   }
 ]
