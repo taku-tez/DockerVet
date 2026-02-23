@@ -7211,5 +7211,147 @@
     },
     "notableFindings": "DL3008(9) apt pinning, DL3015(4) no --no-install-recommends, DV2004(4) dnf module, DV1009(3) no digest — all legitimate. Node.js background job platform.",
     "improvements": []
+  },
+  {
+    "repo": "Infisical/infisical",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 316,
+    "severities": {
+      "error": 5,
+      "warning": 174,
+      "info": 136,
+      "style": 1
+    },
+    "notableFindings": "DL3008(144) apt pinning dominant, DV1003(5) curl|sh for bun/nvm installs, DL3015(31)/DV2004(31) across 7 Dockerfiles — all legitimate. FP fix: DV1001 no longer fires on ARG POSTHOG_API_KEY=posthog-api-key (self-referential kebab-case placeholder).",
+    "improvements": [
+      "fix: DV1001 false positive on self-referential ARG placeholders — value equals kebab-case of key name (e.g. POSTHOG_API_KEY=posthog-api-key) now correctly excluded via isSelfReferentialPlaceholder()"
+    ]
+  },
+  {
+    "repo": "getlago/lago",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 51,
+    "severities": {
+      "error": 1,
+      "warning": 25,
+      "info": 25,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh for Ruby/rbenv install — legitimate. DL3008(13) apt pinning, DV1009(9), DV1006(4) — all legitimate. Open-source usage-based billing platform.",
+    "improvements": []
+  },
+  {
+    "repo": "aptly-dev/aptly",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 54,
+    "severities": {
+      "error": 1,
+      "warning": 46,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3008(41) heavy apt pinning (ironic for a Debian package manager tool), DL3003(3) cd in RUN, DV3008(2) git clone, DL3020 ADD vs COPY — all legitimate. Debian package repository tool.",
+    "improvements": []
+  },
+  {
+    "repo": "netbootxyz/netboot.xyz",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 10,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3007(2) latest tag for versioned tooling images, DV1009(2) no digest, DV1005/DV1008 broad COPY, DV4003 — all legitimate. Network bootloader PXE image builder.",
+    "improvements": []
+  },
+  {
+    "repo": "e2b-dev/E2B",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 77,
+    "severities": {
+      "error": 0,
+      "warning": 39,
+      "info": 38,
+      "style": 0
+    },
+    "notableFindings": "DV1009(13) no digest, DL3008(13) apt pinning, DL3057(11) no HEALTHCHECK, DV1006(10) root — all legitimate. Cloud sandbox infrastructure with 11 microservice Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "daytonaio/daytona",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 126,
+    "severities": {
+      "error": 2,
+      "warning": 75,
+      "info": 49,
+      "style": 0
+    },
+    "notableFindings": "DL3004(1) sudo in sandbox Dockerfile (root context), DV1003 curl|sh for tooling, DL3008(38) apt pinning, DV1009(18) — all legitimate. 12 Dockerfiles for dev environment manager.",
+    "improvements": []
+  },
+  {
+    "repo": "conductorone/baton",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest — all legitimate. Very clean minimal Go identity governance tool Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "opencost/opencost",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 44,
+    "severities": {
+      "error": 24,
+      "warning": 8,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3020(24) ADD vs COPY across 3 Dockerfiles — legitimate for local file copies. DV1009(4), DL3057(3) — all legitimate. Kubernetes cost monitoring tool.",
+    "improvements": []
+  },
+  {
+    "repo": "doitintl/kube-no-trouble",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest, DL3057 no HEALTHCHECK — all legitimate. Extremely clean minimal Go Kubernetes deprecations tool Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/beyla",
+    "scannedAt": "2026-02-23T11:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 69,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 29,
+      "style": 12
+    },
+    "notableFindings": "DL3018(13) apk pinning, DV4012(12) consecutive COPY (style), DL3057(7) no HEALTHCHECK, DV4008(4) TODO comments in devcontainer Dockerfiles — all legitimate. Grafana eBPF auto-instrumentation tool.",
+    "improvements": []
   }
 ]
