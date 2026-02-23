@@ -7495,5 +7495,147 @@
     },
     "notableFindings": "DL3008(3) apt pinning, DL3028(3) gem version pinning, DL3025(2) multiple CMD, DL3057(2), DL3027(2) apt vs apt-get — all legitimate. Go Swagger API documentation generator.",
     "improvements": []
+  },
+  {
+    "repo": "permitio/opal",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 66,
+    "severities": {
+      "error": 0,
+      "warning": 42,
+      "info": 22,
+      "style": 2
+    },
+    "notableFindings": "DL3018(26) apk pinning, DV1009(7) no digest, DL3003(7) cd in RUN, DL3008(5) apt — all legitimate. OPA real-time policy engine.",
+    "improvements": []
+  },
+  {
+    "repo": "authzed/spicedb",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 19,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3018(3) apk pinning, DV2011(3) redundant apk update with --no-cache, DV1006(2) root, DV3008(2) git clone — all legitimate. SpiceDB permission system.",
+    "improvements": []
+  },
+  {
+    "repo": "warrant-dev/warrant",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 3,
+    "severities": {
+      "error": 1,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3000 WORKDIR './' is relative — legitimate finding. DV4011 duplicate suppressed (was double-reporting relative WORKDIR with DL3000). Go RBAC/fine-grained authorization service.",
+    "improvements": [
+      "fix: DV4011 deduplication with DL3000 — relative WORKDIR warning suppressed when DL3000 (error) already fires on same line. Parser strips quotes so both rules were detecting identical condition."
+    ]
+  },
+  {
+    "repo": "pomerium/pomerium",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 7,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY in release Dockerfile, DV2001(2) ENTRYPOINT best practice, DV1005/DV1008(2) broad COPY, DV1006(3) root — all legitimate. Zero-trust identity-aware proxy.",
+    "improvements": []
+  },
+  {
+    "repo": "ory/keto",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 3,
+      "warning": 3,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3020(3) ADD vs COPY across 2 Dockerfiles — legitimate for binary deployment. DV1009(3) no digest, DL3057(2) — all legitimate. Ory permission server.",
+    "improvements": []
+  },
+  {
+    "repo": "smallstep/certificates",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 52,
+    "severities": {
+      "error": 2,
+      "warning": 29,
+      "info": 20,
+      "style": 1
+    },
+    "notableFindings": "DL3020(2) ADD vs COPY for binary artifacts, DL3008(11) apt pinning, DV1009(9) no digest — all legitimate. Step-CA certificate authority.",
+    "improvements": []
+  },
+  {
+    "repo": "smallstep/cli",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3018(7) apk pinning, DL3008(5) apt pinning, DV1009(4) no digest — all legitimate. Step CLI for PKI/certificates.",
+    "improvements": []
+  },
+  {
+    "repo": "jetify-com/devbox",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 2,
+      "warning": 2,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3020(2) ADD vs COPY for local binaries, DL3045 COPY without WORKDIR, DL3057, DV1006 — all legitimate. Nix-based portable dev environments.",
+    "improvements": []
+  },
+  {
+    "repo": "rootless-containers/rootlesskit",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 65,
+    "severities": {
+      "error": 3,
+      "warning": 34,
+      "info": 27,
+      "style": 1
+    },
+    "notableFindings": "DL3020(2) ADD for binaries, DV1003 curl|sh, DL3008(30) heavy apt pinning, DV1009(6) no digest — all legitimate. Linux user namespace and rootless container toolkit.",
+    "improvements": []
+  },
+  {
+    "repo": "vmware-tanzu/cartographer",
+    "scannedAt": "2026-02-23T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 34,
+    "severities": {
+      "error": 1,
+      "warning": 16,
+      "info": 17,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY, DL3008(7) apt pinning, DL3057(3), DV1006(3) root — all legitimate. Kubernetes supply chain choreography tool.",
+    "improvements": []
   }
 ]
