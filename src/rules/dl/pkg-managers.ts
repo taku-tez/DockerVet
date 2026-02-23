@@ -123,20 +123,39 @@ export const DL3016: Rule = {
   description: 'Pin versions in npm',
   check(ctx) {
     const violations: Violation[] = [];
+    // npm flags that consume the following token as a value (not a package name)
+    const npmFlagsWithValue = new Set([
+      '--prefix', '--location', '--workspace', '-w', '--cache', '--userconfig',
+      '--globalconfig', '--registry', '--scope', '--otp', '--tag', '--before',
+    ]);
+    // File-like extensions that indicate the token is a file path, not a package name
+    const fileExtensions = /\.(json|lock|txt|js|cjs|mjs|ts|yaml|yml|toml|sh|bash)$/i;
     forEachInstruction(ctx, 'RUN', (inst) => {
       const m = inst.arguments.match(/npm\s+install\s+(.*?)(?:&&|\|\||[;\n]|$)/s);
       if (!m) return;
       // Strip inline comments (# ...) before parsing package names
       const cleaned = m[1].replace(/#.*$/gm, '').trim();
       if (!cleaned) return; // bare "npm install" (from package.json)
-      const pkgs = cleaned.split(/\s+/)
-        .filter(p => p && !p.startsWith('-'))
+      const tokens = cleaned.split(/\s+/)
         // Strip trailing quotes/backslashes that appear when npm install is inside a shell string
         // e.g., su user -c "npm install eslint" → token becomes "eslint"
         .map(p => p.replace(/["'\\]+$/, ''))
-        .filter(p => p); // re-filter in case stripping left empty string
-      for (const pkg of pkgs) {
-        if (!pkg.includes('@') && !pkg.startsWith('.') && !pkg.startsWith('/') && !pkg.startsWith('$')) {
+        .filter(p => p);
+      let skipNext = false;
+      for (const token of tokens) {
+        if (skipNext) { skipNext = false; continue; }
+        // Skip flags; if flag takes a value, skip the next token too
+        if (token.startsWith('-')) {
+          if (npmFlagsWithValue.has(token) || (token.startsWith('--') && token.includes('='))) {
+            if (!token.includes('=')) skipNext = true;
+          }
+          continue;
+        }
+        // Skip paths, variables, file-like names, and scope-only tokens
+        if (token.startsWith('.') || token.startsWith('/') || token.startsWith('$')) continue;
+        if (fileExtensions.test(token)) continue; // e.g., package.json, package-lock.json
+        const pkg = token;
+        if (!pkg.includes('@')) {
           violations.push({ rule: 'DL3016', severity: 'warning', message: `Pin versions in npm. Instead of \`npm install ${pkg}\` use \`npm install ${pkg}@<version>\``, line: inst.line });
         }
       }

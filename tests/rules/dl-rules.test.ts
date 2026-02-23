@@ -331,6 +331,14 @@ describe('DL3016 - Pin npm versions', () => {
     // But still flag when inside quotes and no version
     expect(hasRule(lintDockerfile('FROM node:18\nRUN su node -c "npm install -g eslint"'), 'DL3016')).toBe(true);
   });
+  it('does not flag package.json file argument as package name (FP: --prefix with package.json)', () => {
+    // npm install --prefix /src/ package.json → package.json is a manifest file, not a package name
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install --prefix /src/ package.json'), 'DL3016')).toBe(false);
+  });
+  it('does not flag --prefix value as package name', () => {
+    // The path value of --prefix should be skipped
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install --prefix /app express'), 'DL3016')).toBe(true); // express still flagged
+  });
 });
 
 describe('DL3018 - Pin apk versions', () => {

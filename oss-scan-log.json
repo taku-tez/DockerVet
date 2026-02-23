@@ -8061,5 +8061,147 @@
     "improvements": [
       "Fixed DL3016 false positive: npm install inside su -c \"...\" string included trailing quote in package name"
     ]
+  },
+  {
+    "repo": "appsmithorg/appsmith",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 42,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 19,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (10x), DV1006 root (5x), DV1009 no digest (5x), DL3057 (4x) — all legitimate. Single-stage Dockerfile with Cypress e2e support images.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/pyroscope",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 55,
+    "totalIssues": 336,
+    "severities": {
+      "error": 9,
+      "warning": 176,
+      "info": 147,
+      "style": 4
+    },
+    "notableFindings": "DV1009 no digest (63x), DV1006 root (48x), DL3013 unpinned pip in example Dockerfiles (26x — legitimate, demo code), DL3042 pip cache (23x). DV2009 /busybox/sh in distroless debug images (legitimate). DL3020 ADD in example Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "cube-js/cube",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 253,
+    "severities": {
+      "error": 1,
+      "warning": 133,
+      "info": 109,
+      "style": 10
+    },
+    "notableFindings": "DL3008 apt pinning (95x) dominant across JDK/PostgreSQL build Dockerfiles. DV1003 curl|sh in dev.Dockerfile (legitimate). DV4012 consecutive COPY (10x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "airbytehq/airbyte",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 29,
+    "totalIssues": 329,
+    "severities": {
+      "error": 3,
+      "warning": 161,
+      "info": 146,
+      "style": 19
+    },
+    "notableFindings": "DL3013 FP: pip install \"Cython<3.0\" flagged as unpinned — but < IS a valid PEP 440 version specifier. DV3018 plaintext chpasswd in bastion/sftp Dockerfiles (legitimate). DL3042 pip cache (41x). DL3008 apt pinning (44x).",
+    "improvements": [
+      "Fixed DL3013: recognize PEP 440 <, <=, > version specifiers and strip surrounding quotes from pip package tokens"
+    ]
+  },
+  {
+    "repo": "supabase/postgres",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (4x), DV4007 DEBIAN_FRONTEND as ENV (2x), DV1009, DV4003 — all legitimate. Well-maintained PostgreSQL extension image.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/mysqld_exporter",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal clean Alpine-based Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/statsd_exporter",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 12,
+    "severities": {
+      "error": 1,
+      "warning": 6,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3006 untagged base image (ARG-based), DL3008 apt pinning (2x), DL3057 no HEALTHCHECK, DV1006 root — all legitimate. Multi-stage Alpine build.",
+    "improvements": []
+  },
+  {
+    "repo": "supabase/realtime",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 26,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (14x) dominant in Elixir/Phoenix Dockerfile. DL3015 no-install-recommends (3x), DL3009 apt lists not cleaned — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "mlocati/docker-php-extension-installer",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV4005 no CMD/ENTRYPOINT — informational only. PHP extension installer utility image.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/graphite_exporter",
+    "scannedAt": "2026-02-24T05:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal clean Alpine-based Dockerfile. Same pattern as mysqld_exporter.",
+    "improvements": []
   }
 ]
