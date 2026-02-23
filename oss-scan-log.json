@@ -7353,5 +7353,147 @@
     },
     "notableFindings": "DL3018(13) apk pinning, DV4012(12) consecutive COPY (style), DL3057(7) no HEALTHCHECK, DV4008(4) TODO comments in devcontainer Dockerfiles — all legitimate. Grafana eBPF auto-instrumentation tool.",
     "improvements": []
+  },
+  {
+    "repo": "basecamp/kamal",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 79,
+    "severities": {
+      "error": 0,
+      "warning": 38,
+      "info": 41,
+      "style": 0
+    },
+    "notableFindings": "DV1006(13) root, DV1009(13) no digest, DL3008(9) apt pinning, DL3057(8) no HEALTHCHECK — all legitimate. 13 test/CI Dockerfiles for Rails/Docker deployment tool.",
+    "improvements": []
+  },
+  {
+    "repo": "devspace-sh/devspace",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 40,
+    "totalIssues": 162,
+    "severities": {
+      "error": 5,
+      "warning": 91,
+      "info": 66,
+      "style": 0
+    },
+    "notableFindings": "DL3020(5) ADD vs COPY in test Dockerfiles, DL3006(24) untagged FROM in test/example Dockerfiles, DV1006(40) root, DV1009(39) — all legitimate. 40 test/integration Dockerfiles for dev env tool.",
+    "improvements": []
+  },
+  {
+    "repo": "garden-io/garden",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 100,
+    "totalIssues": 594,
+    "severities": {
+      "error": 58,
+      "warning": 287,
+      "info": 249,
+      "style": 0
+    },
+    "notableFindings": "DL3020(51) ADD vs COPY across test/example Dockerfiles (51 uses of ADD for local files), DV1009(84), DV1006(83), DL3018(55) — all legitimate. 100 Dockerfiles for K8s dev environment tool.",
+    "improvements": []
+  },
+  {
+    "repo": "nickel-lang/nickel",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 1,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK — only finding. Near-perfect single-Dockerfile repo. Configuration language.",
+    "improvements": []
+  },
+  {
+    "repo": "bufbuild/buf",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV1009(4) no digest, DV1006(3) root, DV4003(3) no WORKDIR, DL3018(3) apk pinning — all legitimate. Clean minimal Go Protobuf tooling Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "konveyor/move2kube",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 21,
+    "totalIssues": 187,
+    "severities": {
+      "error": 0,
+      "warning": 88,
+      "info": 98,
+      "style": 1
+    },
+    "notableFindings": "DV1009(27), DL3057(21), DV1006(18), DV1005(16) — all legitimate. FP fix: DL3021 no longer fires on Go template COPY (COPY --from=builder /{{ .AppName }}/bin/{{ .AppName }} /bin/{{ .AppName }} — template vars with spaces were falsely counted as multi-source).",
+    "improvements": [
+      "fix: DL3021 false positive on Go template variables in COPY — {{ .Var }} syntax now suppresses multi-argument count check since template tokens confuse the parser"
+    ]
+  },
+  {
+    "repo": "oxsecurity/megalinter",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 164,
+    "totalIssues": 4189,
+    "severities": {
+      "error": 135,
+      "warning": 2646,
+      "info": 1405,
+      "style": 3
+    },
+    "notableFindings": "DL3018(2129) apk pinning dominant across 164 per-linter Dockerfiles, DV2012(238) || true error suppression across large monolithic Dockerfile, DV1009(714), DL3020(135) ADD vs COPY — all legitimate. Mega-linter with 160+ individual linter Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/rekor",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 21,
+    "severities": {
+      "error": 3,
+      "warning": 6,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3020(3) ADD vs COPY in 3 Dockerfiles (local binary files), DL3057(4) no HEALTHCHECK, DV1006(4) root — all legitimate. Go immutable artifact transparency log.",
+    "improvements": []
+  },
+  {
+    "repo": "slsa-framework/slsa-verifier",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 3,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DV1005/DV1008 broad COPY, DL3057 no HEALTHCHECK — all legitimate. Extremely clean minimal Go SLSA artifact verifier Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "swaggo/swag",
+    "scannedAt": "2026-02-23T14:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3008(3) apt pinning, DL3028(3) gem version pinning, DL3025(2) multiple CMD, DL3057(2), DL3027(2) apt vs apt-get — all legitimate. Go Swagger API documentation generator.",
+    "improvements": []
   }
 ]
