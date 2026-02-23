@@ -316,6 +316,12 @@ describe('DL3016 - Pin npm versions', () => {
   it('does not flag bare npm install before &&', () => {
     expect(hasRule(lintDockerfile('FROM node:18\nRUN npm install && npm install'), 'DL3016')).toBe(false);
   });
+  it('does not include closing quote in package name (FP regression: su -c pattern)', () => {
+    // su user -c "npm install -g eslint" → eslint" should not be reported as unversioned
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN su node -c "npm install -g eslint@8.0.0"'), 'DL3016')).toBe(false);
+    // But still flag when inside quotes and no version
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN su node -c "npm install -g eslint"'), 'DL3016')).toBe(true);
+  });
 });
 
 describe('DL3018 - Pin apk versions', () => {

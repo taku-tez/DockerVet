@@ -124,7 +124,12 @@ export const DL3016: Rule = {
       // Strip inline comments (# ...) before parsing package names
       const cleaned = m[1].replace(/#.*$/gm, '').trim();
       if (!cleaned) return; // bare "npm install" (from package.json)
-      const pkgs = cleaned.split(/\s+/).filter(p => p && !p.startsWith('-'));
+      const pkgs = cleaned.split(/\s+/)
+        .filter(p => p && !p.startsWith('-'))
+        // Strip trailing quotes/backslashes that appear when npm install is inside a shell string
+        // e.g., su user -c "npm install eslint" → token becomes "eslint"
+        .map(p => p.replace(/["'\\]+$/, ''))
+        .filter(p => p); // re-filter in case stripping left empty string
       for (const pkg of pkgs) {
         if (!pkg.includes('@') && !pkg.startsWith('.') && !pkg.startsWith('/') && !pkg.startsWith('$')) {
           violations.push({ rule: 'DL3016', severity: 'warning', message: `Pin versions in npm. Instead of \`npm install ${pkg}\` use \`npm install ${pkg}@<version>\``, line: inst.line });
