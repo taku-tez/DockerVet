@@ -1,0 +1,57 @@
+name: CI & Publish
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run lint --if-present
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - name: Check if version changed
+        id: version_check
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          PKG=$(node -p "require('./package.json').name")
+          REMOTE=$(npm view "$PKG" version 2>/dev/null || echo "0.0.0")
+          echo "local=$LOCAL" >> $GITHUB_OUTPUT
+          echo "remote=$REMOTE" >> $GITHUB_OUTPUT
+          if [ "$LOCAL" != "$REMOTE" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Publishing $PKG@$LOCAL (was $REMOTE)"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Already published $PKG@$LOCAL, skipping"
+          fi
+      - name: Publish to npm
+        if: steps.version_check.outputs.changed == 'true'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
