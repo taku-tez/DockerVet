@@ -8557,5 +8557,145 @@
     },
     "notableFindings": "DL3018(16) apk pinning, DV1009(6) no digest, DV3019(6) downloaded script without checksum, DV4003(5) no WORKDIR, DL3008(5) apt pinning. DV1003 curl|sh in Test.dockerfile (integration test setup), DL3004 sudo in Test.dockerfile — both legitimate in test context. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "goreleaser/goreleaser",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 69,
+    "severities": {
+      "error": 10,
+      "warning": 41,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3020(10) ADD vs COPY across test Dockerfiles (Dockerfile.bad, Dockerfile.multiple, Dockerfile.nfpm — goreleaser integration test fixtures, legitimate TPs). DL3006(9) untagged FROM alpine in test fixtures, DL3018(16) apk pinning in CI image. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-operator",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 21,
+    "totalIssues": 139,
+    "severities": {
+      "error": 3,
+      "warning": 53,
+      "info": 83,
+      "style": 0
+    },
+    "notableFindings": "DV3020(3) ADD with remote URL without checksum in test Dockerfiles (downloading probe binaries — legitimate security finding), DV3019(4) downloaded scripts without checksum, DL3006(6) untagged busybox, DL3008(6) apt pinning, DV1009(26) no digest across 21 Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "fluxcd/source-controller",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DV1009(4) no digest for tonistiigi/xx and gcr.io/oss-fuzz-base, DL3047(2) wget without progress bar, DV3019(1) downloaded script without checksum, DL3018(1) apk pinning — all legitimate. Clean minimal Go Flux source controller.",
+    "improvements": []
+  },
+  {
+    "repo": "aquasecurity/trivy-operator",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3057(3) no HEALTHCHECK, DV1009(2) no digest for mkdocs-material, DV4003(2) no WORKDIR, DL3013(2) pip pinning (mike package), DL3042(2) pip cache, DV2010(1) apk upgrade — all legitimate. Minimal Go operator with docs-build Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/pushgateway",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal Alpine-based Prometheus push gateway. Near-perfect single Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "jaegertracing/jaeger",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV3010(2) VOLUME /tmp common but may expose ephemeral data (Go microservices use /tmp for temp files — legitimate informational), DL3057(7) no HEALTHCHECK, DL3018(3) apk pinning, DV4003(3) no WORKDIR — all legitimate. Clean minimal Go/Alpine microservice Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "bitnami-labs/sealed-secrets",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3057(3) no HEALTHCHECK, DV1004(1) no multi-stage, DV1009(1) no digest, DV4002(1) consecutive RUN — all informational. Very clean minimal Go Kubernetes secret encryption controller.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/alloy",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 111,
+    "severities": {
+      "error": 1,
+      "warning": 50,
+      "info": 60,
+      "style": 0
+    },
+    "notableFindings": "DV1003(1) curl|sh in Dockerfile line 88 (legitimate installer). DV3020(2) ADD with remote URL without checksum including Dockerfile.windows (Windows-specific). DV4008(3) TODO/FIXME comments. DL3008(23) apt pinning dominant. All findings legitimate. Grafana OpenTelemetry collector distribution.",
+    "improvements": []
+  },
+  {
+    "repo": "kubevirt/kubevirt",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 47,
+    "severities": {
+      "error": 6,
+      "warning": 23,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3047(4) wget without progress bar across Dockerfile and Dockerfile.cs10, DL3028(2) gem install asciidoctor unpinned (Ruby gem for docs build), DL3020(4) ADD vs COPY, DL3040/DL3041(3 each) dnf/yum pinning — all legitimate. KubeVirt VM orchestration build images.",
+    "improvements": []
+  },
+  {
+    "repo": "openshift/origin",
+    "scannedAt": "2026-02-24T19:57:00+09:00",
+    "dockerfiles": 34,
+    "totalIssues": 164,
+    "severities": {
+      "error": 27,
+      "warning": 67,
+      "info": 69,
+      "style": 1
+    },
+    "notableFindings": "DL3020(26) ADD vs COPY across 34 OpenShift component Dockerfiles (binary distribution pattern), DV1009(33) no digest, DV1006(22) root, DV2005(3) MAINTAINER deprecated, DL3002(3) last USER is root — all legitimate. Large multi-component OpenShift origin Dockerfiles.",
+    "improvements": []
   }
 ]

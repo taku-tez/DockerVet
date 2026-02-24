@@ -111,6 +111,12 @@ describe('DV2009 - Unsafe SHELL', () => {
   it('passes /bin/sh', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nSHELL ["/bin/sh", "-c"]'), 'DV2009')).toBe(false);
   });
+  it('passes /busybox/sh (distroless debug image pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/static-debian12:debug AS builder\nSHELL ["/busybox/sh", "-c"]'), 'DV2009')).toBe(false);
+  });
+  it('passes /busybox/busybox (distroless debug image pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/static:debug AS builder\nSHELL ["/busybox/busybox", "sh", "-c"]'), 'DV2009')).toBe(false);
+  });
 });
 
 describe('DV2010: apk upgrade', () => {

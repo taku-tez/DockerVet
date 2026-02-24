@@ -160,7 +160,8 @@ export const DV2009: Rule = {
   description: 'SHELL instruction uses a potentially unsafe shell.',
   check(ctx) {
     const violations: Violation[] = [];
-    const safeShells = ['/bin/sh', '/bin/bash', '/bin/dash', '/bin/ash', '/usr/bin/bash', '/usr/bin/sh', 'cmd', 'powershell', 'pwsh'];
+    // Include busybox sh variants: used in distroless:debug images where /bin/sh is unavailable
+    const safeShells = ['/bin/sh', '/bin/bash', '/bin/dash', '/bin/ash', '/usr/bin/bash', '/usr/bin/sh', 'cmd', 'powershell', 'pwsh', '/busybox/sh', '/busybox/busybox'];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'SHELL') continue;
