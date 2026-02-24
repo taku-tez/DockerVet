@@ -109,6 +109,13 @@ describe('isDockerfile', () => {
     expect(isDockerfile('weave-kube/Dockerfile.template')).toBe(false);
   });
 
+  it('rejects Quarkus Qute template files (.tpl.qute.*)', () => {
+    // Quarkus uses {variable.name} Qute syntax; these require preprocessing before linting
+    expect(isDockerfile('Dockerfile.tpl.qute.native')).toBe(false);
+    expect(isDockerfile('Dockerfile.tpl.qute.native-micro')).toBe(false);
+    expect(isDockerfile('src/main/docker/Dockerfile.tpl.qute.jvm')).toBe(false);
+  });
+
   it('rejects documentation files (man pages, markdown, etc.)', () => {
     // Dockerfile.5.md is the Dockerfile man page, not an actual Dockerfile
     expect(isDockerfile('Dockerfile.5.md')).toBe(false);

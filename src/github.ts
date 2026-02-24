@@ -46,12 +46,22 @@ export function parseGitHubURL(input: string): GitHubRef {
 const NON_DOCKERFILE_EXTENSIONS = /\.(erb|j2|jinja|jinja2|tmpl|tpl|template|md|rst|txt|adoc|html|htm|pdf|yaml|yml|json|toml|xml)$/i;
 
 /**
+ * Template markers that may appear anywhere in the filename (not just as final extension).
+ * e.g. Dockerfile.tpl.qute.native (Quarkus Qute templates) uses {var.name} placeholders
+ * that make static linting invalid. These files require template preprocessing first.
+ */
+const TEMPLATE_INFIX_PATTERN = /\.(tpl\.qute|jinja\.|j2\.|tmpl\.|template\.)/i;
+
+/**
  * Check if a file path matches Dockerfile patterns.
  */
 export function isDockerfile(filePath: string): boolean {
   const basename = filePath.split('/').pop() || '';
   // Skip template, documentation and data files
   if (NON_DOCKERFILE_EXTENSIONS.test(basename)) return false;
+  // Skip files with template markers in the middle of their name
+  // e.g. Dockerfile.tpl.qute.native (Quarkus Qute templates)
+  if (TEMPLATE_INFIX_PATTERN.test(basename)) return false;
   if (basename === 'Dockerfile') return true;
   if (basename.endsWith('.Dockerfile') || basename.endsWith('.dockerfile')) return true;
   if (/^Dockerfile\..+/.test(basename)) return true;

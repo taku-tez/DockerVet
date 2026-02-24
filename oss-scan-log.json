@@ -8203,5 +8203,359 @@
     },
     "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal clean Alpine-based Dockerfile. Same pattern as mysqld_exporter.",
     "improvements": []
+  },
+  {
+    "repo": "meshery/meshery",
+    "scannedAt": "2026-02-24T08:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 26,
+    "severities": {
+      "error": 2,
+      "warning": 11,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3016 FP: 'npm install --prefix /src/ package.json' — package.json is a local manifest file reference, not an npm package name. DL3020 ADD vs COPY (2x), DL3013 unpinned pip (2x: httpx, pygithub) — all legitimate.",
+    "improvements": [
+      "Fixed DL3016: skip .json/.lock/.txt/.js file-extension tokens as npm package names; handle --prefix and other flags that consume the next token as a path value"
+    ]
+  },
+  {
+    "repo": "artifacthub/hub",
+    "scannedAt": "2026-02-24T08:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 62,
+    "severities": {
+      "error": 4,
+      "warning": 17,
+      "info": 40,
+      "style": 1
+    },
+    "notableFindings": "DL3004 sudo in .gitpod/Dockerfile (3x — Gitpod workspace setup, legitimate). DV1003 curl|sh in scanner Dockerfile (Trivy installer). DV3007 TLS disable in tracker. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "continuedev/continue",
+    "scannedAt": "2026-02-24T08:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest, DV1005/DV1008 broad COPY — all informational. Clean minimal devcontainer Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "browserless/browserless",
+    "scannedAt": "2026-02-24T08:00:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 44,
+    "severities": {
+      "error": 1,
+      "warning": 8,
+      "info": 35,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh in base Dockerfile (legitimate installer). DV1004 no multi-stage (7x) — headless browser images necessarily install browsers in final image, not a real issue. DL3045 COPY without WORKDIR, DV4010 chown -R — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "open-webui/pipelines",
+    "scannedAt": "2026-02-24T08:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 8,
+      "style": 1
+    },
+    "notableFindings": "DL3013 pip unpinned (4x: uv, torch, torchvision, torchaudio), DL3008 apt pinning (4x), DV2012 || true error suppression, DV3013 setuid/setgid bit — all legitimate. Python ML pipeline runner image.",
+    "improvements": []
+  },
+  {
+    "repo": "google/cadvisor",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 56,
+    "severities": {
+      "error": 4,
+      "warning": 36,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DL3018(24) apk pinning across Alpine multi-arch build Dockerfiles, DL3020(4) ADD vs COPY for local build artifacts, DV2005(2) MAINTAINER deprecated, DL3003(2) cd in RUN, DV3015 curl pipe without checksum — all legitimate. cAdvisor container metrics tool.",
+    "improvements": []
+  },
+  {
+    "repo": "netdata/netdata",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 37,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 26,
+      "style": 0
+    },
+    "notableFindings": "DV3013(2) setuid bit in Dockerfile (legitimate for netdata's permission model), DV1009(5) no digest, DV1006(4) root, DV1005/DV1008(4) broad COPY — all legitimate. Clean minimal Go/Alpine monitoring agent.",
+    "improvements": []
+  },
+  {
+    "repo": "submariner-io/submariner",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DV1009(6) no digest, DV4003(6) no WORKDIR, DV1005/DV1008(3) broad COPY, DL3057(3) no HEALTHCHECK — all legitimate. Clean minimal Go multi-cluster network tool.",
+    "improvements": []
+  },
+  {
+    "repo": "argoproj/argo-events",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DV3008(1) git clone in RUN (credential risk warning, legitimate for build context), DL3057(3) no HEALTHCHECK, DV1009(2) no digest, DV2010(1) pip --upgrade — all legitimate. Go event-driven automation for Argo.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-code-server",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 28,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DV3019(2) downloaded script without checksum in Dockerfile/Dockerfile.aarch64 (linuxserver standard pattern), DL3008(10) apt pinning, DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. Code-server IDE image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-nextcloud",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 84,
+    "severities": {
+      "error": 0,
+      "warning": 76,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV3019(2) downloaded script without checksum (linuxserver standard pattern), DL3018(74) heavy apk pinning across multi-stage PHP/nginx Alpine build, DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. Nextcloud community image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-qbittorrent",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 23,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DV3019(2) downloaded script without checksum (linuxserver standard pattern), DL3018(10) apk pinning, DV1009(4) no digest, DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. qBittorrent torrent client image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-transmission",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV1009(4) no digest, DL3057(2) no HEALTHCHECK, DV1006(2) root, DV4003(2) no WORKDIR, DL3018(2) apk pinning — all legitimate. Transmission torrent client image.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/rabbitmq",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 180,
+    "severities": {
+      "error": 0,
+      "warning": 84,
+      "info": 96,
+      "style": 0
+    },
+    "notableFindings": "DV4003(30) no WORKDIR, DL3008(30) apt pinning, DL3018(27) apk pinning, DV1009(18) no digest, DL3003(12) cd in RUN — all legitimate across 12 versioned official RabbitMQ Dockerfiles (Debian/Alpine variants).",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/httpd",
+    "scannedAt": "2026-02-24T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 64,
+    "severities": {
+      "error": 0,
+      "warning": 53,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3018(26) apk pinning, DL3008(21) apt pinning, DL3057(2) no HEALTHCHECK, DV1004(2) no multi-stage, DV1006(2) root — all legitimate. Official Apache HTTPD Docker images (Alpine + Debian variants).",
+    "improvements": []
+  },
+  {
+    "repo": "containrrr/watchtower",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 19,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 7,
+      "style": 1
+    },
+    "notableFindings": "DL3018(10) apk pinning, DV4003(2) no WORKDIR, DV1009(2) no digest, DV4012(1) consecutive COPY — all legitimate. Clean minimal Go Alpine Docker auto-updater.",
+    "improvements": []
+  },
+  {
+    "repo": "nicolargo/glances",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 69,
+    "severities": {
+      "error": 0,
+      "warning": 54,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DL3018(24) apk pinning, DL3008(16) apt pinning, DV4003(8) no WORKDIR, DL3042(5) pip no-cache, DV1009(2) no digest — all legitimate. Python system monitor with Alpine/Debian Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "laurent22/joplin",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 33,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 12,
+      "style": 8
+    },
+    "notableFindings": "DL3008(13) apt pinning, DV4012(8) consecutive COPY (style), DV1009(3) no digest, DL3015(2) no --no-install-recommends, DV2004(2) — all legitimate. Node.js note-taking app server.",
+    "improvements": []
+  },
+  {
+    "repo": "certbot/certbot",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3018(14) apk pinning, DV1006(2) root, DV1009(2) no digest, DL3008(2) apt pinning, DV1005(2) broad COPY — all legitimate. Python ACME/Let's Encrypt client.",
+    "improvements": []
+  },
+  {
+    "repo": "quarkusio/quarkus",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 59,
+    "severities": {
+      "error": 1,
+      "warning": 7,
+      "info": 51,
+      "style": 0
+    },
+    "notableFindings": "FP fixed: Dockerfile.tpl.qute.native and Dockerfile.tpl.qute.native-micro (Quarkus Qute templates using {variable.name} syntax) were incorrectly scanned — now excluded via TEMPLATE_INFIX_PATTERN. DV1009(23) no digest, DL3057(22) no HEALTHCHECK (starter templates) — all legitimate. DL3004 sudo in gitpod Dockerfile (legitimate devcontainer).",
+    "improvements": [
+      "fix: Quarkus Qute template files (.tpl.qute.* compound extension) now excluded from linting — TEMPLATE_INFIX_PATTERN checks for template markers anywhere in filename, not just final extension"
+    ]
+  },
+  {
+    "repo": "apache/dubbo",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3008(3) apt pinning, DL3057 no HEALTHCHECK, DV1004 no multi-stage, DV1006 root — all legitimate. Single-stage Java microservices framework Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/camel-k",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 2,
+      "warning": 1,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3020(2) ADD vs COPY for local JARs, DV4003(2) no WORKDIR, DL3010 EXPOSE 0 (dynamic port placeholder), DV1009 no digest — all legitimate. Apache Camel Kubernetes operator.",
+    "improvements": []
+  },
+  {
+    "repo": "grpc/grpc-web",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 75,
+    "severities": {
+      "error": 4,
+      "warning": 31,
+      "info": 39,
+      "style": 1
+    },
+    "notableFindings": "DL3006(7) — 7 Dockerfiles all use FROM grpcweb/prereqs without version tag (project builds its own prereqs image but doesn't pin a version — legitimate TP). DV1003(2) curl|sh, DL3020(2) ADD vs COPY — all legitimate. gRPC-web proxy/example Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "netty/netty",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 265,
+    "severities": {
+      "error": 11,
+      "warning": 195,
+      "info": 59,
+      "style": 0
+    },
+    "notableFindings": "DL3033(72) yum pinning dominant across CentOS/AL2023 build Dockerfiles, DL3008(32) apt pinning, DL3018(31) apk pinning, DL3041(26) dnf pinning, DV1003(11) curl|sh for toolchain installs — all legitimate. Netty cross-distro CI build matrix.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/consul-k8s",
+    "scannedAt": "2026-02-24T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 67,
+    "severities": {
+      "error": 2,
+      "warning": 33,
+      "info": 28,
+      "style": 4
+    },
+    "notableFindings": "DL3018(16) apk pinning, DV1009(6) no digest, DV3019(6) downloaded script without checksum, DV4003(5) no WORKDIR, DL3008(5) apt pinning. DV1003 curl|sh in Test.dockerfile (integration test setup), DL3004 sudo in Test.dockerfile — both legitimate in test context. All findings legitimate.",
+    "improvements": []
   }
 ]
