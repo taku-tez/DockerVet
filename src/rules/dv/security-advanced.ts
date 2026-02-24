@@ -294,13 +294,37 @@ export const DV3014: Rule = {
       // ADO.NET / SQL Server connection string with password field
       /Server\s*=\s*[^;]+;\s*(?:Database|Initial Catalog)\s*=\s*[^;]+;\s*(?:User\s*Id|Uid)\s*=\s*[^;]+;\s*(?:Password|Pwd)\s*=\s*[^${\s;]+/i,
     ];
+
+    // Return true if the userinfo component of a URI contains only obvious placeholder values.
+    // Handles: scheme://user:pass@host and scheme://user@host patterns.
+    // Only suppresses when BOTH user AND password are clearly placeholder tokens.
+    // We intentionally do NOT treat "user"/"username"/"pass"/"password" as placeholders
+    // because they're too generic and often used as real credentials in examples.
+    // Strong placeholder indicators: the literal word "placeholder", angle/curly bracket vars,
+    // or both fields being identical non-meaningful tokens.
+    const STRONG_PLACEHOLDER = /^(?:placeholder|<[^>]+>|\{[^}]+\}|\[[^\]]+\])$/i;
+    function hasPlaceholderCreds(match: string): boolean {
+      // Extract userinfo from URI (everything between :// and @host)
+      const uriUserinfo = /:[/]{2}([^@\s]+)@/.exec(match);
+      if (uriUserinfo) {
+        const userinfo = uriUserinfo[1];
+        const colonIdx = userinfo.indexOf(':');
+        const user = colonIdx >= 0 ? userinfo.slice(0, colonIdx) : userinfo;
+        const pass = colonIdx >= 0 ? userinfo.slice(colonIdx + 1) : '';
+        // Suppress only when BOTH credentials are strong placeholder tokens
+        if (STRONG_PLACEHOLDER.test(user) && (pass === '' || STRONG_PLACEHOLDER.test(pass))) return true;
+      }
+      return false;
+    }
+
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (!['ENV', 'ARG', 'RUN', 'LABEL'].includes(inst.type)) continue;
         const text = inst.arguments || inst.raw;
         for (const pat of dbPatterns) {
-          if (pat.test(text)) {
+          const m = pat.exec(text);
+          if (m && !hasPlaceholderCreds(m[0])) {
             violations.push({ rule: 'DV3014', severity: 'error', message: 'Hardcoded database connection string detected. Use runtime environment variables or secrets.', line: inst.line });
             break;
           }

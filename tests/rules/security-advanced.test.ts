@@ -259,6 +259,17 @@ describe('DV3014 - hardcoded database connection strings', () => {
   it('passes no connection string', () => {
     expect(hasRule(lintDockerfile('FROM node\nENV NODE_ENV=production'), 'DV3014')).toBe(false);
   });
+  it('does NOT flag placeholder:placeholder credentials (hoppscotch pattern)', () => {
+    // ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+    // The word "placeholder" signals a build-time substitution, not a real secret.
+    expect(hasRule(lintDockerfile('FROM node\nENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"'), 'DV3014')).toBe(false);
+  });
+  it('does NOT flag angle-bracket template placeholders', () => {
+    expect(hasRule(lintDockerfile('FROM node\nENV DB=postgres://<user>:<password>@host/db'), 'DV3014')).toBe(false);
+  });
+  it('still flags non-placeholder weak credentials like kimai:kimai', () => {
+    expect(hasRule(lintDockerfile('FROM php\nENV DATABASE_URL=mysql://kimai:kimai@127.0.0.1:3306/kimai'), 'DV3014')).toBe(true);
+  });
 });
 
 describe('DV3016 - AI Prompt Injection in LABEL', () => {
