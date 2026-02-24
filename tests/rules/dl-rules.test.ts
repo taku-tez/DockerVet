@@ -184,6 +184,13 @@ describe('DL3006 - Tag version explicitly', () => {
     // ARG has a default that lacks a version tag → DL3006 should fire
     expect(hasRule(lintDockerfile('ARG BASEIMG=ubuntu\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
   });
+  it('skips DL3006 for bare-variable FROM with sentinel placeholder default (e.g. non-existing)', () => {
+    // Pattern used by VictoriaMetrics and similar projects: caller MUST provide full image ref
+    expect(hasRule(lintDockerfile('ARG base_image=non-existing\nFROM $base_image\nEXPOSE 8080'), 'DL3006')).toBe(false);
+    expect(hasRule(lintDockerfile('ARG ROOT_IMAGE=placeholder\nFROM $ROOT_IMAGE\nRUN echo hi'), 'DL3006')).toBe(false);
+    // But real image names (even untagged) still warn
+    expect(hasRule(lintDockerfile('ARG BASEIMG=ubuntu\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
+  });
   it('skips ARG that defaults to a stage alias', () => {
     expect(hasRule(lintDockerfile('ARG GO_IMAGE=go-builder-base\nFROM golang:1.25-alpine AS go-builder-base\nRUN echo build\nFROM ${GO_IMAGE}'), 'DL3006')).toBe(false);
   });

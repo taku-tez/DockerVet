@@ -64,6 +64,13 @@ export const DL3006: Rule = {
               if (defaultVal.toLowerCase() === 'scratch') continue;
               // Skip if default value (alone) references a stage alias
               if (stageAliases.has(defaultVal.toLowerCase())) continue;
+              // Suppress for bare-variable FROM when ARG default is a clearly-intentional
+              // sentinel/placeholder that will never be used in production builds
+              // (e.g. ARG base_image=non-existing — common pattern for required args).
+              // A sentinel has no dot/slash (not a registry path) and explicitly signals
+              // "caller must provide value" through its name (matches common sentinel words).
+              const SENTINEL_RE = /^(non-?exist(ing)?|undefined|placeholder|required|todo|tbd|none|empty|changeme|change[-_]?me|must[-_]?be[-_]?set|no[-_]?default|invalid|missing|unset|to[-_]?be[-_]?set)$/i;
+              if (/^\$\{?[A-Za-z_][A-Za-z0-9_]*\}?$/.test(f.image) && SENTINEL_RE.test(defaultVal)) continue;
             } else if (!argDef || !(argDef as any).defaultValue) {
               // The ENTIRE image is a single bare variable with no known default (e.g. FROM $build_image).
               // The variable holds the full image ref including any tag/digest; we cannot

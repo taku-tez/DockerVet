@@ -8982,4 +8982,145 @@
     "notableFindings": "DV1003(1) curl|sh for npm/tool install — legitimate. DL3008(17) apt pinning, DL3018(17) apk pinning, DV1009(11) no digest, DL3016(11) npm pinning, DV4002(8) consecutive RUN — all legitimate. Notification infrastructure platform with 7 microservice Dockerfiles.",
     "improvements": []
   }
+,
+  {
+    "repo": "jupyter/docker-stacks",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 30,
+    "totalIssues": 160,
+    "severities": {
+      "error": 0,
+      "warning": 91,
+      "info": 67,
+      "style": 2
+    },
+    "notableFindings": "DL3006(26) FROM $BASE_IMAGE without version tag in 26 example/recipe Dockerfiles in docs/ — ARG BASE_IMAGE has default quay.io/jupyter/minimal-notebook (untagged, legitimate TP). DL3008(47) apt pinning, DL3057(26) no HEALTHCHECK, DV1006(14) root — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "ultralytics/ultralytics",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3008(11) apt pinning, DL3013(3) pip pinning, DV3020(2) ADD with remote URL without checksum (downloading model weights in Dockerfile — legitimate security concern), DL3057 no HEALTHCHECK, DV1004 no multi-stage — all legitimate. YOLOv8/ultralytics ML framework.",
+    "improvements": []
+  },
+  {
+    "repo": "kiali/kiali",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3007(2) latest tag for base images, DV1006(2) root, DV1009(2) no digest, DL3032(1) HEALTHCHECK interval too short — all legitimate. Clean minimal Go Kubernetes service mesh observability tool.",
+    "improvements": []
+  },
+  {
+    "repo": "unstructured-io/unstructured",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018(17) apk pinning dominant across single Alpine-based Dockerfile, DL3007(1) latest tag, DL3057 no HEALTHCHECK, DV1004 no multi-stage — all legitimate. ML document ingestion framework.",
+    "improvements": []
+  },
+  {
+    "repo": "open-mmlab/mmdetection",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 85,
+    "severities": {
+      "error": 0,
+      "warning": 61,
+      "info": 24,
+      "style": 0
+    },
+    "notableFindings": "DL3008(40) apt pinning dominant across 4 CUDA/PyTorch Dockerfiles, DL3042(9) pip no-cache, DL3013(8) pip pinning, DL3057(4) no HEALTHCHECK, DV1009(4) no digest — all legitimate. OpenMMLab object detection framework.",
+    "improvements": []
+  },
+  {
+    "repo": "microsoft/promptflow",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 44,
+    "severities": {
+      "error": 0,
+      "warning": 25,
+      "info": 19,
+      "style": 0
+    },
+    "notableFindings": "DV1006(5) root, DV1009(5) no digest, DL3042(4) pip no-cache, DL3008(4) apt pinning, DL3007(3) latest tag — all legitimate. Microsoft LLM prompt flow framework.",
+    "improvements": []
+  },
+  {
+    "repo": "vllm-project/vllm",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 431,
+    "severities": {
+      "error": 14,
+      "warning": 275,
+      "info": 142,
+      "style": 0
+    },
+    "notableFindings": "DL3008(110) apt pinning dominant across 9 GPU inference Dockerfiles. DL3013(62) pip pinning. DL3003(37) cd in RUN. DV3008(25) git clone in RUN (nightly_torch and ppc64le Dockerfiles clone repos for source builds — legitimate security finding). DL3042(25) pip cache. All findings legitimate. vLLM distributed LLM inference engine.",
+    "improvements": []
+  },
+  {
+    "repo": "labring/sealos",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 44,
+    "totalIssues": 295,
+    "severities": {
+      "error": 0,
+      "warning": 118,
+      "info": 177,
+      "style": 0
+    },
+    "notableFindings": "DV1009(76) no digest dominant across 44 frontend microservice Dockerfiles, DL3018(60) apk pinning, DL3057(43) no HEALTHCHECK, DL3016(22) npm install pnpm without version pin (consistent pattern across all frontend Dockerfiles — legitimate TP), DV4002(14) consecutive RUN — all legitimate. Kubernetes cloud OS platform.",
+    "improvements": []
+  },
+  {
+    "repo": "localstack/localstack",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 68,
+    "severities": {
+      "error": 14,
+      "warning": 42,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3020(14) ADD vs COPY for local files across Dockerfile and Dockerfile.s3 — legitimate TPs, should use COPY. DV4009(3) chmod 777 excessive permissions. DL3013(12) pip pinning (awscli, requests, wheel unpinned). DL3008(25) apt pinning — all legitimate. AWS cloud emulator.",
+    "improvements": []
+  },
+  {
+    "repo": "buildpacks/lifecycle",
+    "scannedAt": "2026-02-25T05:00:00+09:00",
+    "dockerfiles": 21,
+    "totalIssues": 105,
+    "severities": {
+      "error": 0,
+      "warning": 32,
+      "info": 73,
+      "style": 0
+    },
+    "notableFindings": "DV4010(14) chown -R in acceptance test Dockerfiles (adds layer bloat — legitimate suggestion in test fixtures too), DV4003(12) no WORKDIR, DV1009(11) no digest, DL3008(9) apt pinning, DL3009(9) apt list cleanup — all legitimate. Cloud Native Buildpacks lifecycle binaries.",
+    "improvements": []
+  }
 ]
