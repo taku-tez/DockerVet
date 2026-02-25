@@ -191,6 +191,15 @@ describe('DL3006 - Tag version explicitly', () => {
     // But real image names (even untagged) still warn
     expect(hasRule(lintDockerfile('ARG BASEIMG=ubuntu\nFROM ${BASEIMG}'), 'DL3006')).toBe(true);
   });
+  it('skips DL3006 for template placeholder image names (e.g. FROM REPLACE-ME)', () => {
+    // Template Dockerfiles like vscode-dev-containers use REPLACE-ME as a placeholder
+    expect(hasRule(lintDockerfile('FROM REPLACE-ME\nRUN echo hi'), 'DL3006')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM your-image\nRUN echo hi'), 'DL3006')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM _REPLACE_BASE_IMAGE_\nRUN echo hi'), 'DL3006')).toBe(false);
+    // Real untagged images should still warn
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo hi'), 'DL3006')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN echo hi'), 'DL3006')).toBe(true);
+  });
   it('skips ARG that defaults to a stage alias', () => {
     expect(hasRule(lintDockerfile('ARG GO_IMAGE=go-builder-base\nFROM golang:1.25-alpine AS go-builder-base\nRUN echo build\nFROM ${GO_IMAGE}'), 'DL3006')).toBe(false);
   });

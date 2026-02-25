@@ -46,6 +46,11 @@ export const DL3006: Rule = {
     for (const stage of ctx.ast.stages) {
       const f = stage.from;
       if (f.image === 'scratch') continue;
+      // Skip obvious template/placeholder image names (not real Docker images)
+      // e.g. FROM REPLACE-ME, FROM YOUR-IMAGE, FROM PLACEHOLDER, FROM _REPLACE_BASE_IMAGE_
+      // These are template Dockerfiles where users must substitute the placeholder.
+      const TEMPLATE_PLACEHOLDER_RE = /^(replace[-_]me|replace[-_]?this|your[-_]image|placeholder|example[-_]image|my[-_]image|_replace_[a-z_]+_|base_image_placeholder)$/i;
+      if (TEMPLATE_PLACEHOLDER_RE.test(f.image)) continue;
       // Skip references to other build stages (e.g., FROM gobuild)
       if (stageAliases.has(f.image.toLowerCase())) continue;
       if (!f.tag && !f.digest) {
