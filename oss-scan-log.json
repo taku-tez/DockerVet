@@ -9443,5 +9443,140 @@
     },
     "notableFindings": "DV3019(2) downloaded script without checksum in .devcontainer (devcontainer setup, legitimate), DV1009(3) no digest, DV1004 no multi-stage, DV1006 root, DV1005/DV1008 broad COPY — all legitimate. Go Kubernetes add-on controller.",
     "improvements": []
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 3,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 1
+    },
+    "notableFindings": "DV4003 no WORKDIR, DL3057 no HEALTHCHECK, DV4012 consecutive COPY — all legitimate. Very clean operator Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "openobserve/openobserve",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 297,
+    "severities": {
+      "error": 0,
+      "warning": 154,
+      "info": 143
+    },
+    "notableFindings": "Heavy DL3008 apt pinning (106x) across CI/test Dockerfiles. DV1009 no digest (34x). DV1007 apt cache (18x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "microsoft/vscode-dev-containers",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 138,
+    "totalIssues": 672,
+    "severities": {
+      "error": 13,
+      "warning": 305,
+      "info": 354
+    },
+    "notableFindings": "FP found: DL3006 flagged FROM REPLACE-ME (3x) in template Dockerfiles (build/assets/alpine.Dockerfile, debian.Dockerfile, redhat.Dockerfile) — these are user-facing templates where REPLACE-ME is an intentional placeholder. Fixed by adding TEMPLATE_PLACEHOLDER_RE check. Remaining 3 DL3006 are legitimate (untagged continuumio/anaconda3, continuumio/miniconda3, jupyter/datascience-notebook).",
+    "improvements": [
+      "Fixed DL3006: skip template placeholder image names (REPLACE-ME, YOUR-IMAGE, _REPLACE_*_ pattern) to avoid FPs in template Dockerfiles"
+    ]
+  },
+  {
+    "repo": "grafana/phlare",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 98,
+    "severities": {
+      "error": 5,
+      "warning": 45,
+      "info": 46,
+      "style": 2
+    },
+    "notableFindings": "DV1009 no digest (16x), DL3045 COPY without WORKDIR (13x), DL3029 platform flags (7x cross-compilation), DL3020 ADD in eBPF testdata Dockerfile (5x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "carvel-dev/kapp-controller",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 8,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 6
+    },
+    "notableFindings": "DL3018 apk pinning (2x), DV1009 no digest (2x), DV4003 no WORKDIR, DL3057 no HEALTHCHECK — all legitimate. Clean operator Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "kubewarden/kubewarden-controller",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 28,
+    "severities": {
+      "error": 1,
+      "warning": 10,
+      "info": 17
+    },
+    "notableFindings": "DV1009 no digest (11x), DL3006 untagged alpine (4x), DL3018 apk pinning (4x), DL3057 no HEALTHCHECK (3x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cloudflare/workers-sdk",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 14
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK (6x), DV1006 root (6x), DV1009 no digest (6x), DV4002 consecutive RUN (2x). All findings legitimate. Clean minimal Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "containerd/stargz-snapshotter",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 122,
+    "severities": {
+      "error": 0,
+      "warning": 56,
+      "info": 66
+    },
+    "notableFindings": "DL3008 unpinned apt (40x), DV4003 no WORKDIR (18x), DL3003 cd instead of WORKDIR (9x), DV3008 git clone (7x). All findings legitimate. Single large CI Dockerfile with many RUN steps.",
+    "improvements": []
+  },
+  {
+    "repo": "aws/copilot-cli",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 27,
+    "totalIssues": 195,
+    "severities": {
+      "error": 15,
+      "warning": 82,
+      "info": 97,
+      "style": 1
+    },
+    "notableFindings": "DV1009 no digest (36x), DV1006 root (27x), DL3057 no HEALTHCHECK (25x), DL3018 apk pinning (20x), DL3020 ADD in e2e test Dockerfiles (14x). DV1003 curl|sh in main Dockerfile legitimate (install script). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cue-lang/cue",
+    "scannedAt": "2026-02-25T20:04:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 2
+    },
+    "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest — all legitimate. Minimal single-stage build.",
+    "improvements": []
   }
 ]
