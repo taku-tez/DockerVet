@@ -9,6 +9,13 @@ const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|acces
 // Similarly, _URL / _ENDPOINT / _ADDR / _HOST suffixes indicate configuration endpoints, not secret values.
 // e.g. ANCHORE_FEEDS_TOKEN_URL stores an OAuth endpoint URL, not the token itself.
 const FILE_PATH_SUFFIX = /(?:_FILE|_URL|_ENDPOINT|_ADDR|_HOST)$/i;
+// Version/build identifiers: ARG/ENV names ending with these suffixes are version pins, not secrets.
+// e.g. AWS_SECRETSMANAGER_JDBC_VERSION=2.0.3 — "SECRET" is part of "SECRETSMANAGER" (a service name),
+// and the value is a semantic version string, not a secret.
+const VERSION_OR_BUILD_SUFFIX = /(?:_VERSION|_RELEASE|_REVISION|_TAG|_BUILD|_COMMIT|_NUMBER|_NUM|_REF)$/i;
+// Semantic version values like "2.0.3", "v1.0.0", "1.0.0-alpha.1", "3.1.2-beta+build.1"
+// These are clearly not secrets — they are version pins or release identifiers.
+const SEMANTIC_VERSION_VALUE = /^v?\d+(?:\.\d+){0,3}(?:[._-][a-zA-Z0-9._-]+)?$/;
 // HTTP(S) URL values are configuration endpoints, not secrets (even if the key name looks like a secret).
 const HTTP_URL_VALUE = /^https?:\/\//i;
 // Values that look like file paths (not actual secrets)
@@ -51,14 +58,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value) && !INSTRUCTIONAL_PLACEHOLDER.test(pair.value) && !HTTP_URL_VALUE.test(pair.value) && !isSelfReferentialPlaceholder(pair.key, pair.value)) {
+            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && !VERSION_OR_BUILD_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !SEMANTIC_VERSION_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value) && !INSTRUCTIONAL_PLACEHOLDER.test(pair.value) && !HTTP_URL_VALUE.test(pair.value) && !isSelfReferentialPlaceholder(pair.key, pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(a.defaultValue) && !HTTP_URL_VALUE.test(a.defaultValue) && !isSelfReferentialPlaceholder(a.name, a.defaultValue)) {
+          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && !VERSION_OR_BUILD_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !SEMANTIC_VERSION_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(a.defaultValue) && !HTTP_URL_VALUE.test(a.defaultValue) && !isSelfReferentialPlaceholder(a.name, a.defaultValue)) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -66,7 +73,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(arg.defaultValue) && !HTTP_URL_VALUE.test(arg.defaultValue) && !isSelfReferentialPlaceholder(arg.name, arg.defaultValue)) {
+      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && !VERSION_OR_BUILD_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !SEMANTIC_VERSION_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(arg.defaultValue) && !HTTP_URL_VALUE.test(arg.defaultValue) && !isSelfReferentialPlaceholder(arg.name, arg.defaultValue)) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }

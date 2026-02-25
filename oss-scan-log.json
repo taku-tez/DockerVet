@@ -9303,5 +9303,145 @@
     },
     "notableFindings": "DL3020(3) ADD vs COPY in dev/test Dockerfiles, DL3057(4) no HEALTHCHECK, DV1006(4) root — all legitimate. Sigstore software supply chain transparency log.",
     "improvements": []
+  },
+  {
+    "repo": "oras-project/oras",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 10,
+    "severities": {
+      "error": 1,
+      "warning": 5,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (1x error), DL3018 apk pinning (3x), DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest (2x) — all legitimate. Clean Go OCI registry artifact tool.",
+    "improvements": []
+  },
+  {
+    "repo": "kube-vip/kube-vip",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (7x), DL3057 no HEALTHCHECK (3x), DV1009 no digest (3x), DV1008 broad COPY (2x) — all legitimate. Go Alpine high-availability Kubernetes VIP tool.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/boundary",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 95,
+    "severities": {
+      "error": 18,
+      "warning": 39,
+      "info": 35,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (18x across 6 test dbtest Dockerfiles — legitimate), DL3018 apk pinning (30x across Dockerfile + dbtest), DL3057 no HEALTHCHECK (10x), DV1006 root (8x), DV1009 no digest (8x) — all legitimate. Terraform identity-based access management tool.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/waypoint",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 65,
+    "severities": {
+      "error": 0,
+      "warning": 32,
+      "info": 30,
+      "style": 3
+    },
+    "notableFindings": "DL3018 apk pinning (14x), DV1009 no digest (9x), DV4003 no WORKDIR (6x), DV4012 consecutive COPY (3x style), DL3008 apt pinning (5x), DV4008 TODO comment (1x) — all legitimate. Go/Alpine application deployment platform.",
+    "improvements": []
+  },
+  {
+    "repo": "telepresenceio/telepresence",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 100,
+    "severities": {
+      "error": 0,
+      "warning": 47,
+      "info": 49,
+      "style": 4
+    },
+    "notableFindings": "DL3000(3) relative WORKDIR: 'WORKDIR telepresence' (missing leading /) in 3 build Dockerfiles — true positive, should be 'WORKDIR /telepresence'. DL3018 apk pinning (25x), DV1009 no digest (16x), DV1006 root (9x), DL3006 untagged (7x) — all legitimate. Go Kubernetes dev/debugging proxy tool.",
+    "improvements": []
+  },
+  {
+    "repo": "kedacore/keda",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 20,
+    "severities": {
+      "error": 1,
+      "warning": 4,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3004/DV3011 sudo in .devcontainer/Dockerfile (devcontainer install, legitimate), DV3019(2) downloaded script without checksum (NVM/tool installer), DV1009(7) no digest — all legitimate. Go Kubernetes event-driven autoscaling.",
+    "improvements": []
+  },
+  {
+    "repo": "strimzi/strimzi-kafka-operator",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 12,
+      "style": 3
+    },
+    "notableFindings": "DL3007(3) FROM strimzi/base and FROM registry.access.redhat.com/ubi9/ubi-minimal without version tags — legitimate TP. DL3002(1) last USER root in base Dockerfile — intentional for operator security context. DV4012(3) consecutive COPY — all legitimate. Kafka Kubernetes operator.",
+    "improvements": []
+  },
+  {
+    "repo": "rook/rook",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 10,
+    "severities": {
+      "error": 1,
+      "warning": 3,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY in tests/scripts/pythonwebserver/Dockerfile (test fixture), DL3041 dnf pinning (2x for iproute/baseos), DL3006 BASEIMAGE ARG-based FROM, DV3019 downloaded script — all legitimate. Cloud-native Ceph storage operator.",
+    "improvements": []
+  },
+  {
+    "repo": "openkruise/kruise",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 4,
+      "warning": 5,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3020(4) ADD in tutorial guestbook Dockerfile (example code), DL3018 apk pinning, DV2010 apk upgrade, DL3006 untagged golang/busybox in tutorial, DL3045 COPY without WORKDIR — all legitimate. Kubernetes workload management extensions.",
+    "improvements": []
+  },
+  {
+    "repo": "projectsveltos/addon-controller",
+    "scannedAt": "2026-02-25T17:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DV3019(2) downloaded script without checksum in .devcontainer (devcontainer setup, legitimate), DV1009(3) no digest, DV1004 no multi-stage, DV1006 root, DV1005/DV1008 broad COPY — all legitimate. Go Kubernetes add-on controller.",
+    "improvements": []
   }
 ]
