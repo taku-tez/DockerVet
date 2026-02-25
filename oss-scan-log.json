@@ -9578,5 +9578,145 @@
     },
     "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest — all legitimate. Minimal single-stage build.",
     "improvements": []
+  },
+  {
+    "repo": "backstage/backstage",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 114,
+    "severities": {
+      "error": 0,
+      "warning": 62,
+      "info": 48,
+      "style": 4
+    },
+    "notableFindings": "DL3018(29) apk pinning in devops/Dockerfile, DL3008(16) apt pinning, DV1009(13) no digest, DL3010(7) COPY of .tar.gz archives where ADD would auto-extract (skeleton.tar.gz, bundle.tar.gz — pattern is intentional: team uses COPY+tar to avoid ADD's magic behavior), DV1006(6) root — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "milvus-io/milvus",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 377,
+    "severities": {
+      "error": 8,
+      "warning": 234,
+      "info": 134,
+      "style": 1
+    },
+    "notableFindings": "DL3008(118) apt pinning dominant across 23 CI build Dockerfiles (Amazon Linux, Ubuntu, CentOS), DL3041(53) dnf pinning across AL2023/RHEL builds, DV1009(25) no digest, DL3057(22) no HEALTHCHECK, DL3047(19) wget without progress bar — all legitimate. Vector database with extensive multi-distro build matrix.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/airflow",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 24,
+    "totalIssues": 105,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 76,
+      "style": 3
+    },
+    "notableFindings": "DV1009(21) no digest, DV4003(18) no WORKDIR across 24 CI/test/dev Dockerfiles, DL3057(17) no HEALTHCHECK, DV1006(13) root, DL3008(6) apt pinning — all legitimate. Large workflow orchestration platform with many CI/test Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "keycloak/keycloak",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 28,
+    "severities": {
+      "error": 4,
+      "warning": 10,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3006(5) untagged ubi9/ubi9-micro (UBI images without version tag), DL3020(3) ADD vs COPY in operator/quarkus Dockerfiles, DV3020(1) ADD remote URL (tarball download without checksum), DV1003(1) curl|sh in EDB test Dockerfile — all legitimate. Identity and access management.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 67,
+    "severities": {
+      "error": 2,
+      "warning": 34,
+      "info": 31,
+      "style": 0
+    },
+    "notableFindings": "DL3008(18) apt pinning, DL3018(8) apk pinning, DL3057(4) no HEALTHCHECK, DV1006(4) root, DV1009(4) no digest, DV3019(1) downloaded script without checksum — all legitimate. Go-based workload orchestration CI/dev Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "typesense/typesense",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 280,
+    "severities": {
+      "error": 0,
+      "warning": 178,
+      "info": 102,
+      "style": 0
+    },
+    "notableFindings": "DV3020(35) ADD with remote URL without checksum across 11 development/benchmark Dockerfiles (downloading Bazel, clang, LLVM, cmake etc. without hash verification — legitimate security concern). DL3008(76) apt pinning, DL3003(37) cd in RUN, DL3015(15) no-install-recommends, DV2004(15) — all legitimate. C++ search engine with heavy toolchain install Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/alertmanager",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3057(3) no HEALTHCHECK, DV1006(2) root, DV1009(2) no digest, DV4003(2) no WORKDIR, DL3007(1) latest tag — all legitimate. Very clean minimal Go Alpine Alertmanager Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "istio/istio",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 30,
+    "totalIssues": 114,
+    "severities": {
+      "error": 0,
+      "warning": 34,
+      "info": 74,
+      "style": 6
+    },
+    "notableFindings": "DL3057(30) no HEALTHCHECK across 30 microservice Dockerfiles, DV1006(18) root, DV1009(16) no digest, DV4003(10) no WORKDIR, DV4012(6) consecutive COPY — all legitimate. Service mesh with 30 clean minimal Go/distroless Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "litmuschaos/litmus",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 30,
+    "severities": {
+      "error": 4,
+      "warning": 5,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "DL3020(4) ADD vs COPY in authentication/event-tracker/subscriber/upgrade-agents Dockerfiles, DV1009(12) no digest, DL3057(7) no HEALTHCHECK, DV1006(2) root — all legitimate. Go chaos engineering platform with minimal Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-collector-contrib",
+    "scannedAt": "2026-02-25T22:57:00+09:00",
+    "dockerfiles": 21,
+    "totalIssues": 87,
+    "severities": {
+      "error": 2,
+      "warning": 33,
+      "info": 51,
+      "style": 1
+    },
+    "notableFindings": "DV4003(16) no WORKDIR across 21 example/test/integration Dockerfiles, DV1009(16) no digest, DV1006(13) root, DL3018(7) apk pinning, DL3020(2) ADD vs COPY, DL3025(2) CMD not JSON notation — all legitimate. OTel collector contrib with varied test/example Dockerfiles.",
+    "improvements": []
   }
 ]
