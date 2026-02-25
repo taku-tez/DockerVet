@@ -9718,5 +9718,285 @@
     },
     "notableFindings": "DV4003(16) no WORKDIR across 21 example/test/integration Dockerfiles, DV1009(16) no digest, DV1006(13) root, DL3018(7) apk pinning, DL3020(2) ADD vs COPY, DL3025(2) CMD not JSON notation — all legitimate. OTel collector contrib with varied test/example Dockerfiles.",
     "improvements": []
+  },
+  {
+    "repo": "vespa-engine/vespa",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest, DV1005/DV1008 broad COPY — all legitimate. Single JS app Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "fluxcd/helm-controller",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3047 wget without progress (2x), DV3019 downloaded script without checksum, DV1009 (4x), DL3018 apk pinning — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "buildkite/agent",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DV3019 downloaded script without checksum (5x) in CI agent Dockerfiles, DV1006 root (6x), DV4003 no WORKDIR (6x) — all legitimate for CI agent images.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/pyroscope",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 55,
+    "totalIssues": 334,
+    "severities": {
+      "error": 9,
+      "warning": 174,
+      "info": 147,
+      "style": 4
+    },
+    "notableFindings": "DL3020 ADD vs COPY (7x), DV1003 curl|sh in update_examples.Dockerfile (2x), DV1004 no multi-stage (15x in example/demo Dockerfiles), DV1009 (63x), DV1006 (48x) — all legitimate across profiling example images.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/mysqld_exporter",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal clean Alpine-based Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/statsd_exporter",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 12,
+    "severities": {
+      "error": 1,
+      "warning": 6,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo + DV3011 in .gitpod.Dockerfile (expected for gitpod dev workspace), DL3007 latest in main Dockerfile — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "kubernetes-sigs/prometheus-adapter",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 3,
+      "style": 1
+    },
+    "notableFindings": "DV1009 no digest (2x), DV4012 consecutive COPY, DL3057 no HEALTHCHECK — clean distroless Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "helm/charts",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 36,
+    "severities": {
+      "error": 2,
+      "warning": 14,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY in centos chart (2x), DV2005 deprecated MAINTAINER (2x), DV3020 ADD remote URL in rethinkdb chart, DV3019 downloaded script in chart-testing Dockerfile — all legitimate in this archived project.",
+    "improvements": []
+  },
+  {
+    "repo": "jaegertracing/jaeger-ui",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DV1004 no multi-stage (single-stage UI build), DV1006 root, DV1009 no digest, DV1005/DV1008 broad COPY — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-java-instrumentation",
+    "scannedAt": "2026-02-26T01:57:00+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 76,
+    "severities": {
+      "error": 2,
+      "warning": 36,
+      "info": 37,
+      "style": 1
+    },
+    "notableFindings": "DV3020 ADD remote URL without checksum (8x in smoke-test servlet Dockerfiles pulling JVM servers), DV1001 ADMIN_PASSWORD in payara.dockerfile — all legitimate. DL3057 (16x), DV1006 (15x) standard patterns in test images.",
+    "improvements": []
+  },
+  {
+    "repo": "renovatebot/renovate",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 99,
+    "severities": {
+      "error": 2,
+      "warning": 49,
+      "info": 46,
+      "style": 2
+    },
+    "notableFindings": "DV1003 curl|sh in __fixtures__/Dockerfile (test fixture for regex manager testing). Heavy DL3008 apt pinning (19x), DL3045 COPY without WORKDIR (9x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "jaegertracing/jaeger-operator",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 23,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 10,
+      "style": 7
+    },
+    "notableFindings": "DV4009 chmod -R 777 in tests/Dockerfile for Prow CI (legitimate CI test image). DV4012 consecutive COPY (7x). DL3057 HEALTHCHECK missing. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "minio/operator",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 73,
+    "severities": {
+      "error": 3,
+      "warning": 37,
+      "info": 31,
+      "style": 2
+    },
+    "notableFindings": "DL3020 ADD vs COPY (3x), DL3008 unpinned apt (16x), DV1009 no digest (10x), DV1006 root (7x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "lyft/clutch",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 22,
+    "severities": {
+      "error": 1,
+      "warning": 11,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3045 COPY without WORKDIR (4x), DV1009 no digest (5x), DL3006 untagged base images (distroless without version/tag). DL3020 ADD in main Dockerfile. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "pomerium/pomerium",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 7,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD in main Dockerfile, DV2001 apt-get update not combined (2x), DV1008 COPY . (2x), DV1006 root (3x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "grpc-ecosystem/grpc-gateway",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DV2001 apt-get update not combined, DL3047 wget without progress bar, DV3019 downloaded script without checksum. All findings legitimate. Clean minimal Go Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "databricks/databricks-cli",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 6,
+      "style": 1
+    },
+    "notableFindings": "DL3013 pip pinning (2x), DL3042 pip cache (2x), DV2001 apt-get update, DV1006 root (2x). All findings legitimate. Dev container and simple Python Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-mailserver/docker-mailserver",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1006 root, DL3057 no HEALTHCHECK, DV4003 no WORKDIR (3x), DV1009 no digest. All findings legitimate. Minimal mailserver base image.",
+    "improvements": []
+  },
+  {
+    "repo": "FlareSolverr/FlareSolverr",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (10x) including Chromium packages, DV4010 chown -R, DL3042 pip cache. All findings legitimate. Chromium/headless browser automation image.",
+    "improvements": []
+  },
+  {
+    "repo": "Kareadita/Kavita",
+    "scannedAt": "2026-02-26T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3010 (info) on 'COPY _output/*.tar.gz /files/' — intentionally keeps archives for manual extraction by copy_runtime.sh (not auto-extraction). DL3008 unpinned apt (4x). All findings legitimate/informational.",
+    "improvements": []
   }
 ]
