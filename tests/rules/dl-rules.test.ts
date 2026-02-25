@@ -457,6 +457,12 @@ describe('DL3021 - COPY multiple sources needs / dest', () => {
   it('skips check when destination is a braced shell variable (${VAR})', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nARG DEPLOYDIR=/data/deploy\nCOPY *.sh *.conf ${DEPLOYDIR}'), 'DL3021')).toBe(false);
   });
+  it('skips check when destination path ends with a shell variable (cilium pattern)', () => {
+    // cilium/cilium: COPY a.sh b.sh c.sh /tmp/install/${TARGETOS}/${TARGETARCH}
+    // Destination starts with / but ends with a variable — cannot determine expansion at lint time
+    const df = 'FROM ubuntu:20.04\nARG TARGETOS\nARG TARGETARCH\nCOPY a.sh b.sh c.sh /tmp/install/${TARGETOS}/${TARGETARCH}';
+    expect(hasRule(lintDockerfile(df), 'DL3021')).toBe(false);
+  });
   it('skips check when arguments contain template variables ({{ .Var }} Go template syntax)', () => {
     // konveyor/move2kube pattern: COPY --from=builder /{{ .AppName }}/bin/{{ .AppName }} /bin/{{ .AppName }}
     // Template variables with spaces confuse the parser into counting extra arguments

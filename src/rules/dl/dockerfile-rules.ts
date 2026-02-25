@@ -107,10 +107,10 @@ export const DL3021: Rule = {
     for (const type of ['COPY', 'ADD'] as const) {
       forEachInstruction(ctx, type, (inst) => {
         const c = inst as CopyInstruction;
-        // Skip check when destination is a shell variable (e.g. $DEPLOYDIR, ${DIR}) —
-        // the variable's value cannot be determined at lint time, so we cannot know if it
-        // will expand to a path ending with '/' or to an existing directory.
-        const destIsVar = c.destination.startsWith('$');
+        // Skip check when destination contains a shell variable (e.g. $DEPLOYDIR, ${DIR},
+        // or /path/${VAR}) — the variable's value cannot be determined at lint time, so we
+        // cannot know if it will expand to a path ending with '/' or to an existing directory.
+        const destIsVar = c.destination.includes('$');
         // Skip check when any argument contains a template variable ({{ .Var }} syntax) —
         // template files (Go, Jinja2, etc.) may have {{ .AppName }} in paths which the
         // parser splits on spaces, causing spurious multi-source counts (konveyor/move2kube pattern).
