@@ -10399,5 +10399,147 @@
     },
     "notableFindings": "All findings legitimate. DL3057 no HEALTHCHECK, DV1006 root, DV1009 digest pinning. Minimal Go client library test Dockerfile.",
     "improvements": []
+  },
+  {
+    "repo": "jenkins-x/jx",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest, DV1006 root \u2014 all legitimate. Minimal Alpine-based image.",
+    "improvements": []
+  },
+  {
+    "repo": "actions/runner",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 29,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (12x), DV1009 no digest, DV1006 root \u2014 all legitimate. GitHub Actions self-hosted runner image.",
+    "improvements": []
+  },
+  {
+    "repo": "datadog/datadog-agent",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 14,
+    "totalIssues": 225,
+    "severities": {
+      "error": 2,
+      "warning": 127,
+      "info": 96,
+      "style": 0
+    },
+    "notableFindings": "DL3022 flagged COPY --from=artifacts (no colon, not a tagged external image \u2014 could be undefined alias). DL3008 apt pinning (76x), DL3027 apt vs apt-get (11x). DV3009 EXPOSE 22 (SSH port), DV2002 dist-upgrade. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "opensearch-project/opensearch-dashboards",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 46,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 24,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (11x), DV1009 no digest (8x), DV4003 no WORKDIR (6x), DL3057 no HEALTHCHECK \u2014 all legitimate. Standard Node.js/OpenSearch builds.",
+    "improvements": []
+  },
+  {
+    "repo": "virtual-kubelet/virtual-kubelet",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 12,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (4x), DV1009 no digest, DV1006 root, DL3057 \u2014 all legitimate. Clean Go Alpine multi-stage builds.",
+    "improvements": []
+  },
+  {
+    "repo": "pingcap/tidb-operator",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest, DV1006 root \u2014 all legitimate. Minimal operator image.",
+    "improvements": []
+  },
+  {
+    "repo": "tikv/pd",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 19,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (7x), DV1009 no digest (4x), DV4003 no WORKDIR \u2014 all legitimate. TiKV Placement Driver build image.",
+    "improvements": []
+  },
+  {
+    "repo": "golang-migrate/migrate",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 44,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (14x), DV1009 no digest (8x), DL3008 apt pinning (7x), DL3057 (4x) \u2014 all legitimate. Multi-database migration tool build images.",
+    "improvements": []
+  },
+  {
+    "repo": "flux-iac/tofu-controller",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 35,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 22,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (11x), DL3057 no HEALTHCHECK (6x), DL3018 apk pinning (2x) \u2014 all legitimate. OpenTofu controller for Flux CD.",
+    "improvements": []
+  },
+  {
+    "repo": "spiffe/spire",
+    "scannedAt": "2026-02-26T17:02:44.276290+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 60,
+    "severities": {
+      "error": 0,
+      "warning": 33,
+      "info": 27,
+      "style": 0
+    },
+    "notableFindings": "DL3022 FP: COPY --from=spire-agent:latest-local flagged as undefined alias \u2014 fixed (tagged image reference, not stage alias). DL3018 apk pinning (17x), DV1009 (11x).",
+    "improvements": [
+      "Fixed DL3022: COPY --from=name:tag now recognized as external image ref (colon indicates tag, not stage alias)"
+    ]
   }
 ]
