@@ -9998,5 +9998,266 @@
     },
     "notableFindings": "DL3010 (info) on 'COPY _output/*.tar.gz /files/' — intentionally keeps archives for manual extraction by copy_runtime.sh (not auto-extraction). DL3008 unpinned apt (4x). All findings legitimate/informational.",
     "improvements": []
+  },
+  {
+    "repo": "argoproj/argo-cd",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 132,
+    "severities": {
+      "error": 0,
+      "warning": 91,
+      "info": 39,
+      "style": 2
+    },
+    "notableFindings": "DL3008(64) apt pinning dominant, DV1006(8) root, DL3057(6) no HEALTHCHECK, DV4003(6) no WORKDIR, DV1009(5) no digest — all legitimate. Kubernetes GitOps CD tool with devenv/CI Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/prometheus",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3057(3) no HEALTHCHECK, DV1009(2) no digest, DL3010(2) EXPOSE sequential port — all legitimate. Very clean minimal Go Alpine Prometheus Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/grafana",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 33,
+    "totalIssues": 245,
+    "severities": {
+      "error": 25,
+      "warning": 99,
+      "info": 119,
+      "style": 2
+    },
+    "notableFindings": "DL3020(23) ADD vs COPY across 33 devenv/docker Dockerfiles. DV1001 correctly flags MYSQL_ROOT_PASSWORD='rootpass' and MYSQL_PASSWORD='password' in devenv/docker/blocks/mysql_opendata/Dockerfile (legitimate TP — real hardcoded dev credentials). DL3018(28) apk pinning, DV1009(37) no digest, DL3057(29) no HEALTHCHECK — all legitimate. Large dashboard platform with extensive test/devenv Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "k3s-io/k3s",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 73,
+    "severities": {
+      "error": 4,
+      "warning": 31,
+      "info": 37,
+      "style": 1
+    },
+    "notableFindings": "DV1003(3) curl|sh in Dockerfile.dapper/Dockerfile.local/Dockerfile.test (legitimate install patterns for cross-arch build toolchain). DL3000 relative WORKDIR in main Dockerfile (TP). DL3008(16) apt pinning, DV1006(5) root — all legitimate. Lightweight Kubernetes distribution.",
+    "improvements": []
+  },
+  {
+    "repo": "crossplane/crossplane",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {},
+    "notableFindings": "No Dockerfiles found — crossplane/crossplane uses distroless images built via Ko/CI pipelines without checked-in Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "kyverno/kyverno",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {},
+    "notableFindings": "No Dockerfiles found — kyverno/kyverno uses Ko for image builds without checked-in Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "containerd/containerd",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 62,
+    "severities": {
+      "error": 1,
+      "warning": 26,
+      "info": 35,
+      "style": 0
+    },
+    "notableFindings": "DV2003 VOLUME /var/lib in Dockerfile.test (legitimate security finding — containerd intentionally makes /var/lib a volume for test isolation). DL3008(15) apt pinning, DV4003(7) no WORKDIR, DV1006(4) root — all legitimate. Container runtime.",
+    "improvements": []
+  },
+  {
+    "repo": "helm/helm",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {},
+    "notableFindings": "No Dockerfiles found — helm/helm ships as a Go binary without checked-in Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "golangci/golangci-lint",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018(4) apk pinning, DL3057(2) no HEALTHCHECK, DV1006(2) root, DV1009(2) no digest, DV4003(2) no WORKDIR — all legitimate. Clean minimal Go Alpine linter runner.",
+    "improvements": []
+  },
+  {
+    "repo": "cilium/cilium",
+    "scannedAt": "2026-02-26T07:57:00+09:00",
+    "dockerfiles": 14,
+    "totalIssues": 148,
+    "severities": {
+      "error": 2,
+      "warning": 92,
+      "info": 53,
+      "style": 1
+    },
+    "notableFindings": "FP fixed: DL3021 was incorrectly flagging 'COPY a.sh b.sh c.sh /tmp/install/${TARGETOS}/${TARGETARCH}' — destination starts with / but ends with a shell variable, so trailing-slash check cannot be applied at lint time. Fixed by checking for '$' anywhere in destination (not just startsWith). DL3020(2) ADD vs COPY, DL3008(37) apt pinning, DL3018(25) apk pinning — all legitimate.",
+    "improvements": [
+      "fix: DL3021 false positive when COPY destination path ends with a shell variable (e.g. /tmp/install/${TARGETOS}/${TARGETARCH}) — now checks for '$' anywhere in destination, not just startsWith"
+    ]
+  },
+  {
+    "repo": "aws/amazon-vpc-cni-k8s",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 11,
+      "style": 1
+    },
+    "notableFindings": "DV1006 no USER (6x), DV1005/DV1008 broad COPY (10x), DL3033 yum pinning (4x) — all legitimate. AWS VPC CNI networking Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "cozy/cozy-stack",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 39,
+    "severities": {
+      "error": 1,
+      "warning": 25,
+      "info": 11,
+      "style": 2
+    },
+    "notableFindings": "DL3008 apt pinning (19x), DV1001 correctly flags COUCHDB_PASSWORD in production ENV, DV1009 no digest (4x) — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "eclipse-che/che",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 25,
+    "severities": {
+      "error": 1,
+      "warning": 14,
+      "info": 10
+    },
+    "notableFindings": "DL3002 last USER root in e2e test Dockerfile, DL3033 yum pinning (2x), DV1007 apt cache not cleaned — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "quarkusio/quarkus",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 25,
+    "totalIssues": 59,
+    "severities": {
+      "error": 1,
+      "warning": 7,
+      "info": 51
+    },
+    "notableFindings": "DV1009 no digest (23x), DL3057 no HEALTHCHECK (22x), DV1006 root (4x) — all legitimate. Clean Quarkus native/JVM multi-variant Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/pyroscope",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 30,
+    "totalIssues": 334,
+    "severities": {
+      "error": 9,
+      "warning": 174,
+      "info": 147,
+      "style": 4
+    },
+    "notableFindings": "DV1009 no digest (63x), DV1006 root (48x), DL3013 pip pinning (26x), DL3042 pip cache (23x), DV4003 no WORKDIR (20x) — all legitimate. Large polyglot profiling platform with many build images.",
+    "improvements": []
+  },
+  {
+    "repo": "k3d-io/k3d",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 44,
+    "severities": {
+      "error": 1,
+      "warning": 21,
+      "info": 22
+    },
+    "notableFindings": "DL3018 apk pinning (12x), DV1009 no digest (7x), DL3057 no HEALTHCHECK (3x), DV2011 apk update redundant with --no-cache — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "aws/eks-anywhere",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 9
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK (3x), DL3008 apt pinning (3x), DV1006 root (2x) — all legitimate. Clean EKS Anywhere infrastructure Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "tauri-apps/tauri",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 12
+    },
+    "notableFindings": "DL3008 apt pinning (11x), DL3009 apt lists not cleaned (3x), DV1007 apt cache (3x), DV1006 root (2x) — all legitimate. Linux CI build Dockerfiles with typical apt patterns.",
+    "improvements": []
+  },
+  {
+    "repo": "linkerd/linkerd-viz",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 4,
+      "style": 1
+    },
+    "notableFindings": "DL3057, DV1009, DV4003, DL3002 last root, DV3019 downloaded script — all legitimate. Single Grafana-based visualization Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-java",
+    "scannedAt": "2026-02-26T11:01:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 2
+    },
+    "notableFindings": "DV3020 ADD remote URL, DL3057, DV1006 root, DL3013 pip pinning — all legitimate. Minimal test Dockerfile.",
+    "improvements": []
   }
 ]
