@@ -824,6 +824,11 @@ describe('DL3022 - COPY --from external image', () => {
     const v = lintDockerfile('FROM ubuntu:20.04\nCOPY --from=mybuilder /app /app');
     expect(hasRule(v, 'DL3022')).toBe(true);
   });
+  it('does not flag COPY --from with tagged image reference (no slash or dot)', () => {
+    // e.g. COPY --from=spire-agent:latest-local (external locally-tagged image)
+    const v = lintDockerfile('FROM ubuntu:20.04\nCOPY --from=spire-agent:latest-local /app /app');
+    expect(hasRule(v, 'DL3022')).toBe(false);
+  });
 });
 
 describe('DL3057 - HEALTHCHECK missing', () => {
