@@ -145,6 +145,11 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nENV MY_SECRET=change-this-to-your-secret'), 'DV1001')).toBe(false);
     expect(hasRule(lintDockerfile('FROM ubuntu\nENV DB_PASSWORD=replace_me_with_real_password'), 'DV1001')).toBe(false);
     expect(hasRule(lintDockerfile('FROM ubuntu\nARG AUTH_TOKEN=change_this\nFROM ubuntu'), 'DV1001')).toBe(false);
+    // opf/openproject pattern: ENV SECRET_KEY_BASE=OVERWRITE_ME — explicit overwrite instruction
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV SECRET_KEY_BASE=OVERWRITE_ME'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV API_KEY=must_change'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV SECRET=fill_in'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV TOKEN=update_this'), 'DV1001')).toBe(false);
   });
 
   it('still flags non-instructional values even if they contain change-like words', () => {

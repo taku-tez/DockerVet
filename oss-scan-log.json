@@ -10802,5 +10802,145 @@
     },
     "notableFindings": "DL3006 untagged alpine in tilt development Dockerfiles (4x), DV1009 no digest (11x), DL3018 apk (4x) — all legitimate. Tilt dev Dockerfiles intentionally use untagged alpine.",
     "improvements": []
+  },
+  {
+    "repo": "harness/harness",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 73,
+    "severities": {
+      "error": 3,
+      "warning": 28,
+      "info": 30,
+      "style": 12
+    },
+    "notableFindings": "Legitimate findings: unpinned apt-get, missing USER, etc. No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-heimdall",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 6,
+      "style": 2
+    },
+    "notableFindings": "All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-nginx",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 72,
+    "severities": {
+      "error": 0,
+      "warning": 66,
+      "info": 4,
+      "style": 2
+    },
+    "notableFindings": "Mostly DL3018 (apk pin versions) - all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "opengist/opengist",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found.",
+    "improvements": []
+  },
+  {
+    "repo": "gitbucket/gitbucket",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found.",
+    "improvements": []
+  },
+  {
+    "repo": "sonatype/nexus3",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-swag",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 8,
+      "style": 2
+    },
+    "notableFindings": "All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-sabnzbd",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 46,
+    "severities": {
+      "error": 0,
+      "warning": 31,
+      "info": 10,
+      "style": 5
+    },
+    "notableFindings": "All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "drone/drone",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found.",
+    "improvements": []
+  },
+  {
+    "repo": "jlesage/docker-baseimage-gui",
+    "scannedAt": "2026-02-27T01:59:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 79,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 42,
+      "style": 11
+    },
+    "notableFindings": "DL3006 on ARG-based image names - legitimate warnings. All findings valid.",
+    "improvements": []
   }
 ]

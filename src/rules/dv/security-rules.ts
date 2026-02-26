@@ -33,7 +33,7 @@ const ANGLE_BRACKET_PLACEHOLDER = /^<[^>]+>$/;
 const PLACEHOLDER_KEYWORD = /^(?:placeholder|changeme|change_me|change-me|example|dummy|todo|fixme|x{3,}|n\/a|none|null|empty|fake|sample)$/i;
 // Instructional placeholder values that explicitly tell users to change the value.
 // e.g. "change_this_to_something_unique" (kimai), "your_secret_here", "replace_me_with_something"
-const INSTRUCTIONAL_PLACEHOLDER = /^change[_-]?(?:this|me|it)|^replace[_-]?(?:me|this|it)|^your[_-].+[_-]here$|^set[_-].+[_-]here$/i;
+const INSTRUCTIONAL_PLACEHOLDER = /^change[_-]?(?:this|me|it)|^replace[_-]?(?:me|this|it)|^your[_-].+[_-]here$|^set[_-].+[_-]here$|^overwrite[_-]?(?:me|this|it)|^must[_-](?:change|set|update)|^fill[_-]in|^update[_-](?:me|this|it)/i;
 // Self-referential placeholder: value is the kebab-case or lowercase form of the variable name.
 // e.g. ARG POSTHOG_API_KEY=posthog-api-key — the value is just the key name lowercased with hyphens,
 // clearly a build-time placeholder (Infisical/infisical pattern for Next.js ARG stubs).
