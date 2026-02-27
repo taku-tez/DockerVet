@@ -11824,5 +11824,404 @@
     },
     "notableFindings": "All findings legitimate",
     "improvements": []
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 67,
+    "severities": {
+      "error": 2,
+      "warning": 34,
+      "info": 31
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "openzipkin/zipkin",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 57,
+    "severities": {
+      "style": 12,
+      "info": 36,
+      "warning": 9
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "wurstmeister/zookeeper-docker",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 8,
+    "severities": {
+      "error": 1,
+      "warning": 4,
+      "info": 3
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "cilium/tetragon",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 143,
+    "severities": {
+      "error": 1,
+      "warning": 86,
+      "info": 50,
+      "style": 6
+    },
+    "notableFindings": "DL3000 in Dockerfile.hugo (relative WORKDIR) - legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "cri-o/cri-o",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 4,
+      "info": 8
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "etcd-io/etcd",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 23,
+    "severities": {
+      "error": 2,
+      "warning": 4,
+      "info": 17
+    },
+    "notableFindings": "DL3029 false positive: FROM --platform=linux/${ARCH} was incorrectly flagged",
+    "improvements": [
+      "Fixed DL3029 to allow composite platform strings with ARG variables (e.g. linux/${ARCH})"
+    ]
+  },
+  {
+    "repo": "apache/zookeeper",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 23,
+    "severities": {
+      "warning": 15,
+      "info": 8
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "netdata/netdata",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 37,
+    "severities": {
+      "warning": 11,
+      "info": 26
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/tempo",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 24,
+    "severities": {
+      "warning": 10,
+      "info": 14
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "dexidp/dex",
+    "scannedAt": "2026-02-28T02:01:49.750563+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 19,
+    "severities": {
+      "warning": 8,
+      "info": 11
+    },
+    "notableFindings": "No false positives found",
+    "improvements": []
+  },
+  {
+    "repo": "langgenius/dify",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (6x), DV1009 no digest (4x), DV4003 no WORKDIR, DL3057. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "eclipse/openvsx",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 47,
+    "severities": {
+      "error": 1,
+      "warning": 18,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (10x), DL3057 (6x), DV4003 (4x), DL3008 apt pinning, DL3006 ubuntu without tag. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "influxdata/flux",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3006 on quay.io/influxdb/flux-build without version tag, DV1004, DV1009, DV4003 - all legitimate. Very clean Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "supertokens/supertokens-core",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 110,
+    "severities": {
+      "error": 1,
+      "warning": 49,
+      "info": 60,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (28x), DL3009 apt cleanup (11x), DL3015 apt recommends (11x), DV2004 (11x). Heavy but all legitimate Java/Debian Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "posthog/posthog-js",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (6x), DL3016 npm pinning (5x), DL3057 no HEALTHCHECK, DV4002 consecutive RUN. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "Unleash/unleash",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 9,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (3x), DL3057 no HEALTHCHECK (2x), DV1005/DV1008 broad COPY. Clean minimal Node.js Dockerfiles. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "flagsmith/flagsmith",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 27,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (7x), DL3019 apt cleanup (5x), DL3003 cd instead of WORKDIR (3x), DL3007 latest tag (2x). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openlit/openlit",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 55,
+    "severities": {
+      "error": 1,
+      "warning": 25,
+      "info": 29,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (15x), DL3018 apk pinning (9x), DL3057 (6x), DV1006 root (6x), DL3006 alpine without version tag (2x, legitimate). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "growthbook/growthbook",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 14,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (7x), DV1009 no digest (3x), DL3013 pip pinning, DL3016 npm pinning. All legitimate. Clean Node.js/Python monorepo Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "unkeyed/unkey",
+    "scannedAt": "2026-02-28T04:57:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 45,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 25,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (12x), DL3057 (8x), DV1006 root (8x), DL3007 latest (4x), DL3006 gcr.io/distroless/static-debian12 without digest (legitimate - needs explicit version). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "spegel-org/spegel",
+    "scannedAt": "2026-02-28T07:58:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 14,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 8
+    },
+    "notableFindings": "DL3008 apt pinning (3x), DL3047 wget without progress (2x), DV1009, DV1006 - all legitimate. Clean minimal Go Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "eksctl-io/eksctl",
+    "scannedAt": "2026-02-28T07:58:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 4
+    },
+    "notableFindings": "DV1009 no digest (2x), DV1005/DV1008 broad COPY, DL3057, DV1006 - all legitimate. Clean single Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "goharbor/harbor-helm",
+    "scannedAt": "2026-02-28T07:58:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 8,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 5
+    },
+    "notableFindings": "DL3018 apk pinning (2x), DL3057, DV1006, DV1009, DV4003 - all legitimate. Minimal Alpine-based Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "kairos-io/kairos",
+    "scannedAt": "2026-02-28T07:58:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 52,
+    "severities": {
+      "error": 0,
+      "warning": 18,
+      "info": 34
+    },
+    "notableFindings": "DV1009 no digest (14x), DV1006 root (7x), DV4003 no WORKDIR (7x), DL3008 apt pinning (7x) - all legitimate. Cloud-native OS build Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "stefanprodan/podinfo",
+    "scannedAt": "2026-02-28T07:58:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 23,
+    "severities": {
+      "error": 0,
+      "warning": 9,
+      "info": 14
+    },
+    "notableFindings": "DV1009 no digest (6x), DL3018 apk pinning (6x), DL3057 (3x) - all legitimate. Well-maintained Go microservice reference app.",
+    "improvements": []
+  },
+  {
+    "repo": "tkestack/tke",
+    "scannedAt": "2026-02-28T08:05:00+09:00",
+    "dockerfiles": 31,
+    "totalIssues": 192,
+    "severities": {
+      "error": 26,
+      "warning": 80,
+      "info": 86
+    },
+    "notableFindings": "DL3020 ADD vs COPY (24x across component Dockerfiles), DL3006 BASE_IMAGE ARG without version tag (8x), DL3008 apt pinning (25x) - all legitimate. Large Chinese cloud-native platform.",
+    "improvements": []
+  },
+  {
+    "repo": "koordinator-sh/koordinator",
+    "scannedAt": "2026-02-28T08:05:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 55,
+    "severities": {
+      "error": 0,
+      "warning": 25,
+      "info": 30
+    },
+    "notableFindings": "DV1009 no digest (12x), DV1006 root (8x), DL3018 apk (8x), DL3057 (6x) - all legitimate. Cloud-native resource scheduling project.",
+    "improvements": []
+  },
+  {
+    "repo": "clusterpedia-io/clusterpedia",
+    "scannedAt": "2026-02-28T08:05:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 13
+    },
+    "notableFindings": "DV1009 no digest (6x), DV1006 root (3x), DL3018 apk (2x) - all legitimate. Clean Kubernetes multi-cluster resource search tool Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "k0sproject/k0smotron",
+    "scannedAt": "2026-02-28T08:05:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 11
+    },
+    "notableFindings": "DL3008 apt pinning (7x), DV1009 no digest (5x), DV1006 root (4x) - all legitimate. Kubernetes-in-Kubernetes operator Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "kubermatic/kubermatic",
+    "scannedAt": "2026-02-28T08:05:00+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 103,
+    "severities": {
+      "error": 5,
+      "warning": 47,
+      "info": 51
+    },
+    "notableFindings": "DL3020 ADD vs COPY (4x), DL3008 apt pinning (25x), DV1009 no digest (20x), DV1006 root (10x) - all legitimate. Large Kubernetes management platform.",
+    "improvements": []
   }
 ]
