@@ -1231,20 +1231,6 @@
     "improvements": []
   },
   {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-02-18T09:16:40.449932Z",
-    "dockerfiles": 3,
-    "totalIssues": 31,
-    "severities": {
-      "error": 0,
-      "warning": 16,
-      "info": 15,
-      "style": 0
-    },
-    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DL3008: Pin versions in apt-get install. Instead of `apt-get install bash` use `apt-get ; DL3008: Pin versions in apt-get install. Instead of `apt-get install build-essential` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install ca-certificates` us; DL3008: Pin versions in apt-get install. Instead of `apt-get install crossbuild-essentia",
-    "improvements": []
-  },
-  {
     "repo": "tigera/operator",
     "scannedAt": "2026-02-18T09:16:48.063311Z",
     "dockerfiles": 1,
@@ -9636,20 +9622,6 @@
     "improvements": []
   },
   {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-02-25T22:57:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 67,
-    "severities": {
-      "error": 2,
-      "warning": 34,
-      "info": 31,
-      "style": 0
-    },
-    "notableFindings": "DL3008(18) apt pinning, DL3018(8) apk pinning, DL3057(4) no HEALTHCHECK, DV1006(4) root, DV1009(4) no digest, DV3019(1) downloaded script without checksum — all legitimate. Go-based workload orchestration CI/dev Dockerfiles.",
-    "improvements": []
-  },
-  {
     "repo": "typesense/typesense",
     "scannedAt": "2026-02-25T22:57:00+09:00",
     "dockerfiles": 11,
@@ -11475,6 +11447,382 @@
       "style": 0
     },
     "notableFindings": "DL3020(10) ADD vs COPY across ci.Dockerfile and frontend.Dockerfile (local file copies in multi-stage build) — legitimate TPs, should use COPY. DL3018(3) apk pinning in build.Dockerfile, DV4005(2) no CMD/ENTRYPOINT in CI/frontend builder stages — all legitimate. DNS blocker with 3 separate build Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "okteto/okteto",
+    "scannedAt": "2026-02-27T17:06:21.300084+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 88,
+    "severities": {
+      "error": 2,
+      "warning": 37,
+      "info": 49,
+      "style": 0
+    },
+    "notableFindings": "DL3020(2) ADD vs COPY, DL3006(7) untagged bases in sample Dockerfiles, DL3018(8) apk pinning, DV1009(7) no digest — all legitimate. Sample application Dockerfiles for Kubernetes dev platform.",
+    "improvements": []
+  },
+  {
+    "repo": "prestodb/presto",
+    "scannedAt": "2026-02-27T17:06:21.300084+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 50,
+    "severities": {
+      "error": 0,
+      "warning": 28,
+      "info": 22,
+      "style": 0
+    },
+    "notableFindings": "DL3008(11) apt pinning, DV4003(7) no WORKDIR, DV1006(6) root, DL3027 apt vs apt-get, DL3041 dnf pinning — all legitimate. Native execution and devcontainer Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "goodwithtech/dockle",
+    "scannedAt": "2026-02-27T17:06:21.300084+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 25,
+    "severities": {
+      "error": 3,
+      "warning": 9,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3020(2) ADD vs COPY, DV2003 sensitive VOLUME /usr in testdata/Dockerfile.base (intentional test fixture), DV3013 setuid bit in testdata (test fixture), DV1009(4) no digest — all findings in test fixtures, all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "atlassian/dc-app-performance-toolkit",
+    "scannedAt": "2026-02-27T17:06:21.300084+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 1,
+      "warning": 3,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3047(3) wget without progress bar, DL3057 no HEALTHCHECK, DV1006 root, DV1009 no digest — all legitimate. Atlassian DC performance testing toolkit.",
+    "improvements": []
+  },
+  {
+    "repo": "devcontainers/templates",
+    "scannedAt": "2026-02-27T17:06:21.300084+09:00",
+    "dockerfiles": 17,
+    "totalIssues": 60,
+    "severities": {
+      "error": 0,
+      "warning": 24,
+      "info": 36,
+      "style": 0
+    },
+    "notableFindings": "DV1006(17) root, DV1009(17) no digest, DV4003(12) no WORKDIR across official devcontainer templates — all legitimate. FP fixed: DL3028 was incorrectly including trailing `\"` from `su -c \"gem install pkg\"` pattern, stripping to correct package name.",
+    "improvements": [
+      "fix: DL3028 strip surrounding/trailing quotes from gem package tokens — `su vscode -c \"gem install rails webdrivers\"` was reporting webdrivers\" (with trailing quote) as the package name"
+    ]
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-python-contrib",
+    "scannedAt": "2026-02-27T17:06:21.300084+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3042(2) pip no-cache, DV1006 root, DV1009 no digest, DL3008 apt pinning — all legitimate. Very clean minimal Python OTel contrib Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "ray-project/kuberay",
+    "scannedAt": "2026-02-27T17:07:13.936422+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 61,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 46,
+      "style": 0
+    },
+    "notableFindings": "DV1009(12) no digest, DL3057(11) no HEALTHCHECK, DV4003(4) no WORKDIR, DL3013(3) pip pinning — all legitimate. Clean Go/Python microservice Dockerfiles for KubeRay operator.",
+    "improvements": []
+  },
+  {
+    "repo": "shipwright-io/build",
+    "scannedAt": "2026-02-27T17:07:13.936422+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DV4003(6) no WORKDIR, DL3057(5) no HEALTHCHECK, DV4005(2) no CMD/ENTRYPOINT — all legitimate. Very clean minimal Go build system Dockerfiles for Kubernetes.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 67,
+    "severities": {
+      "error": 2,
+      "warning": 34,
+      "info": 31,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (2x), DL3008 unpinned apt, DV4007 DEBIAN_FRONTEND as ENV — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/pyroscope",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 55,
+    "totalIssues": 334,
+    "severities": {
+      "error": 9,
+      "warning": 174,
+      "info": 147,
+      "style": 4
+    },
+    "notableFindings": "DV1003 curl|sh, DL3020 ADD vs COPY, DV4003 no WORKDIR (many), DV1006 root — all legitimate. Large observability repo with many sub-service Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "spiffe/spire",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 57,
+    "severities": {
+      "error": 0,
+      "warning": 30,
+      "info": 27,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (20x), DV1009 no digest, DL3006 untagged ARG-based image, DV4003 no WORKDIR — all legitimate. Clean SPIFFE/SPIRE identity framework Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-java",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DV3020 ADD remote URL without checksum, DV4002 consecutive RUN, DL3013 pip pin, DL3042 pip cache — all legitimate. Single minimal Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/dubbo",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 13,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt, DV1004 no multi-stage, DV1006 root, DV1009 no digest — all legitimate. Single builder Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "meshery/meshery",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 25,
+    "severities": {
+      "error": 2,
+      "warning": 10,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (2x), DL3013 pip pinning, DL3018 apk pinning — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "rancher/fleet",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning, DV1006 root, DV1009 no digest, DL3025 CMD without JSON notation — all legitimate. Clean minimal Go fleet management Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/consul-k8s",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 63,
+    "severities": {
+      "error": 2,
+      "warning": 33,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo usage, DV1003 curl|sh, DL3008 unpinned apt — all legitimate. Kubernetes Consul integration Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-operator",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 21,
+    "totalIssues": 139,
+    "severities": {
+      "error": 3,
+      "warning": 53,
+      "info": 83,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (2x), DV1003 curl|sh (1x), DL3018 apk pinning, DL3007 latest tag — all legitimate. Large multi-language instrumentation operator repo.",
+    "improvements": []
+  },
+  {
+    "repo": "crossplane/crossplane",
+    "scannedAt": "2026-02-27T20:03:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo (uses OCI images built via CI tooling, not Dockerfiles).",
+    "improvements": []
+  },
+  {
+    "repo": "serversideup/docker-php",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 38,
+    "severities": {
+      "warning": 11,
+      "info": 20,
+      "style": 7
+    },
+    "notableFindings": "All findings legitimate: DL3008 apt pinning, DV4012 COPY consolidation, DL3018 apk pinning",
+    "improvements": []
+  },
+  {
+    "repo": "crazy-max/docker-fail2ban",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 20,
+    "severities": {
+      "warning": 18,
+      "info": 2
+    },
+    "notableFindings": "DL3018 apk pinning, DV3020 ADD remote URL without checksum - all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "crazy-max/docker-samba",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 18,
+    "severities": {
+      "warning": 13,
+      "info": 5
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "jlesage/docker-handbrake",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "warning": 2,
+      "info": 7
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-deluge",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "warning": 5,
+      "info": 8
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-nzbget",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 43,
+    "severities": {
+      "warning": 27,
+      "info": 16
+    },
+    "notableFindings": "DL3018 apk pinning x18, DL3013 pip pinning x4 - all legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-emby",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 17,
+    "severities": {
+      "warning": 9,
+      "info": 8
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "JetBrains/projector-docker",
+    "scannedAt": "2026-02-27T22:59:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 41,
+    "severities": {
+      "error": 2,
+      "warning": 17,
+      "info": 22
+    },
+    "notableFindings": "DL3020 errors (ADD instead of COPY) are legitimate, DL3006 untagged debian are legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-transmission",
+    "scannedAt": "2026-02-27T23:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 13,
+    "severities": {
+      "warning": 5,
+      "info": 8
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-heimdall",
+    "scannedAt": "2026-02-27T23:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 24,
+    "severities": {
+      "warning": 16,
+      "info": 8
+    },
+    "notableFindings": "All findings legitimate",
     "improvements": []
   }
 ]

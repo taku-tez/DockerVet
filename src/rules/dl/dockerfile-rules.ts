@@ -232,7 +232,8 @@ export const DL3029: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
-      if (stage.from.platform && !BUILDKIT_PLATFORM_ARGS.test(stage.from.platform) && !/^\$/.test(stage.from.platform)) {
+      // Allow BuildKit automatic vars, pure variable refs ($VAR), and composite platform strings containing variables (linux/${ARCH})
+      if (stage.from.platform && !BUILDKIT_PLATFORM_ARGS.test(stage.from.platform) && !/\$/.test(stage.from.platform)) {
         violations.push({ rule: 'DL3029', severity: 'warning', message: 'Do not use --platform flag with FROM', line: stage.from.line });
       }
     }
