@@ -216,7 +216,9 @@ export const DL3028: Rule = {
       if (!m) return;
       const allParts = m[1].split(/\s+/).filter(p => p);
       for (let i = 0; i < allParts.length; i++) {
-        const part = allParts[i];
+        // Strip surrounding quotes (can occur when gem install is inside su -c "..." string)
+        const part = allParts[i].replace(/^["']|["']$/g, '');
+        if (!part) continue;
         if (part === '-v' || part === '--version') { i++; continue; }
         if (part.startsWith('-')) continue;
         if (!part.startsWith('$') && !part.includes(':')) {
