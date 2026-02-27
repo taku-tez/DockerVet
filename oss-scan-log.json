@@ -11350,5 +11350,131 @@
     },
     "notableFindings": "DL3020(3) ADD vs COPY in dev.dockerfile (local dirs), DL3018 apk pinning (dominant), DV4002 consecutive RUN, DL3042 pip no-cache across 29 microservice/client Dockerfiles — all legitimate. Grafana Loki log aggregation platform.",
     "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-jackett",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3018(4) apk pinning, DV3019 downloaded script without checksum (2x), DV1006(2) root, DV1009(2) no digest, DL3057(2) no HEALTHCHECK, DV4003(2) no WORKDIR, DV4010(2) chown -R — all legitimate. Standard linuxserver Alpine image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-sonarr",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018(6) apk pinning, DV3019(2) downloaded script without checksum, DV1006(2) root, DV1009(2) no digest, DL3057(2) no HEALTHCHECK, DV4003(2) no WORKDIR — all legitimate. Standard linuxserver Alpine .NET/Sonarr image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-lidarr",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018(8) apk pinning, DV3019(2) downloaded script without checksum, DV1006(2) root, DV1009(2) no digest, DL3057(2) no HEALTHCHECK, DV4003(2) no WORKDIR — all legitimate. Standard linuxserver Alpine Lidarr (music) image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-bazarr",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 21,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3018(14) apk pinning, DL3013(4) pip pinning, DV3019(2) downloaded script, DV1006(2) root, DV1009(3) no digest, DL3007(1) latest tag — all legitimate. Standard linuxserver Alpine Bazarr (subtitle manager) image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-overseerr",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018(4) apk pinning, DL3003(2) cd in RUN, DV3019(2) downloaded script, DV1006(2) root, DV1009(2) no digest, DL3057(2) no HEALTHCHECK, DV4003(2) no WORKDIR — all legitimate. Standard linuxserver Alpine Overseerr (media request) image.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-unifi-network-application",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 12,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3008(8) apt pinning, DV3019(2) downloaded script, DV1007(2) apt cache, DL3009(2) apt lists, DV4007(2) DEBIAN_FRONTEND as ENV, DV1009(2) no digest, DL3057(2) no HEALTHCHECK — all legitimate. Standard linuxserver Ubuntu-based UniFi Network Application image.",
+    "improvements": []
+  },
+  {
+    "repo": "freeipa/freeipa-container",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 131,
+    "severities": {
+      "error": 13,
+      "warning": 53,
+      "info": 65,
+      "style": 0
+    },
+    "notableFindings": "DL3020(13) ADD vs COPY for local files across 13 Dockerfiles — legitimate TPs, should use COPY. DV2006(13) multiple ENTRYPOINT — intentional override of systemd-init parent ENTRYPOINT (legitimate for this use case). DL3041(21) dnf version pinning, DL3006(5) untagged UBI/AlmaLinux/Rocky images — all legitimate. FreeIPA identity management multi-distro build matrix.",
+    "improvements": []
+  },
+  {
+    "repo": "influxdata/chronograf",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 6,
+      "warning": 2,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3020(6) ADD vs COPY for local binary files — legitimate TPs, should use COPY. DL3018 apk pinning, DL3019 apk cache, DL3057 HEALTHCHECK — all legitimate. InfluxData Chronograf time-series dashboard.",
+    "improvements": []
+  },
+  {
+    "repo": "adguardteam/AdGuardHome",
+    "scannedAt": "2026-02-27T14:00:39.916340+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 18,
+    "severities": {
+      "error": 10,
+      "warning": 4,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3020(10) ADD vs COPY across ci.Dockerfile and frontend.Dockerfile (local file copies in multi-stage build) — legitimate TPs, should use COPY. DL3018(3) apk pinning in build.Dockerfile, DV4005(2) no CMD/ENTRYPOINT in CI/frontend builder stages — all legitimate. DNS blocker with 3 separate build Dockerfiles.",
+    "improvements": []
   }
 ]
