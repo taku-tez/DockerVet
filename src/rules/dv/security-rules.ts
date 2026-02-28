@@ -45,7 +45,7 @@ function isSelfReferentialPlaceholder(key: string, value: string): boolean {
 
 // DV1001: Hardcoded secrets in ENV/ARG
 // _meta directories are module test fixtures (e.g. elastic/beats) where dummy credentials are expected
-const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__|_meta)(?:[/\\]|$)/i;
+const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__|_meta|demo|example|sample|getting[_-]?started|[a-z0-9_-]+-fixtures?)(?:[/\\]|$)/i;
 export const DV1001: Rule = {
   id: 'DV1001', severity: 'error',
   description: 'Secrets should not be hardcoded in ENV or ARG instructions',
