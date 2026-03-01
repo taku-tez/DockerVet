@@ -310,7 +310,7 @@ export const DV1010: Rule = {
  */
 const CLOUD_KEY_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
   { name: 'AWS access key ID',         pattern: /\bAKIA[0-9A-Z]{16}\b/ },
-  { name: 'AWS secret access key',     pattern: /\b[A-Za-z0-9+/]{40}\b/ },
+  { name: 'AWS secret access key',     pattern: /(?<![A-Za-z0-9])[A-Za-z0-9/+]{40}(?![A-Za-z0-9=])/ },
   { name: 'GCP service-account key',   pattern: /"private_key"\s*:\s*"-----BEGIN/ },
   { name: 'Azure storage account key', pattern: /[A-Za-z0-9+/]{86}==/ },
   { name: 'GitHub personal access token (classic)', pattern: /\bghp_[A-Za-z0-9]{36}\b/ },
