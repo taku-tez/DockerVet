@@ -516,7 +516,13 @@ export const DL3053: Rule = {
           for (const pair of env.pairs) {
             // Only flag when ARG has a default value (without default, there's nothing to shadow)
             if (argDefaults.has(pair.key) && argDefaults.get(pair.key)) {
-              violations.push({ rule: 'DL3053', severity: 'warning', message: `ENV ${pair.key} overrides ARG with the same name. --build-arg ${pair.key} will have no effect.`, line: inst.line });
+              // Skip if ENV value references the ARG variable (e.g., ENV FOO $FOO or ENV FOO ${FOO})
+              // This is the correct pattern to pass ARG values to runtime ENV
+              const val = pair.value.trim();
+              const isArgRef = val === `$${pair.key}` || val === `\${${pair.key}}`;
+              if (!isArgRef) {
+                violations.push({ rule: 'DL3053', severity: 'warning', message: `ENV ${pair.key} overrides ARG with the same name. --build-arg ${pair.key} will have no effect.`, line: inst.line });
+              }
             }
           }
         }

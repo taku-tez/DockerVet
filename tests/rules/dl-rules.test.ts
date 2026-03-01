@@ -978,6 +978,14 @@ describe('DL3053 - ENV overrides ARG', () => {
   it('passes ARG without default followed by ENV', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nARG FOO\nENV FOO=baz'), 'DL3053')).toBe(false);
   });
+  it('passes ENV that references the ARG variable ($VAR pattern)', () => {
+    // Common pattern: ARG NODE_ENV=production; ENV NODE_ENV $NODE_ENV
+    // This is valid - ARG value is passed through to runtime ENV
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG NODE_ENV=production\nENV NODE_ENV $NODE_ENV'), 'DL3053')).toBe(false);
+  });
+  it('passes ENV that references the ARG variable (${VAR} pattern)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG PORT=3000\nENV PORT ${PORT}'), 'DL3053')).toBe(false);
+  });
 });
 
 describe('DL3056 - Invalid inline ignore rule ID', () => {
