@@ -11458,5 +11458,145 @@
     },
     "notableFindings": "DL3020 ADD vs COPY in duo-api Dockerfile",
     "improvements": []
+  },
+  {
+    "repo": "docker-library/haproxy",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 292,
+    "severities": {
+      "error": 0,
+      "warning": 184,
+      "info": 108,
+      "style": 0
+    },
+    "notableFindings": "DL3018(96) apk pinning, DL3008(72) apt pinning, DL3057(16) no HEALTHCHECK, DV1004(16) no multi-stage — all legitimate across 16 versioned Alpine/Debian official HAProxy Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/elasticsearch",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3057(2) no HEALTHCHECK, DV1006(2) root — all legitimate. Very clean official Elasticsearch Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "go-gitea/gitea",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 62,
+    "severities": {
+      "error": 0,
+      "warning": 39,
+      "info": 17,
+      "style": 6
+    },
+    "notableFindings": "DL3018(31) apk pinning across two Alpine Dockerfiles, DL3052(6) unused ARGs, DV1009(6) no digest — all legitimate. Clean minimal Go git server.",
+    "improvements": []
+  },
+  {
+    "repo": "goharbor/harbor",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 34,
+    "totalIssues": 256,
+    "severities": {
+      "error": 6,
+      "warning": 104,
+      "info": 135,
+      "style": 11
+    },
+    "notableFindings": "DV1001(2) COSIGN_PASSWORD hardcoded in test engine Dockerfiles (api_test/ui_test) — legitimate TP. DV3024 tarball without checksum in test Dockerfile. DL3008(27) apt pinning, DV4003(25) no WORKDIR, DL3057(21) no HEALTHCHECK — all legitimate. Large multi-service container registry.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/loki",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 30,
+    "totalIssues": 283,
+    "severities": {
+      "error": 4,
+      "warning": 109,
+      "info": 168,
+      "style": 2
+    },
+    "notableFindings": "DV3024 tarball without checksum, DV1003 curl|sh for toolchain install, DL3020 ADD in dev.dockerfile — all legitimate. DV1009(45) no digest, DL3008(39) apt pinning, DV4003(36) no WORKDIR across 30 microservice Dockerfiles. Grafana log aggregation system.",
+    "improvements": []
+  },
+  {
+    "repo": "dragonflyoss/dragonfly",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 78,
+    "severities": {
+      "error": 0,
+      "warning": 40,
+      "info": 28,
+      "style": 10
+    },
+    "notableFindings": "DL3018(17) apk pinning, DL3008(13) apt pinning, DL3052(10) unused ARGs (cross-platform ARGs not used in every arch variant), DL3057(6) no HEALTHCHECK — all legitimate. Clean multi-arch Alpine Go P2P file distribution tool.",
+    "improvements": []
+  },
+  {
+    "repo": "influxdata/telegraf",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 14,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 7,
+      "style": 1
+    },
+    "notableFindings": "DL3008(2) apt pinning, DL3052 unused ARG, DL3057 no HEALTHCHECK, DV1004 no multi-stage, DV1006 root — all legitimate. Minimal PostgreSQL test Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "influxdata/influxdb",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 81,
+    "severities": {
+      "error": 1,
+      "warning": 59,
+      "info": 21,
+      "style": 0
+    },
+    "notableFindings": "DL3004 sudo in Dockerfile.ci (CI context, legitimate), DL3008(43) heavy apt pinning across Debian InfluxDB Dockerfiles, DL3053(9) ENV overrides ARG — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "etcd-io/etcd",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 28,
+    "severities": {
+      "error": 3,
+      "warning": 4,
+      "info": 19,
+      "style": 2
+    },
+    "notableFindings": "DL3020(3) ADD vs COPY for local binary artifacts in base and builder Dockerfiles — legitimate TPs. DV1009(5) no digest, DL3057(4) no HEALTHCHECK — all legitimate. Clean minimal Go etcd distributed key-value store.",
+    "improvements": []
+  },
+  {
+    "repo": "timescale/timescaledb-docker",
+    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 27,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3018(10) apk pinning, DV4003(3) no WORKDIR, DV2011(3) redundant apk update with --no-cache — all legitimate. PostgreSQL-based time series extension.",
+    "improvements": []
   }
 ]
