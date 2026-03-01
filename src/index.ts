@@ -151,17 +151,28 @@ function processContent(
   const ast = parse(content);
   const violations = lint(ast, { config, trustedRegistries, filePath: filename });
 
-  const hasErrors = violations.some(v => v.severity === 'error');
-  const hasWarnings = violations.some(v => v.severity === 'warning');
+  const failOn: string[] = config.failOn ?? ['error'];
+  const threshold: string = config.severityThreshold ?? 'style';
+  const severityOrder = ['error', 'warning', 'info', 'style'];
+  const thresholdIdx = severityOrder.indexOf(threshold);
+
+  // Filter violations below threshold
+  const activeViolations = violations.filter(v => {
+    const idx = severityOrder.indexOf(v.severity);
+    return idx !== -1 && idx <= thresholdIdx;
+  });
+
+  const hasFail = activeViolations.some(v => failOn.includes(v.severity));
+  const hasWarnings = activeViolations.some(v => v.severity === 'warning') && !hasFail;
   let exitCode = 0;
-  if (hasErrors) exitCode = 2;
+  if (hasFail) exitCode = 2;
   else if (hasWarnings) exitCode = 1;
 
-  return { filename, violations, exitCode };
+  return { filename, violations: activeViolations, exitCode };
 }
 
 function outputResults(
-  results: ProcessResult[], format: string, noColor: boolean
+  results: ProcessResult[], format: string, noColor: boolean, config?: any
 ): void {
   switch (format) {
     case 'json':
@@ -175,6 +186,14 @@ function outputResults(
         console.log(formatTTY(result.violations, result.filename, !noColor && process.stdout.isTTY !== false));
       }
       break;
+  }
+
+  // Auto-export SARIF if configured
+  if (config?.sarif?.export && format !== 'sarif') {
+    const sarifOutput = formatSARIFBatch(results);
+    const outFile = config.sarif.outputFile || 'dockervet-results.sarif';
+    fs.writeFileSync(outFile, sarifOutput, 'utf-8');
+    process.stderr.write(`SARIF output written to ${outFile}\n`);
   }
 }
 
@@ -191,7 +210,7 @@ async function handleGitHub(
     results.push(result);
   }
   
-  outputResults(results, format, noColor);
+  outputResults(results, format, noColor, config);
   return Math.max(...results.map(r => r.exitCode), 0);
 }
 
@@ -216,7 +235,7 @@ function main(): void {
 
   const opts = parseArgs(args);
   const config = loadConfig(opts.configPath);
-  config.ignore = [...config.ignore, ...opts.ignoreRules];
+  config.ignore = [...config.ignore, ...opts.ignoreRules] as (string | import('./engine/config').IgnoreEntry)[];
   if (opts.trustedRegistries.length > 0) {
     config.trustedRegistries = [...config.trustedRegistries, ...opts.trustedRegistries];
   }
@@ -235,7 +254,7 @@ function main(): void {
   if (opts.useStdin) {
     const content = fs.readFileSync(0, 'utf-8');
     const result = processContent(content, '<stdin>', config, opts.trustedRegistries);
-    outputResults([result], opts.format, opts.noColor);
+    outputResults([result], opts.format, opts.noColor, config);
     process.exit(result.exitCode);
   }
 
@@ -259,7 +278,7 @@ function main(): void {
     maxExit = Math.max(maxExit, result.exitCode);
   }
   
-  outputResults(results, opts.format, opts.noColor);
+  outputResults(results, opts.format, opts.noColor, config);
   process.exit(maxExit);
 }
 
