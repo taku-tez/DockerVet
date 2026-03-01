@@ -30,8 +30,9 @@ jobs:
 
       - name: Run DockerVet
         run: |
-          npx --yes dockervet@latest $(find . -name 'Dockerfile*' -not -path '*/node_modules/*' | tr '\n' ' ') \
-            --format sarif > dockervet-results.sarif || true
+          # Use xargs to handle filenames with spaces safely
+          # Pin version: replace dockervet@latest with dockervet@x.y.z
+          find . -name 'Dockerfile*' -not -path '*/node_modules/*' | xargs npx --yes dockervet@latest --format sarif > dockervet-results.sarif || true
 
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
