@@ -1,0 +1,42 @@
+# DockerVet - Dockerfile Security Linter
+# Official workflow template for GitHub Code Scanning integration
+#
+# Usage:
+#   Copy this file to .github/workflows/dockervet.yml in your repository.
+#   DockerVet will scan all Dockerfiles and upload results to GitHub Code Scanning.
+
+name: DockerVet Dockerfile Scan
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+  schedule:
+    # Run weekly on Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+
+jobs:
+  dockervet:
+    name: DockerVet Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run DockerVet
+        run: |
+          # Use xargs to handle filenames with spaces safely
+          # Pin version: replace dockervet@latest with dockervet@x.y.z
+          find . -name 'Dockerfile*' -not -path '*/node_modules/*' | xargs npx --yes dockervet@latest --format sarif > dockervet-results.sarif || true
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: dockervet-results.sarif
+          category: dockervet
