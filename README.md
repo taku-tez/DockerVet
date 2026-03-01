@@ -53,6 +53,7 @@ DockerVet implements all major Hadolint rules:
 | DL3002 | warning | Last USER should not be root |
 | DL3003 | warning | Use WORKDIR instead of cd |
 | DL3004 | error | Do not use sudo |
+| DL3005 | error | Do not use apt-get dist-upgrade |
 | DL3006 | warning | Always tag image version |
 | DL3007 | warning | Do not use :latest tag |
 | DL3008 | warning | Pin versions in apt-get install |
@@ -64,6 +65,7 @@ DockerVet implements all major Hadolint rules:
 | DL3014 | warning | Use -y with apt-get |
 | DL3015 | info | Use --no-install-recommends |
 | DL3016 | warning | Pin versions in npm |
+| DL3017 | error | Do not use apk upgrade |
 | DL3018 | warning | Pin versions in apk |
 | DL3019 | info | Use --no-cache with apk |
 | DL3020 | error | Use COPY instead of ADD for files |
@@ -77,13 +79,15 @@ DockerVet implements all major Hadolint rules:
 | DL3028 | warning | Pin versions in gem |
 | DL3029 | warning | Do not use --platform with FROM |
 | DL3030 | warning | Use -y with yum |
+| DL3031 | error | Do not use zypper update |
 | DL3032 | warning | yum clean all after yum |
 | DL3033 | warning | Pin versions in yum |
-| DL3034 | warning | Use -y with zypper |
+| DL3034 | warning | Use -y with zypper install |
 | DL3035 | warning | Do not use zypper dist-upgrade |
 | DL3036 | warning | zypper clean after zypper |
 | DL3037 | warning | Pin versions in zypper |
 | DL3038 | warning | Use -y with dnf |
+| DL3039 | warning | Use -y with zypper addrepo |
 | DL3040 | warning | dnf clean all after dnf |
 | DL3041 | warning | Pin versions in dnf |
 | DL3042 | warning | Use --no-cache-dir with pip |
@@ -95,6 +99,10 @@ DockerVet implements all major Hadolint rules:
 | DL3048 | info | Invalid label key |
 | DL3049 | info | Required label missing |
 | DL3050 | info | Superfluous label |
+| DL3051 | warning | Required LABEL value is empty |
+| DL3052 | style | ARG declared but never referenced |
+| DL3053 | warning | ENV overrides ARG with same name |
+| DL3056 | style | Invalid rule ID in inline ignore comment |
 | DL3057 | info | HEALTHCHECK missing |
 
 ### DockerVet Security Rules (DV1xxx)
@@ -139,6 +147,11 @@ DockerVet implements all major Hadolint rules:
 | DV3008 | warning | git clone with possible credentials |
 | DV3009 | warning | EXPOSE 22 (SSH) |
 | DV3010 | warning | VOLUME on sensitive paths |
+| DV3021 | warning/error | Dangerous service port exposed (Redis, MySQL, Docker API, etc.) |
+| DV3022 | warning | Sensitive credential operation without BuildKit --mount=type=secret |
+| DV3023 | warning | Unquoted ARG variable in shell execution context (injection risk) |
+| DV3024 | error | Downloaded file executed without checksum verification |
+| DV3025 | error | git credential configuration stores credentials in plaintext |
 
 ### Best Practices Rules (DV4xxx)
 
@@ -154,6 +167,10 @@ DockerVet implements all major Hadolint rules:
 | DV4008 | info | TODO/FIXME/HACK comments |
 | DV4009 | warning | chmod 777 excessive permissions |
 | DV4010 | info | Recursive chown -R increases layer size |
+| DV4014 | info | HEALTHCHECK missing in final stage |
+| DV4015 | warning | python -m pip install without --no-cache-dir |
+| DV4016 | info | COPY --from references invalid or self-referential stage |
+| DV4017 | warning | PATH contains writable directory (PATH pollution risk) |
 
 ## Configuration
 

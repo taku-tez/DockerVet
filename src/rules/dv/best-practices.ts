@@ -345,6 +345,86 @@ export const DV4013: Rule = {
   },
 };
 
+// DV4014: HEALTHCHECK instruction missing in final stage
+export const DV4014: Rule = {
+  id: 'DV4014', severity: 'info',
+  description: 'HEALTHCHECK instruction missing in final stage.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+
+    // Skip scratch and distroless/chainguard images
+    const image = lastStage.from.image.toLowerCase();
+    if (image === 'scratch') return violations;
+    if (image.includes('distroless') || image.includes('chainguard')) return violations;
+
+    // Skip if HEALTHCHECK is already set (including HEALTHCHECK NONE)
+    const hasHC = lastStage.instructions.some(i => i.type === 'HEALTHCHECK');
+    if (hasHC) return violations;
+
+    // Skip utility images without CMD/ENTRYPOINT (they don't need health checks)
+    const hasCmdOrEp = lastStage.instructions.some(i => i.type === 'CMD' || i.type === 'ENTRYPOINT');
+    if (!hasCmdOrEp) return violations;
+
+    violations.push({ rule: 'DV4014', severity: 'info', message: 'HEALTHCHECK instruction missing. Add HEALTHCHECK to enable container health monitoring in orchestration platforms.', line: lastStage.from.line });
+    return violations;
+  },
+};
+
+// DV4015: pip install without --no-cache-dir (extends DL3042 to cover python -m pip)
+export const DV4015: Rule = {
+  id: 'DV4015', severity: 'warning',
+  description: 'Avoid pip cache in Docker. Use `pip install --no-cache-dir`',
+  check(ctx) {
+    // Skip if PIP_NO_CACHE_DIR is set via ENV in any stage
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV' && /PIP_NO_CACHE_DIR\s*=\s*["']?(1|true|on|yes)/i.test(inst.arguments)) {
+          return [];
+        }
+      }
+    }
+    const violations: Violation[] = [];
+    forEachInstruction(ctx, 'RUN', (inst) => {
+      if (/--mount=type=cache/.test(inst.arguments)) return;
+      if (/python3?\s+-m\s+pip\s+install/.test(inst.arguments) && !/--no-cache-dir/.test(inst.arguments)) {
+        violations.push({ rule: 'DV4015', severity: 'warning', message: 'Avoid pip cache in Docker. Use `python -m pip install --no-cache-dir <package>` to reduce image size.', line: inst.line });
+      }
+    });
+    return violations;
+  },
+};
+
+// DV4016: Invalid COPY --from stage reference
+export const DV4016: Rule = {
+  id: 'DV4016', severity: 'info',
+  description: 'COPY --from references an invalid or self-referential stage index.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const totalStages = ctx.ast.stages.length;
+
+    for (let stageIdx = 0; stageIdx < ctx.ast.stages.length; stageIdx++) {
+      const stage = ctx.ast.stages[stageIdx];
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY') continue;
+        const c = inst as CopyInstruction;
+        if (!c.from) continue;
+        // Only check numeric references (named refs are handled by DL3022)
+        if (!/^\d+$/.test(c.from)) continue;
+
+        const fromIdx = parseInt(c.from, 10);
+        if (totalStages === 1 && fromIdx === 0) {
+          violations.push({ rule: 'DV4016', severity: 'info', message: `COPY --from=0 in a single-stage build is self-referential and has no effect.`, line: inst.line });
+        } else if (fromIdx >= totalStages) {
+          violations.push({ rule: 'DV4016', severity: 'info', message: `COPY --from=${c.from} references non-existent stage (only ${totalStages} stage(s) exist).`, line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV4012: Multiple consecutive COPY instructions that could be combined
 export const DV4012: Rule = {
   id: 'DV4012', severity: 'style',

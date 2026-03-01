@@ -6,6 +6,13 @@
 import { Rule, Violation } from '../types';
 import { runCheck, runCheckNeg, checkVersionPinning, forEachInstruction } from '../utils';
 
+// DL3005: Do not use apt-get dist-upgrade
+export const DL3005: Rule = {
+  id: 'DL3005', severity: 'error',
+  description: 'Do not use apt-get dist-upgrade',
+  check(ctx) { return runCheck(ctx, /apt-get\s+dist-upgrade/, 'DL3005', 'error', 'Do not use apt-get dist-upgrade. Use package pinning for reproducible builds.'); },
+};
+
 // DL3008: Pin versions in apt-get install
 export const DL3008: Rule = {
   id: 'DL3008', severity: 'warning',
@@ -191,6 +198,13 @@ export const DL3018: Rule = {
   },
 };
 
+// DL3017: Do not use apk upgrade
+export const DL3017: Rule = {
+  id: 'DL3017', severity: 'error',
+  description: 'Do not use apk upgrade',
+  check(ctx) { return runCheck(ctx, /apk\s+(?:--[^\s]+\s+)*upgrade/, 'DL3017', 'error', 'Do not use apk upgrade. Pin package versions instead for reproducible builds.'); },
+};
+
 // DL3019: Use --no-cache switch with apk
 export const DL3019: Rule = {
   id: 'DL3019', severity: 'info',
@@ -259,6 +273,13 @@ export const DL3033: Rule = {
   },
 };
 
+// DL3031: Do not use zypper update
+export const DL3031: Rule = {
+  id: 'DL3031', severity: 'error',
+  description: 'Do not use zypper update',
+  check(ctx) { return runCheck(ctx, /zypper\s+update/, 'DL3031', 'error', 'Do not use zypper update. Pin package versions for reproducible builds.'); },
+};
+
 // DL3034-DL3037: zypper rules
 export const DL3034: Rule = {
   id: 'DL3034', severity: 'warning',
@@ -290,6 +311,13 @@ export const DL3037: Rule = {
       (pkg) => `Specify version with zypper install -y ${pkg}=<version>`,
     );
   },
+};
+
+// DL3039: Non-interactive switch missing from zypper addrepo
+export const DL3039: Rule = {
+  id: 'DL3039', severity: 'warning',
+  description: 'Non-interactive switch missing from zypper command: zypper addrepo -y',
+  check(ctx) { return runCheckNeg(ctx, /zypper\s+(?:addrepo|ar)\b/, /-y|--no-confirm/, 'DL3039', 'warning', 'Non-interactive switch missing. Use zypper addrepo -y to avoid interactive prompts.'); },
 };
 
 // DL3038-DL3041: dnf rules

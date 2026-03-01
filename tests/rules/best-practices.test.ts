@@ -280,3 +280,64 @@ describe('DV4013 - Pin pecl versions', () => {
     expect(hasRule(lintDockerfile('FROM php:8.3\nRUN pecl install $EXT'), 'DV4013')).toBe(false);
   });
 });
+
+describe('DV4014 - HEALTHCHECK missing in final stage', () => {
+  it('flags missing HEALTHCHECK with CMD present', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCMD ["app"]'), 'DV4014')).toBe(true);
+  });
+  it('passes when HEALTHCHECK is set', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nHEALTHCHECK CMD curl localhost\nCMD ["app"]'), 'DV4014')).toBe(false);
+  });
+  it('passes HEALTHCHECK NONE', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nHEALTHCHECK NONE\nCMD ["app"]'), 'DV4014')).toBe(false);
+  });
+  it('skips FROM scratch', () => {
+    expect(hasRule(lintDockerfile('FROM scratch\nCOPY binary /\nENTRYPOINT ["/binary"]'), 'DV4014')).toBe(false);
+  });
+  it('skips distroless images', () => {
+    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/base\nCOPY app /app\nENTRYPOINT ["/app"]'), 'DV4014')).toBe(false);
+  });
+  it('skips images without CMD/ENTRYPOINT (utility images)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y curl'), 'DV4014')).toBe(false);
+  });
+  it('checks final stage only in multi-stage build', () => {
+    const df = 'FROM golang AS builder\nRUN go build\nFROM ubuntu\nCMD ["app"]';
+    expect(hasRule(lintDockerfile(df), 'DV4014')).toBe(true);
+  });
+});
+
+describe('DV4015 - python -m pip install without --no-cache-dir', () => {
+  it('flags python -m pip install without --no-cache-dir', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN python -m pip install torch'), 'DV4015')).toBe(true);
+  });
+  it('flags python3 -m pip install without --no-cache-dir', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN python3 -m pip install requests'), 'DV4015')).toBe(true);
+  });
+  it('passes with --no-cache-dir', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN python -m pip install --no-cache-dir torch'), 'DV4015')).toBe(false);
+  });
+  it('passes with --mount=type=cache', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN --mount=type=cache,target=/root/.cache/pip python -m pip install torch'), 'DV4015')).toBe(false);
+  });
+  it('passes when PIP_NO_CACHE_DIR env is set', () => {
+    expect(hasRule(lintDockerfile('FROM python\nENV PIP_NO_CACHE_DIR=1\nRUN python -m pip install torch'), 'DV4015')).toBe(false);
+  });
+  it('passes regular pip install (covered by DL3042, not DV4015)', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN pip install torch'), 'DV4015')).toBe(false);
+  });
+});
+
+describe('DV4016 - Invalid COPY --from stage reference', () => {
+  it('flags COPY --from=0 in single-stage build', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY --from=0 /app /app'), 'DV4016')).toBe(true);
+  });
+  it('flags COPY --from with out-of-range index', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu AS builder\nFROM ubuntu\nCOPY --from=5 /app /app'), 'DV4016')).toBe(true);
+  });
+  it('passes valid COPY --from in multi-stage build', () => {
+    expect(hasRule(lintDockerfile('FROM golang AS builder\nRUN go build\nFROM ubuntu\nCOPY --from=0 /go/bin/app /app'), 'DV4016')).toBe(false);
+  });
+  it('passes COPY --from with named stage reference', () => {
+    expect(hasRule(lintDockerfile('FROM golang AS builder\nRUN go build\nFROM ubuntu\nCOPY --from=builder /go/bin/app /app'), 'DV4016')).toBe(false);
+  });
+});

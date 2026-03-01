@@ -6,7 +6,7 @@
 import { Rule, Violation } from '../types';
 import { forEachInstruction, ARCHIVE_PATTERN, isUrl } from '../utils';
 import {
-  CopyInstruction, ExposeInstruction,
+  ArgInstruction, CopyInstruction, ExposeInstruction,
   EnvInstruction, LabelInstruction,
 } from '../../parser/types';
 
@@ -430,6 +430,98 @@ export const DL3050: Rule = {
         }
       }
     });
+    return violations;
+  },
+};
+
+// DL3051: Empty LABEL value for required labels
+export const DL3051: Rule = {
+  id: 'DL3051', severity: 'warning',
+  description: 'LABEL value should not be empty',
+  check(ctx) {
+    if (!ctx.requiredLabels || ctx.requiredLabels.length === 0) return [];
+    const violations: Violation[] = [];
+    const requiredSet = new Set(ctx.requiredLabels);
+    forEachInstruction(ctx, 'LABEL', (inst) => {
+      const l = inst as LabelInstruction;
+      for (const pair of l.pairs) {
+        if (requiredSet.has(pair.key) && pair.value.trim() === '') {
+          violations.push({ rule: 'DL3051', severity: 'warning', message: `LABEL "${pair.key}" is present but empty. Provide a meaningful value.`, line: inst.line });
+        }
+      }
+    });
+    return violations;
+  },
+};
+
+// DL3052: ARG declared but not referenced
+export const DL3052: Rule = {
+  id: 'DL3052', severity: 'style',
+  description: 'ARG is declared but never referenced',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Collect all text where variables can be referenced (including FROM directives)
+    const allText: string[] = [];
+    for (const stage of ctx.ast.stages) {
+      allText.push(stage.from.raw || stage.from.arguments);
+      for (const inst of stage.instructions) {
+        allText.push(inst.raw || inst.arguments);
+      }
+    }
+    const combined = allText.join('\n');
+
+    // Check global args (before any FROM)
+    for (const arg of ctx.ast.globalArgs) {
+      const name = arg.name;
+      if (!name) continue;
+      const re = new RegExp(`\\$\\{?${name}\\}?`);
+      if (!re.test(combined)) {
+        violations.push({ rule: 'DL3052', severity: 'style', message: `ARG ${name} is declared but never referenced in the Dockerfile.`, line: arg.line });
+      }
+    }
+
+    // Check per-stage args
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'ARG') continue;
+        const ai = inst as ArgInstruction;
+        const name = ai.name;
+        if (!name) continue;
+        const re = new RegExp(`\\$\\{?${name}\\}?`);
+        if (!re.test(combined)) {
+          violations.push({ rule: 'DL3052', severity: 'style', message: `ARG ${name} is declared but never referenced in the Dockerfile.`, line: ai.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DL3053: ENV overrides ARG with same name
+export const DL3053: Rule = {
+  id: 'DL3053', severity: 'warning',
+  description: 'ENV variable overrides ARG with the same name, preventing build-arg injection',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      const argDefaults = new Map<string, boolean>(); // name -> has default value
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG') {
+          const ai = inst as ArgInstruction;
+          if (ai.name) {
+            argDefaults.set(ai.name, ai.defaultValue !== undefined);
+          }
+        } else if (inst.type === 'ENV') {
+          const env = inst as EnvInstruction;
+          for (const pair of env.pairs) {
+            // Only flag when ARG has a default value (without default, there's nothing to shadow)
+            if (argDefaults.has(pair.key) && argDefaults.get(pair.key)) {
+              violations.push({ rule: 'DL3053', severity: 'warning', message: `ENV ${pair.key} overrides ARG with the same name. --build-arg ${pair.key} will have no effect.`, line: inst.line });
+            }
+          }
+        }
+      }
+    }
     return violations;
   },
 };

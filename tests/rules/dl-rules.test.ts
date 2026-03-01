@@ -887,3 +887,110 @@ describe('DL3057 - HEALTHCHECK missing', () => {
     expect(hasRule(lintDockerfile('FROM ubi9\nRUN echo', defaultConfig, 'operator/scripts/Dockerfile-custom-image'), 'DL3057')).toBe(false);
   });
 });
+
+describe('DL3005 - apt-get dist-upgrade', () => {
+  it('flags apt-get dist-upgrade', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get dist-upgrade'), 'DL3005')).toBe(true);
+  });
+  it('passes apt-get upgrade (not dist-upgrade)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get upgrade'), 'DL3005')).toBe(false);
+  });
+  it('passes normal apt-get install', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y curl'), 'DL3005')).toBe(false);
+  });
+});
+
+describe('DL3017 - apk upgrade', () => {
+  it('flags apk upgrade', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk upgrade'), 'DL3017')).toBe(true);
+  });
+  it('flags apk --no-cache upgrade', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk --no-cache upgrade'), 'DL3017')).toBe(true);
+  });
+  it('passes apk add', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN apk add --no-cache curl'), 'DL3017')).toBe(false);
+  });
+});
+
+describe('DL3031 - zypper update', () => {
+  it('flags zypper update', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper update'), 'DL3031')).toBe(true);
+  });
+  it('passes zypper install', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper install -y curl'), 'DL3031')).toBe(false);
+  });
+  it('passes zypper dist-upgrade (flagged by DL3035 instead)', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper update'), 'DL3031')).toBe(true);
+  });
+});
+
+describe('DL3039 - zypper addrepo without -y', () => {
+  it('flags zypper addrepo without -y', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper addrepo https://example.com/repo repo'), 'DL3039')).toBe(true);
+  });
+  it('flags zypper ar without -y', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper ar https://example.com/repo repo'), 'DL3039')).toBe(true);
+  });
+  it('passes zypper addrepo with -y', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper addrepo -y https://example.com/repo repo'), 'DL3039')).toBe(false);
+  });
+  it('passes zypper addrepo with --no-confirm', () => {
+    expect(hasRule(lintDockerfile('FROM opensuse/leap\nRUN zypper addrepo --no-confirm https://example.com/repo repo'), 'DL3039')).toBe(false);
+  });
+});
+
+describe('DL3051 - Empty LABEL value', () => {
+  it('flags empty required label value', () => {
+    const config = { ...defaultConfig, requiredLabels: ['maintainer'] };
+    expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL maintainer=""', config), 'DL3051')).toBe(true);
+  });
+  it('passes non-empty required label', () => {
+    const config = { ...defaultConfig, requiredLabels: ['maintainer'] };
+    expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL maintainer="team@example.com"', config), 'DL3051')).toBe(false);
+  });
+  it('passes when no required labels configured', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nLABEL maintainer=""'), 'DL3051')).toBe(false);
+  });
+});
+
+describe('DL3052 - Unused ARG', () => {
+  it('flags unused ARG', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG UNUSED_VAR\nRUN echo hi'), 'DL3052')).toBe(true);
+  });
+  it('passes ARG used in RUN', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG VERSION=1.0\nRUN echo $VERSION'), 'DL3052')).toBe(false);
+  });
+  it('passes global ARG used in FROM', () => {
+    expect(hasRule(lintDockerfile('ARG BASE=ubuntu\nFROM $BASE\nRUN echo hi'), 'DL3052')).toBe(false);
+  });
+  it('passes ARG used with braces', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG MY_VAR=foo\nRUN echo ${MY_VAR}'), 'DL3052')).toBe(false);
+  });
+});
+
+describe('DL3053 - ENV overrides ARG', () => {
+  it('flags ENV overriding ARG with default', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG FOO=bar\nENV FOO=baz'), 'DL3053')).toBe(true);
+  });
+  it('passes ENV with different name than ARG', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG FOO=bar\nENV BAR=baz'), 'DL3053')).toBe(false);
+  });
+  it('passes ARG without default followed by ENV', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG FOO\nENV FOO=baz'), 'DL3053')).toBe(false);
+  });
+});
+
+describe('DL3056 - Invalid inline ignore rule ID', () => {
+  it('flags unknown rule ID in inline ignore', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\n# hadolint ignore=DL9999\nRUN apt-get install curl'), 'DL3056')).toBe(true);
+  });
+  it('passes valid rule ID in inline ignore', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\n# hadolint ignore=DL3008\nRUN apt-get install curl'), 'DL3056')).toBe(false);
+  });
+  it('passes valid dockervet ignore', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\n# dockervet ignore=DV1001\nRUN apt-get install curl'), 'DL3056')).toBe(false);
+  });
+  it('flags typo in dockervet ignore', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\n# dockervet ignore=DV9999\nRUN apt-get install curl'), 'DL3056')).toBe(true);
+  });
+});
