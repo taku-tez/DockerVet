@@ -364,6 +364,8 @@ export const DL3042: Rule = {
     const violations: Violation[] = [];
     forEachInstruction(ctx, 'RUN', (inst) => {
       if (/--mount=type=cache/.test(inst.arguments)) return;
+      // Skip python -m pip install — covered by DV4015 to avoid duplicate warnings
+      if (/python3?\s+-m\s+pip\s+install/.test(inst.arguments)) return;
       if (/pip3?\s+install/.test(inst.arguments) && !/--no-cache-dir/.test(inst.arguments)) {
         violations.push({ rule: 'DL3042', severity: 'warning', message: 'Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`', line: inst.line });
       }

@@ -87,7 +87,7 @@ DockerVet implements all major Hadolint rules:
 | DL3036 | warning | zypper clean after zypper |
 | DL3037 | warning | Pin versions in zypper |
 | DL3038 | warning | Use -y with dnf |
-| DL3039 | warning | Use -y with zypper addrepo |
+| DL3039 | warning | Non-interactive switch missing from zypper addrepo |
 | DL3040 | warning | dnf clean all after dnf |
 | DL3041 | warning | Pin versions in dnf |
 | DL3042 | warning | Use --no-cache-dir with pip |
