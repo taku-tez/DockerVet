@@ -94,7 +94,7 @@ const EOL_IMAGE_DB: Record<string, EolInfo> = {
   'ubuntu:14.04': { eolDate: '2019-04-25', note: 'Ubuntu 14.04 LTS EOL' },
   'ubuntu:16.04': { eolDate: '2021-04-30', note: 'Ubuntu 16.04 LTS EOL' },
   'ubuntu:18.04': { eolDate: '2023-04-30', note: 'Ubuntu 18.04 LTS EOL' },
-  'ubuntu:20.04': { eolDate: '2025-04-02', note: 'Ubuntu 20.04 LTS EOL' },
+  'ubuntu:20.04': { eolDate: '2025-04-30', note: 'Ubuntu 20.04 LTS EOL' },
   // Debian
   'debian:7':      { eolDate: '2018-05-31', note: 'Debian 7 (Wheezy) EOL' },
   'debian:8':      { eolDate: '2020-06-30', note: 'Debian 8 (Jessie) EOL' },
