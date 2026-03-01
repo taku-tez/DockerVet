@@ -484,7 +484,7 @@ export const DV3021: Rule = {
       4444: { severity: 'warning', name: 'Selenium Grid Hub' },
       4445: { severity: 'warning', name: 'Selenium Grid' },
       4446: { severity: 'warning', name: 'Selenium Grid' },
-      5000: { severity: 'warning', name: 'Docker Registry' },
+      5000: { severity: 'info', name: 'Docker Registry / common web app port (Flask, etc.)' },
       8080: { severity: 'info', name: 'HTTP alternate (admin UI)' },
       8443: { severity: 'info', name: 'HTTPS alternate (admin UI)' },
     };
