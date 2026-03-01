@@ -10901,5 +10901,296 @@
     },
     "notableFindings": "DV3020 ADD remote URL, DL3013 pip pinning, DL3042 pip cache, DV1006 root — all legitimate. Single small test Dockerfile.",
     "improvements": []
+  },
+  {
+    "repo": "netdata/netdata",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 37,
+    "severities": {
+      "warning": 11,
+      "info": 26
+    },
+    "notableFindings": "No false positives. Standard warnings.",
+    "improvements": []
+  },
+  {
+    "repo": "linuxserver/docker-mariadb",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 12,
+    "severities": {
+      "info": 6,
+      "warning": 6
+    },
+    "notableFindings": "No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/ozone",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 83,
+    "severities": {
+      "info": 7,
+      "warning": 41,
+      "error": 35
+    },
+    "notableFindings": "sudo usage and ADD instruction violations, all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "ansible/ansible-runner",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 10,
+    "severities": {
+      "info": 3,
+      "warning": 7
+    },
+    "notableFindings": "No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "celery/celery",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 53,
+    "severities": {
+      "info": 14,
+      "warning": 38,
+      "error": 1
+    },
+    "notableFindings": "curl-pipe-to-shell warning is legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "certbot/certbot",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 32,
+    "severities": {
+      "info": 10,
+      "warning": 22
+    },
+    "notableFindings": "No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/iceberg",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 4,
+    "severities": {
+      "info": 3,
+      "warning": 1
+    },
+    "notableFindings": "DV1001 false positive: CATALOG_JDBC_PASSWORD=password in iceberg-rest-fixture dir. Fixed by expanding DV1001_SKIP_DIRS to match dirs ending with -fixture(s).",
+    "improvements": [
+      "Fixed DV1001 skip dirs to match directory names ending with -fixture(s)"
+    ]
+  },
+  {
+    "repo": "open-metadata/OpenMetadata",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 157,
+    "severities": {
+      "info": 89,
+      "warning": 65,
+      "style": 1,
+      "error": 2
+    },
+    "notableFindings": "All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/flink-docker",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 120,
+    "severities": {
+      "info": 99,
+      "warning": 21
+    },
+    "notableFindings": "No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/plugin-validator",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 28,
+    "severities": {
+      "error": 3,
+      "warning": 21,
+      "info": 4
+    },
+    "notableFindings": "ADD instead of COPY and curl-pipe-shell are legitimate findings.",
+    "improvements": []
+  },
+  {
+    "repo": "codecov/codecov-api",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 35,
+    "severities": {
+      "info": 15,
+      "warning": 20
+    },
+    "notableFindings": "No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "kuadrant/kuadrant-operator",
+    "scannedAt": "2026-03-01T05:03:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 11,
+    "severities": {
+      "info": 10,
+      "warning": 1
+    },
+    "notableFindings": "No false positives.",
+    "improvements": []
+  },
+  {
+    "repo": "wundergraph/cosmo",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "multiple",
+    "totalIssues": 140,
+    "severities": {
+      "error": 0,
+      "warning": 48,
+      "info": 91,
+      "style": 1
+    },
+    "notableFindings": "All findings legitimate (DV1009 digest pinning, DL3057 no CMD, DV1006/DV1005/DV1008 base image hygiene)",
+    "improvements": []
+  },
+  {
+    "repo": "tensorchord/envd",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "few",
+    "totalIssues": 8,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "microsoft/retina",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "multiple",
+    "totalIssues": 147,
+    "severities": {
+      "error": 3,
+      "warning": 89,
+      "info": 54,
+      "style": 1
+    },
+    "notableFindings": "All findings legitimate (DL3008 unpinned apt, DL3045 apt-get in RUN, DL3057 no CMD)",
+    "improvements": []
+  },
+  {
+    "repo": "deckhouse/deckhouse",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "multiple",
+    "totalIssues": 44,
+    "severities": {
+      "error": 2,
+      "warning": 38,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate (DL3018 unpinned apk)",
+    "improvements": []
+  },
+  {
+    "repo": "gozargah/marzban",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 1,
+      "warning": 10,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate (DL3008 unpinned apt)",
+    "improvements": []
+  },
+  {
+    "repo": "quickwit-oss/quickwit",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "multiple",
+    "totalIssues": 48,
+    "severities": {
+      "error": 2,
+      "warning": 20,
+      "info": 26,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate (DL3008 unpinned apt, DV4003 non-root user)",
+    "improvements": []
+  },
+  {
+    "repo": "bentoml/BentoML",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "multiple",
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate (DL3008 unpinned apt)",
+    "improvements": []
+  },
+  {
+    "repo": "hatchet-dev/hatchet",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": "multiple",
+    "totalIssues": 120,
+    "severities": {
+      "error": 0,
+      "warning": 74,
+      "info": 42,
+      "style": 4
+    },
+    "notableFindings": "All findings legitimate (DL3018 unpinned apk, DV1009 digest pinning)",
+    "improvements": []
+  },
+  {
+    "repo": "openai/openai-python",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate",
+    "improvements": []
+  },
+  {
+    "repo": "matomo-org/matomo",
+    "scannedAt": "2026-03-01T08:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "Clean - no issues found",
+    "improvements": []
   }
 ]
