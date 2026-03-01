@@ -281,28 +281,28 @@ describe('DV4013 - Pin pecl versions', () => {
   });
 });
 
-describe('DV4014 - HEALTHCHECK missing in final stage', () => {
+describe('DL3057 - HEALTHCHECK missing in final stage', () => {
   it('flags missing HEALTHCHECK with CMD present', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nCMD ["app"]'), 'DV4014')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCMD ["app"]'), 'DL3057')).toBe(true);
   });
   it('passes when HEALTHCHECK is set', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nHEALTHCHECK CMD curl localhost\nCMD ["app"]'), 'DV4014')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nHEALTHCHECK CMD curl localhost\nCMD ["app"]'), 'DL3057')).toBe(false);
   });
   it('passes HEALTHCHECK NONE', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nHEALTHCHECK NONE\nCMD ["app"]'), 'DV4014')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nHEALTHCHECK NONE\nCMD ["app"]'), 'DL3057')).toBe(false);
   });
   it('skips FROM scratch', () => {
-    expect(hasRule(lintDockerfile('FROM scratch\nCOPY binary /\nENTRYPOINT ["/binary"]'), 'DV4014')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM scratch\nCOPY binary /\nENTRYPOINT ["/binary"]'), 'DL3057')).toBe(false);
   });
   it('skips distroless images', () => {
-    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/base\nCOPY app /app\nENTRYPOINT ["/app"]'), 'DV4014')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM gcr.io/distroless/base\nCOPY app /app\nENTRYPOINT ["/app"]'), 'DL3057')).toBe(false);
   });
   it('skips images without CMD/ENTRYPOINT (utility images)', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y curl'), 'DV4014')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN apt-get install -y curl'), 'DL3057')).toBe(false);
   });
   it('checks final stage only in multi-stage build', () => {
     const df = 'FROM golang AS builder\nRUN go build\nFROM ubuntu\nCMD ["app"]';
-    expect(hasRule(lintDockerfile(df), 'DV4014')).toBe(true);
+    expect(hasRule(lintDockerfile(df), 'DL3057')).toBe(true);
   });
 });
 

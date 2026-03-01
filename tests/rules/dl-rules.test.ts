@@ -833,7 +833,7 @@ describe('DL3022 - COPY --from external image', () => {
 
 describe('DL3057 - HEALTHCHECK missing', () => {
   it('flags missing HEALTHCHECK', () => {
-    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN echo'), 'DL3057')).toBe(true);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nCMD ["app"]'), 'DL3057')).toBe(true);
   });
   it('passes with HEALTHCHECK', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nHEALTHCHECK CMD curl localhost'), 'DL3057')).toBe(false);

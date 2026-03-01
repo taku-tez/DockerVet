@@ -544,6 +544,16 @@ export const DL3057: Rule = {
     }
     const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
     if (!lastStage) return violations;
+
+    // Skip scratch and distroless/chainguard images (no processes to health-check)
+    const image = lastStage.from.image.toLowerCase();
+    if (image === 'scratch') return violations;
+    if (image.includes('distroless') || image.includes('chainguard')) return violations;
+
+    // Skip utility images without CMD/ENTRYPOINT (they don't serve requests)
+    const hasCmdOrEp = lastStage.instructions.some(i => i.type === 'CMD' || i.type === 'ENTRYPOINT');
+    if (!hasCmdOrEp) return violations;
+
     const hasHC = lastStage.instructions.some(i => i.type === 'HEALTHCHECK');
     if (!hasHC) {
       violations.push({ rule: 'DL3057', severity: 'info', message: 'HEALTHCHECK instruction missing', line: lastStage.from.line });

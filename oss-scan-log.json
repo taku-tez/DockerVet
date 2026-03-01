@@ -11192,5 +11192,271 @@
     },
     "notableFindings": "Clean - no issues found",
     "improvements": []
+  },
+  {
+    "repo": "apache/superset",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 149,
+    "severities": {
+      "error": 3,
+      "warning": 69,
+      "info": 77,
+      "style": 0
+    },
+    "notableFindings": "DV1003(3) curl|sh in .devcontainer/Dockerfile and RELEASING Dockerfiles (nvm/node install scripts, legitimate). DL3008(40+) apt pinning across 8 Dockerfiles. All findings legitimate. Apache Superset analytics platform.",
+    "improvements": []
+  },
+  {
+    "repo": "redpanda-data/redpanda",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 151,
+    "severities": {
+      "error": 0,
+      "warning": 59,
+      "info": 89,
+      "style": 3
+    },
+    "notableFindings": "DL3008(30+) apt pinning, DV4012(3) consecutive COPY (style), DL3018 apk pinning, DV1009 no digest — all legitimate across 8 Dockerfiles. Kafka-compatible C++ streaming platform.",
+    "improvements": []
+  },
+  {
+    "repo": "weaviate/weaviate",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 27,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DL3018(8) apk pinning, DV1009(4) no digest, DL3057(2) no HEALTHCHECK, DV1006 root — all legitimate. Go-based vector search engine.",
+    "improvements": []
+  },
+  {
+    "repo": "qdrant/qdrant",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 52,
+    "severities": {
+      "error": 0,
+      "warning": 24,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DL3008(20) apt pinning, DL3006(2) untagged base images (tonistiigi/xx cross-compilation helper, rocm/dev-ubuntu-22.04) — all legitimate. Rust vector database.",
+    "improvements": []
+  },
+  {
+    "repo": "chroma-core/chroma",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 113,
+    "severities": {
+      "error": 3,
+      "warning": 64,
+      "info": 46,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh in main Dockerfile (legitimate Go toolchain install), DL3020(2) ADD vs COPY in go/Dockerfile. DL3008(40+) apt pinning. All findings legitimate. Python/Go embedding database.",
+    "improvements": []
+  },
+  {
+    "repo": "marqo-ai/marqo",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3006(3) untagged base images (busybox without version, vespaengine/vespa-pipeline), DL3008 apt pinning — all legitimate. Python tensor search engine.",
+    "improvements": []
+  },
+  {
+    "repo": "dagger/dagger",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 34,
+    "severities": {
+      "error": 1,
+      "warning": 13,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3006 untagged nginx in example Dockerfile, DL3018 apk pinning (7+), DV1009 no digest — all legitimate. Go-based CI/CD pipeline engine.",
+    "improvements": []
+  },
+  {
+    "repo": "n8n-io/n8n",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 73,
+    "severities": {
+      "error": 0,
+      "warning": 31,
+      "info": 42,
+      "style": 0
+    },
+    "notableFindings": "DL3016(1) npm install pnpm without version pin in .devcontainer/Dockerfile — legitimate TP. DL3008(15+) apt pinning, DV1009(6) no digest — all legitimate. Node.js workflow automation platform.",
+    "improvements": []
+  },
+  {
+    "repo": "activepieces/activepieces",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 51,
+    "severities": {
+      "error": 0,
+      "warning": 30,
+      "info": 18,
+      "style": 3
+    },
+    "notableFindings": "DL3016(2) npm install nx/node-gyp without version pin — legitimate TPs. DL3008(12+) apt pinning, DV4012(3) consecutive COPY — all legitimate. TypeScript no-code automation platform.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/airflow",
+    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
+    "dockerfiles": 24,
+    "totalIssues": 106,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 77,
+      "style": 3
+    },
+    "notableFindings": "DV1009(21) no digest, DV4003(18) no WORKDIR, DL3057(17) no HEALTHCHECK, DV1006(13) root across 24 Dockerfiles. DV3019(6) downloaded scripts without checksum. DV4012(3) consecutive COPY — all legitimate. Python workflow scheduler.",
+    "improvements": []
+  },
+  {
+    "repo": "laradock/laradock",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 84,
+    "totalIssues": 1350,
+    "severities": {
+      "error": 31,
+      "warning": 682,
+      "info": 634,
+      "style": 3
+    },
+    "notableFindings": "DL3053 ENV overrides ARG (28 instances), DV1009 digest pinning recommendations",
+    "improvements": []
+  },
+  {
+    "repo": "dotnet/dotnet-docker",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 649,
+    "totalIssues": 4085,
+    "severities": {
+      "error": 1,
+      "warning": 1282,
+      "info": 2787,
+      "style": 15
+    },
+    "notableFindings": "DL3000 relative WORKDIR in aspire-dashboard, DL3008/DL3018 package version pinning",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/php",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 70,
+    "totalIssues": 2014,
+    "severities": {
+      "error": 0,
+      "warning": 1419,
+      "info": 595,
+      "style": 0
+    },
+    "notableFindings": "DL3003 cd in RUN (build-time cd for compilation), DL3008/DL3018 no version pinning",
+    "improvements": []
+  },
+  {
+    "repo": "dunglas/symfony-docker",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 6,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "Minimal findings, well-maintained Dockerfile",
+    "improvements": []
+  },
+  {
+    "repo": "jessfraz/dockerfiles",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 202,
+    "totalIssues": 2490,
+    "severities": {
+      "error": 14,
+      "warning": 1389,
+      "info": 1086,
+      "style": 1
+    },
+    "notableFindings": "DV3001 correctly detected Google API key in chromium/Dockerfile, DV3024 tarball no-checksum, DV1003 curl-pipe-shell",
+    "improvements": []
+  },
+  {
+    "repo": "fastapi/full-stack-fastapi-template",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 20,
+    "severities": {
+      "error": 1,
+      "warning": 5,
+      "info": 12,
+      "style": 2
+    },
+    "notableFindings": "DV1003 curl-pipe-shell in playwright Dockerfile",
+    "improvements": []
+  },
+  {
+    "repo": "Stirling-Tools/Stirling-PDF",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 262,
+    "severities": {
+      "error": 6,
+      "warning": 184,
+      "info": 64,
+      "style": 8
+    },
+    "notableFindings": "DL3017 apk upgrade, DL3045 COPY without WORKDIR in backend stage, DV1003 curl-pipe-shell",
+    "improvements": []
+  },
+  {
+    "repo": "chatwoot/chatwoot",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 92,
+    "severities": {
+      "error": 1,
+      "warning": 61,
+      "info": 29,
+      "style": 1
+    },
+    "notableFindings": "DL3008/DL3018 version pinning, various warnings",
+    "improvements": []
+  },
+  {
+    "repo": "authelia/authelia",
+    "scannedAt": "2026-03-01T13:57:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 29,
+    "severities": {
+      "error": 1,
+      "warning": 16,
+      "info": 9,
+      "style": 3
+    },
+    "notableFindings": "DL3020 ADD vs COPY in duo-api Dockerfile",
+    "improvements": []
   }
 ]

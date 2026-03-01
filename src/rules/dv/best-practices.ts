@@ -345,33 +345,6 @@ export const DV4013: Rule = {
   },
 };
 
-// DV4014: HEALTHCHECK instruction missing in final stage
-export const DV4014: Rule = {
-  id: 'DV4014', severity: 'info',
-  description: 'HEALTHCHECK instruction missing in final stage.',
-  check(ctx) {
-    const violations: Violation[] = [];
-    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
-    if (!lastStage) return violations;
-
-    // Skip scratch and distroless/chainguard images
-    const image = lastStage.from.image.toLowerCase();
-    if (image === 'scratch') return violations;
-    if (image.includes('distroless') || image.includes('chainguard')) return violations;
-
-    // Skip if HEALTHCHECK is already set (including HEALTHCHECK NONE)
-    const hasHC = lastStage.instructions.some(i => i.type === 'HEALTHCHECK');
-    if (hasHC) return violations;
-
-    // Skip utility images without CMD/ENTRYPOINT (they don't need health checks)
-    const hasCmdOrEp = lastStage.instructions.some(i => i.type === 'CMD' || i.type === 'ENTRYPOINT');
-    if (!hasCmdOrEp) return violations;
-
-    violations.push({ rule: 'DV4014', severity: 'info', message: 'HEALTHCHECK instruction missing. Add HEALTHCHECK to enable container health monitoring in orchestration platforms.', line: lastStage.from.line });
-    return violations;
-  },
-};
-
 // DV4015: pip install without --no-cache-dir (extends DL3042 to cover python -m pip)
 export const DV4015: Rule = {
   id: 'DV4015', severity: 'warning',
