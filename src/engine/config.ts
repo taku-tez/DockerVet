@@ -38,6 +38,42 @@ export function loadConfig(configPath?: string): DockerVetConfig {
   return { ...DEFAULT_CONFIG };
 }
 
+/**
+ * Load config from a `.securify.yaml` file, reading the `securify.docker` section.
+ * Falls back to `loadConfig()` when no securify file is found.
+ *
+ * Example `.securify.yaml`:
+ * ```yaml
+ * securify:
+ *   docker:
+ *     ignore:
+ *       - DV1009
+ *     trustedRegistries:
+ *       - docker.io
+ * ```
+ */
+export function loadSecurifyConfig(securifyPath?: string): DockerVetConfig {
+  const candidates = securifyPath
+    ? [securifyPath]
+    : ['.securify.yaml', '.securify.yml'];
+
+  for (const p of candidates) {
+    const resolved = path.resolve(p);
+    if (!fs.existsSync(resolved)) continue;
+
+    const content = fs.readFileSync(resolved, 'utf-8');
+    const parsed = parseSimpleYaml(content) as any;
+
+    // Extract `securify.docker` section if present
+    const dockerSection = parsed?.securify?.docker ?? parsed?.docker ?? {};
+
+    return { ...DEFAULT_CONFIG, ...dockerSection };
+  }
+
+  // Fall back to standard DockerVet config
+  return loadConfig();
+}
+
 function parseSimpleYaml(content: string): Partial<DockerVetConfig> {
   const result: any = {};
   const lines = content.split('\n');
