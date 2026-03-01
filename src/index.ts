@@ -9,6 +9,9 @@ import { formatJSON, formatJSONBatch } from './formatter/json';
 import { formatSARIF, formatSARIFBatch } from './formatter/sarif';
 import { fetchDockerfiles } from './github';
 import { Violation } from './rules/types';
+import { extractComponents } from './sbom/extractor';
+import { formatCycloneDX } from './sbom/cyclonedx';
+import { formatSPDX } from './sbom/spdx';
 
 const VERSION = '0.1.0';
 
@@ -20,6 +23,7 @@ Usage:
   dockervet [options] <Dockerfile> [Dockerfile...]
   dockervet --stdin
   dockervet --github <owner/repo or URL> [--branch <branch>]
+  dockervet sbom <Dockerfile> [--format cyclonedx|spdx|json]
 
 Options:
   --format <tty|json|sarif>    Output format (default: tty)
@@ -32,7 +36,48 @@ Options:
   --branch <branch>            Branch for --github (default: repo default)
   -h, --help                   Show this help
   -v, --version                Show version
+
+SBOM subcommand:
+  dockervet sbom <Dockerfile> --format cyclonedx   CycloneDX 1.5 JSON
+  dockervet sbom <Dockerfile> --format spdx         SPDX 2.3 JSON
+  dockervet sbom <Dockerfile> --format json          Same as cyclonedx
 `);
+}
+
+function handleSbom(args: string[]): void {
+  let format = 'cyclonedx';
+  let file = '';
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--format') {
+      format = args[++i] || 'cyclonedx';
+    } else if (!args[i].startsWith('-')) {
+      file = args[i];
+    }
+  }
+
+  if (!file) {
+    console.error('Error: No Dockerfile specified for sbom subcommand.');
+    process.exit(3);
+  }
+
+  if (!fs.existsSync(file)) {
+    console.error(`Error: File not found: ${file}`);
+    process.exit(3);
+  }
+
+  const content = fs.readFileSync(file, 'utf-8');
+  const ast = parse(content);
+  const components = extractComponents(ast);
+
+  const fmt = format === 'spdx' ? 'spdx' : 'cyclonedx';
+
+  if (fmt === 'spdx') {
+    console.log(formatSPDX(components, { documentName: file }));
+  } else {
+    console.log(formatCycloneDX(components, { source: file }));
+  }
+  process.exit(0);
 }
 
 interface CLIOptions {
@@ -180,6 +225,12 @@ function main(): void {
   if (args.includes('-v') || args.includes('--version')) {
     console.log(`dockervet ${VERSION}`);
     process.exit(0);
+  }
+
+  // Subcommand: dockervet sbom <file> [--format cyclonedx|spdx|json]
+  if (args[0] && !args[0].startsWith('-') && args[0] === 'sbom') {
+    handleSbom(args.slice(1));
+    return;
   }
 
   const opts = parseArgs(args);
