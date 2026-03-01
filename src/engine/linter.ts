@@ -44,8 +44,12 @@ export function lint(ast: DockerfileAST, options: LintOptions): Violation[] {
     }
   }
 
-  // Sort by line number
-  violations.sort((a, b) => a.line - b.line || a.rule.localeCompare(b.rule));
+  // Deduplicate: if DV1001 (error) already covers a line, drop DV1011 (warning) for the same line
+  const dv1001Lines = new Set(violations.filter(v => v.rule === 'DV1001').map(v => v.line));
+  const deduped = violations.filter(v => !(v.rule === 'DV1011' && dv1001Lines.has(v.line)));
 
-  return violations;
+  // Sort by line number
+  deduped.sort((a, b) => a.line - b.line || a.rule.localeCompare(b.rule));
+
+  return deduped;
 }
