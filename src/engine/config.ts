@@ -56,10 +56,7 @@ export function loadConfig(configPath?: string): DockerVetConfig {
 
 function normalizeConfig(cfg: DockerVetConfig): DockerVetConfig {
   // Normalize ignore to always be string | IgnoreEntry[]
-  cfg.ignore = (cfg.ignore || []).map(entry => {
-    if (typeof entry === 'string') return entry;
-    return entry;
-  });
+  cfg.ignore = cfg.ignore || [];
   return cfg;
 }
 
@@ -252,7 +249,7 @@ function parseIgnoreBlock(lines: string[]): (string | IgnoreEntry)[] {
     if (trimmed.startsWith('- ')) {
       const rest = trimmed.slice(2).trim();
 
-      if (rest.match(/^[A-Z0-9]+$/)) {
+      if (rest.match(/^[A-Za-z][A-Za-z0-9]+$/)) {
         // Plain rule ID: - DL3008
         result.push(rest);
         i++;

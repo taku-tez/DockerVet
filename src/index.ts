@@ -107,7 +107,7 @@ function processContent(
   const violations = lint(ast, { config, trustedRegistries, filePath: filename });
 
   const failOn: string[] = config.failOn ?? ['error'];
-  const threshold: string = config.severityThreshold ?? 'info';
+  const threshold: string = config.severityThreshold ?? 'style';
   const severityOrder = ['error', 'warning', 'info', 'style'];
   const thresholdIdx = severityOrder.indexOf(threshold);
 
