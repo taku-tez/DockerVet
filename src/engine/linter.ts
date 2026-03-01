@@ -1,7 +1,7 @@
 import { DockerfileAST } from '../parser/types';
 import { ALL_RULES, RULE_MAP } from '../rules/index';
 import { Rule, RuleContext, Violation } from '../rules/types';
-import { DockerVetConfig } from './config';
+import { DockerVetConfig, getActiveIgnoreIds } from './config';
 
 export interface LintOptions {
   config: DockerVetConfig;
@@ -11,7 +11,7 @@ export interface LintOptions {
 
 export function lint(ast: DockerfileAST, options: LintOptions): Violation[] {
   const { config } = options;
-  const ignoredRules = new Set(config.ignore || []);
+  const ignoredRules = getActiveIgnoreIds(config);
   const trustedRegistries = options.trustedRegistries || config.trustedRegistries || [];
 
   const ctx: RuleContext = {
