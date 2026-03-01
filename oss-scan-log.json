@@ -11800,5 +11800,142 @@
     },
     "notableFindings": "DV1009 no digest (5x), DV4012 consecutive COPY (4x), DL3018 apk pinning \u2014 all legitimate. Clean Go multi-stage builds.",
     "improvements": []
+  },
+  {
+    "repo": "langfuse/langfuse",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 3,
+    "totalIssues": 36,
+    "severities": {
+      "error": 2,
+      "warning": 9,
+      "info": 16,
+      "style": 8
+    },
+    "notableFindings": "DL3052 ARG never referenced (Next.js public env vars), DL3017 apk upgrade, DL3018 apk pinning - all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "automatisch/automatisch",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 3,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 15,
+      "info": 9
+    },
+    "notableFindings": "DL3018 apk pinning (7x), DL3003 cd instead of WORKDIR, DL3007 latest tag - all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "pretix/pretix",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 1,
+    "totalIssues": 35,
+    "severities": {
+      "error": 1,
+      "warning": 28,
+      "info": 6
+    },
+    "notableFindings": "DL3008 apt pinning (21x), DL3013 pip pinning, DL3004 sudo, DL3003 cd - all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "inventree/InvenTree",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 2,
+    "totalIssues": 62,
+    "severities": {
+      "error": 0,
+      "warning": 51,
+      "info": 11
+    },
+    "notableFindings": "Heavy DL3008 apt pinning (36x), DL3016 npm pinning, DL3027 apt vs apt-get, DV4017 writable PATH dirs - all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gitguardian/ggshield",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 3,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 8,
+      "info": 4
+    },
+    "notableFindings": "DL3005 dist-upgrade, DL3008 apt pinning - all legitimate. Clean Python security tool image.",
+    "improvements": []
+  },
+  {
+    "repo": "gitpod-io/workspace-images",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 10,
+    "totalIssues": 155,
+    "severities": {
+      "error": 29,
+      "warning": 46,
+      "info": 79,
+      "style": 1
+    },
+    "notableFindings": "DL3004 sudo (16x), DV1003 curl|sh (8x), DV3023 unquoted ARG in URL (6x), DV3024 tarball without checksum (3x) - workspace images expected to have dev tools. DL3001 vim/nano flagged as info-level (expected for workspace images).",
+    "improvements": []
+  },
+  {
+    "repo": "getredash/redash",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 2,
+    "totalIssues": 33,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 8,
+      "style": 2
+    },
+    "notableFindings": "DV3021 FP: port 5000 labeled as 'Docker Registry' but Redash uses it as web UI. Fixed by downgrading port 5000 to info severity with broader label.",
+    "improvements": [
+      "Fixed DV3021: port 5000 downgraded from warning to info - used by Flask/web apps, not just Docker Registry"
+    ]
+  },
+  {
+    "repo": "tolgee/tolgee-platform",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 2,
+    "totalIssues": 12,
+    "severities": {
+      "error": 0,
+      "warning": 6,
+      "info": 5,
+      "style": 1
+    },
+    "notableFindings": "DL3018 apk pinning, DV2006 multiple ENTRYPOINT, DV1006 root - all legitimate. Clean Spring Boot image.",
+    "improvements": []
+  },
+  {
+    "repo": "firezone/firezone",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 5,
+    "totalIssues": 85,
+    "severities": {
+      "error": 1,
+      "warning": 68,
+      "info": 13,
+      "style": 2
+    },
+    "notableFindings": "Heavy DL3018 apk pinning (58x) across multiple service Dockerfiles. DL3017 apk upgrade. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "taigaio/taiga-back",
+    "scannedAt": "2026-03-02T02:04:04.559813",
+    "dockerfiles": 1,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 12,
+      "info": 8
+    },
+    "notableFindings": "DL3008 apt pinning (8x), DV4007 DEBIAN_FRONTEND as ENV, DV3019 downloaded script without checksum - all legitimate.",
+    "improvements": []
   }
 ]
