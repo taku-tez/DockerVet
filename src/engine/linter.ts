@@ -44,6 +44,21 @@ export function lint(ast: DockerfileAST, options: LintOptions): Violation[] {
     }
   }
 
+  // DL3056: Validate inline ignore rule IDs against known rules
+  if (!ignoredRules.has('DL3056')) {
+    const ignoreCommentRe = /^#\s*(?:dockervet|hadolint)\s+ignore\s*=\s*(.+)$/i;
+    for (const comment of ast.comments) {
+      const m = comment.arguments.match(ignoreCommentRe);
+      if (!m) continue;
+      const ruleIds = m[1].split(',').map(r => r.trim()).filter(Boolean);
+      for (const rid of ruleIds) {
+        if (!RULE_MAP.has(rid)) {
+          violations.push({ rule: 'DL3056', severity: 'style', message: `Unknown rule ID "${rid}" in inline ignore comment. Check for typos.`, line: comment.line });
+        }
+      }
+    }
+  }
+
   // Deduplicate: if DV1001 (error) already covers a line, drop DV1011 (warning) for the same line
   const dv1001Lines = new Set(violations.filter(v => v.rule === 'DV1001').map(v => v.line));
   const deduped = violations.filter(v => !(v.rule === 'DV1011' && dv1001Lines.has(v.line)));

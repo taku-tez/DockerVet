@@ -1,5 +1,5 @@
 import { Rule, Violation } from '../types';
-import { CopyInstruction, ExposeInstruction } from '../../parser/types';
+import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction } from '../../parser/types';
 import { isUrl } from '../utils';
 
 // DV3001: AWS/GCP credential patterns in ENV/ARG/RUN
@@ -465,6 +465,66 @@ export const DV3017: Rule = {
   },
 };
 
+// DV3021: Dangerous service port EXPOSE detection
+export const DV3021: Rule = {
+  id: 'DV3021', severity: 'warning',
+  description: 'Exposing sensitive service ports can enable unauthorized access.',
+  check(ctx) {
+    type PortSeverity = 'error' | 'warning' | 'info';
+    const dangerousPorts: Record<number, { severity: PortSeverity; name: string }> = {
+      2375: { severity: 'error', name: 'Docker API (unencrypted)' },
+      2376: { severity: 'error', name: 'Docker API (TLS)' },
+      6379: { severity: 'warning', name: 'Redis' },
+      27017: { severity: 'warning', name: 'MongoDB' },
+      5432: { severity: 'warning', name: 'PostgreSQL' },
+      3306: { severity: 'warning', name: 'MySQL/MariaDB' },
+      11211: { severity: 'warning', name: 'Memcached' },
+      9200: { severity: 'warning', name: 'Elasticsearch HTTP' },
+      9300: { severity: 'warning', name: 'Elasticsearch Transport' },
+      4444: { severity: 'warning', name: 'Selenium Grid Hub' },
+      4445: { severity: 'warning', name: 'Selenium Grid' },
+      4446: { severity: 'warning', name: 'Selenium Grid' },
+      5000: { severity: 'warning', name: 'Docker Registry' },
+      8080: { severity: 'info', name: 'HTTP alternate (admin UI)' },
+      8443: { severity: 'info', name: 'HTTPS alternate (admin UI)' },
+    };
+
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'EXPOSE') continue;
+        const e = inst as ExposeInstruction;
+
+        // Check parsed ports (handles single ports; NaN ports are variable references, skipped)
+        for (const portEntry of e.ports) {
+          if (isNaN(portEntry.port)) continue;
+          const info = dangerousPorts[portEntry.port];
+          if (info) {
+            violations.push({ rule: 'DV3021', severity: info.severity, message: `EXPOSE ${portEntry.port} (${info.name}) may expose a sensitive service. Avoid publishing service ports directly.`, line: inst.line });
+          }
+        }
+
+        // Also check port ranges in arguments (e.g., EXPOSE 6379-6380)
+        const rangeMatch = inst.arguments.match(/(\d+)-(\d+)/);
+        if (rangeMatch) {
+          const start = parseInt(rangeMatch[1], 10);
+          const end = parseInt(rangeMatch[2], 10);
+          for (const [portStr, info] of Object.entries(dangerousPorts)) {
+            const portNum = parseInt(portStr, 10);
+            if (portNum >= start && portNum <= end) {
+              // Avoid double-reporting if already caught by individual port check
+              if (!e.ports.some(p => p.port === portNum)) {
+                violations.push({ rule: 'DV3021', severity: info.severity, message: `Port range includes ${portNum} (${info.name}) which may expose a sensitive service.`, line: inst.line });
+              }
+            }
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3010: VOLUME with sensitive paths
 export const DV3010: Rule = {
   id: 'DV3010', severity: 'warning',
@@ -487,6 +547,176 @@ export const DV3010: Rule = {
           if (re.test(inst.arguments)) {
             violations.push({ rule: 'DV3010', severity: 'info', message: `VOLUME on "${p}" is common but may expose ephemeral data. Ensure no secrets are written there.`, line: inst.line });
           }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3022: Sensitive operation without BuildKit secret mount
+export const DV3022: Rule = {
+  id: 'DV3022', severity: 'warning',
+  description: 'Sensitive credential operation without BuildKit --mount=type=secret.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (/--mount=type=secret/.test(args)) continue;
+
+        // 1. Authentication file generation (.netrc or /etc/apt/auth.conf)
+        if ((/echo\b/.test(args) || /tee\b/.test(args) || />/.test(args)) &&
+            (/\.netrc/.test(args) || /\/etc\/apt\/auth\.conf/.test(args))) {
+          violations.push({ rule: 'DV3022', severity: 'warning', message: 'Generating authentication file in RUN. Use --mount=type=secret to avoid storing credentials in image layers.', line: inst.line });
+          continue;
+        }
+
+        // 2. pip with authenticated --extra-index-url
+        if (/pip3?\s+install.*--extra-index-url\s+https?:\/\/[^@\s]+@/.test(args)) {
+          violations.push({ rule: 'DV3022', severity: 'warning', message: 'pip install with authenticated --extra-index-url. Use --mount=type=secret for credentials.', line: inst.line });
+          continue;
+        }
+
+        // 3. npm with authenticated --registry
+        if (/npm\s+install.*--registry\s+https?:\/\/[^@\s]+@/.test(args) ||
+            /npm\s+config.*registry\s+https?:\/\/[^@\s]+@/.test(args)) {
+          violations.push({ rule: 'DV3022', severity: 'warning', message: 'npm with authenticated --registry. Use --mount=type=secret for credentials.', line: inst.line });
+          continue;
+        }
+
+        // 4. git clone with credentials in URL (when not caught by DV3008 at error level)
+        if (/git\s+clone\s+https?:\/\/[^@\s]+:[^@\s]+@/.test(args)) {
+          violations.push({ rule: 'DV3022', severity: 'warning', message: 'git clone with embedded credentials. Use --mount=type=secret or SSH keys instead.', line: inst.line });
+          continue;
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3023: Shell variable expansion injection risk in RUN
+export const DV3023: Rule = {
+  id: 'DV3023', severity: 'warning',
+  description: 'Unquoted ARG variable in shell execution context enables injection via --build-arg.',
+  check(ctx) {
+    const violations: Violation[] = [];
+
+    for (const stage of ctx.ast.stages) {
+      // Collect ARG names (injectable via --build-arg)
+      const argNames = new Set<string>();
+      for (const globalArg of ctx.ast.globalArgs) {
+        if (globalArg.name) argNames.add(globalArg.name);
+      }
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG') {
+          const ai = inst as ArgInstruction;
+          if (ai.name) argNames.add(ai.name);
+        }
+      }
+
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (/--mount=type=secret/.test(args)) continue;
+
+        let flagged = false;
+        for (const name of argNames) {
+          // Pattern 1: unquoted ARG in eval/sh -c/bash -c context
+          const evalRe = new RegExp(`(?:eval|sh\\s+-c|bash\\s+-c|sh\\s+-s)\\s+\\$(?:\\{${name}\\}|${name})(?!["\\'\\w])`);
+          if (evalRe.test(args)) {
+            violations.push({ rule: 'DV3023', severity: 'warning', message: `Unquoted ARG $${name} in shell execution context. This may allow command injection via --build-arg.`, line: inst.line });
+            flagged = true;
+            break;
+          }
+
+          // Pattern 2: unquoted ARG variable in wget/curl URL
+          const urlRe = new RegExp(`(?:wget|curl)\\s+(?:[^"]*?)\\$(?:\\{${name}\\}|${name})(?!["\\'\\w])`);
+          if (urlRe.test(args)) {
+            violations.push({ rule: 'DV3023', severity: 'warning', message: `Unquoted ARG $${name} in download URL. URL injection possible via --build-arg.`, line: inst.line });
+            flagged = true;
+            break;
+          }
+
+          // Pattern 3: unquoted ARG in find -exec path
+          const findRe = new RegExp(`find\\s+.*\\$(?:\\{${name}\\}|${name}).*-exec`);
+          if (findRe.test(args)) {
+            violations.push({ rule: 'DV3023', severity: 'warning', message: `Unquoted ARG $${name} in find -exec. Path traversal possible via --build-arg.`, line: inst.line });
+            flagged = true;
+            break;
+          }
+        }
+        if (flagged) continue;
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3024: Downloaded file executed without checksum verification
+export const DV3024: Rule = {
+  id: 'DV3024', severity: 'error',
+  description: 'Downloaded file executed without checksum verification.',
+  check(ctx) {
+    const checksumPattern = /(?:sha256sum|sha512sum|sha384sum|md5sum|shasum|gpg\s+--verify|cosign\s+verify)/;
+    // Patterns already covered by DV1003 (pipe to shell) — skip to avoid duplicate
+    const dv1003Pattern = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source|ash)\b/;
+    const violations: Violation[] = [];
+
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (checksumPattern.test(args)) continue;
+        if (dv1003Pattern.test(args)) continue;
+
+        // Pattern 1: download → chmod +x → execute chain
+        if (/(?:curl|wget)\b/.test(args) && /chmod\s+\+x\b/.test(args) && /(?:\.\s*\/|\bexec\s+\.\/)/.test(args)) {
+          violations.push({ rule: 'DV3024', severity: 'error', message: 'Downloaded file made executable and run without checksum verification. Verify file integrity before execution.', line: inst.line });
+          continue;
+        }
+
+        // Pattern 2: download + extract tarball without verification
+        if (/(?:curl|wget)\b[^;]*(?:&&|;)\s*tar\s/.test(args)) {
+          violations.push({ rule: 'DV3024', severity: 'error', message: 'Tarball downloaded and extracted without checksum verification. Verify integrity before extraction.', line: inst.line });
+          continue;
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3025: git credential configuration stores credentials in plaintext
+export const DV3025: Rule = {
+  id: 'DV3025', severity: 'error',
+  description: 'git credential configuration stores credentials in plaintext in image layers.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+
+        // credential.helper store (plaintext file storage)
+        if (/git\s+config.*credential\.helper\s+store/.test(args)) {
+          violations.push({ rule: 'DV3025', severity: 'error', message: 'git credential.helper store saves credentials as plaintext. Use --mount=type=secret instead.', line: inst.line });
+          continue;
+        }
+
+        // Writing to ~/.git-credentials
+        if (/(?:echo|printf|tee)\b.*(?:>>?)\s*~?\/?(root|home\/[^/]+)?\/\.git-credentials/.test(args) ||
+            /~?\/\.git-credentials/.test(args) && /(?:echo|printf|tee|>)/.test(args)) {
+          violations.push({ rule: 'DV3025', severity: 'error', message: 'Writing credentials to .git-credentials stores them in the image layer. Use --mount=type=secret instead.', line: inst.line });
+          continue;
+        }
+
+        // git config with embedded token/password value
+        if (/git\s+config\s+.*(?:password|token|pat|secret)\s+\S{8,}/.test(args)) {
+          violations.push({ rule: 'DV3025', severity: 'error', message: 'git config with embedded credentials stores them in image layer history. Use --mount=type=secret instead.', line: inst.line });
+          continue;
         }
       }
     }
@@ -570,6 +800,45 @@ export const DV3020: Rule = {
                 message: 'ADD with remote URL lacks integrity verification. Use ADD --checksum=<digest> (Docker 24+) or download with curl/wget and verify checksum.',
                 line: inst.line,
               });
+            }
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4017: PATH contains writable directory (PATH pollution attack)
+export const DV4017: Rule = {
+  id: 'DV4017', severity: 'warning',
+  description: 'PATH contains a writable directory, enabling PATH pollution attacks.',
+  check(ctx) {
+    const dangerousPaths = ['/tmp', '/var/tmp', '/dev/shm'];
+    const dangerousPatterns = [/^\/home\//, /^\/root\//];
+    const violations: Violation[] = [];
+
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'ENV') continue;
+        const env = inst as EnvInstruction;
+        for (const pair of env.pairs) {
+          if (pair.key !== 'PATH') continue;
+          const pathValue = pair.value;
+          // Skip pure variable references like PATH=$PATH:/usr/local/bin (these are fine)
+          const paths = pathValue.split(':');
+          for (const p of paths) {
+            const trimmed = p.trim().replace(/["']/g, '');
+            // Skip variable references in individual components
+            if (trimmed.startsWith('$')) continue;
+            if (trimmed === '') continue;
+            if (dangerousPaths.some(dp => trimmed === dp || trimmed.startsWith(dp + '/'))) {
+              violations.push({ rule: 'DV4017', severity: 'warning', message: `PATH contains writable directory "${trimmed}" which can enable PATH pollution attacks.`, line: inst.line });
+              break;
+            }
+            if (dangerousPatterns.some(dp => dp.test(trimmed))) {
+              violations.push({ rule: 'DV4017', severity: 'warning', message: `PATH contains potentially writable directory "${trimmed}" which can enable PATH pollution attacks.`, line: inst.line });
+              break;
             }
           }
         }

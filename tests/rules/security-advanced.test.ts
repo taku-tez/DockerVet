@@ -472,3 +472,111 @@ describe('DV3020', () => {
     expect(hasRule(r, 'DV3020')).toBe(true);
   });
 });
+
+describe('DV3021 - Dangerous service ports', () => {
+  it('flags EXPOSE 6379 (Redis)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nEXPOSE 6379'), 'DV3021')).toBe(true);
+  });
+  it('flags EXPOSE 2375 (Docker API) as error', () => {
+    const v = lintDockerfile('FROM ubuntu\nEXPOSE 2375');
+    const r = v.find(x => x.rule === 'DV3021');
+    expect(r).toBeDefined();
+    expect(r?.severity).toBe('error');
+  });
+  it('passes EXPOSE 80 443', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nEXPOSE 80 443'), 'DV3021')).toBe(false);
+  });
+  it('flags EXPOSE 3306 (MySQL)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nEXPOSE 3306'), 'DV3021')).toBe(true);
+  });
+  it('passes EXPOSE $PORT (variable)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nEXPOSE $PORT'), 'DV3021')).toBe(false);
+  });
+  it('flags only dangerous port in multi-port EXPOSE', () => {
+    const v = lintDockerfile('FROM ubuntu\nEXPOSE 6379 80');
+    const r = v.filter(x => x.rule === 'DV3021');
+    expect(r.length).toBe(1);
+    expect(r[0].message).toContain('6379');
+  });
+});
+
+describe('DV3022 - BuildKit secret mount for credentials', () => {
+  it('flags .netrc generation', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo "machine github.com login user password pass" > ~/.netrc'), 'DV3022')).toBe(true);
+  });
+  it('flags pip with authenticated extra-index-url', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN pip install --extra-index-url https://user:pass@private.pypi.org/simple/ mypackage'), 'DV3022')).toBe(true);
+  });
+  it('passes when --mount=type=secret is used', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN --mount=type=secret,id=pip pip install mypackage'), 'DV3022')).toBe(false);
+  });
+  it('passes standard pip install', () => {
+    expect(hasRule(lintDockerfile('FROM python\nRUN pip install requests'), 'DV3022')).toBe(false);
+  });
+  it('flags git clone with credentials', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git clone https://user:token123@github.com/org/repo'), 'DV3022')).toBe(true);
+  });
+});
+
+describe('DV3023 - Shell variable injection risk', () => {
+  it('flags unquoted ARG in eval', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG CMD_ARG\nRUN eval $CMD_ARG'), 'DV3023')).toBe(true);
+  });
+  it('flags unquoted ARG in wget URL', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG REPO_URL\nRUN wget $REPO_URL'), 'DV3023')).toBe(true);
+  });
+  it('passes when no ARG is used', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN wget https://example.com/file'), 'DV3023')).toBe(false);
+  });
+  it('passes when --mount=type=secret is used', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG CMD\nRUN --mount=type=secret,id=sec eval $CMD'), 'DV3023')).toBe(false);
+  });
+  it('passes echo with quoted var (safe context)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG MY_VAR\nRUN echo "$MY_VAR"'), 'DV3023')).toBe(false);
+  });
+});
+
+describe('DV3024 - Downloaded file executed without checksum', () => {
+  it('flags download + chmod +x + execute chain', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -o install.sh https://example.com/install.sh && chmod +x install.sh && ./install.sh'), 'DV3024')).toBe(true);
+  });
+  it('flags download + tar without checksum', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -o pkg.tar.gz https://example.com/pkg.tar.gz && tar xzf pkg.tar.gz'), 'DV3024')).toBe(true);
+  });
+  it('passes when checksum is verified', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl -o pkg.tar.gz https://example.com/pkg.tar.gz && sha256sum -c pkg.tar.gz.sha256 && tar xzf pkg.tar.gz'), 'DV3024')).toBe(false);
+  });
+  it('passes curl | bash (already covered by DV1003)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN curl https://example.com/install.sh | bash'), 'DV3024')).toBe(false);
+  });
+});
+
+describe('DV3025 - git credential configuration', () => {
+  it('flags git config credential.helper store', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git config --global credential.helper store'), 'DV3025')).toBe(true);
+  });
+  it('flags writing to .git-credentials', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN echo "https://user:pass@github.com" > ~/.git-credentials'), 'DV3025')).toBe(true);
+  });
+  it('passes safe git config (email)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git config --global user.email "user@example.com"'), 'DV3025')).toBe(false);
+  });
+  it('passes git clone without credentials', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git clone https://github.com/org/repo.git'), 'DV3025')).toBe(false);
+  });
+});
+
+describe('DV4017 - PATH contains writable directory', () => {
+  it('flags /tmp in PATH', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV PATH=/tmp:/usr/local/bin'), 'DV4017')).toBe(true);
+  });
+  it('flags /home/user in PATH', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV PATH=/home/user/bin:/usr/local/bin'), 'DV4017')).toBe(true);
+  });
+  it('passes standard PATH', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV PATH=/usr/local/bin:/usr/bin:/bin'), 'DV4017')).toBe(false);
+  });
+  it('passes PATH with variable component', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nENV PATH=$PATH:/usr/local/bin'), 'DV4017')).toBe(false);
+  });
+});
