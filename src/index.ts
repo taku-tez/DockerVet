@@ -228,7 +228,7 @@ function main(): void {
   }
 
   // Subcommand: dockervet sbom <file> [--format cyclonedx|spdx|json]
-  if (args[0] === 'sbom') {
+  if (args[0] && !args[0].startsWith('-') && args[0] === 'sbom') {
     handleSbom(args.slice(1));
     return;
   }
