@@ -299,3 +299,123 @@ export const DV1010: Rule = {
     return violations;
   },
 };
+
+// ---------------------------------------------------------------------------
+// DV1011: High-entropy string detection (Shannon entropy ≥ 7.0, ≥ 20 chars)
+// ---------------------------------------------------------------------------
+
+/**
+ * Cloud provider credential patterns.
+ * These are kept intentionally specific to minimise false positives.
+ */
+const CLOUD_KEY_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
+  { name: 'AWS access key ID',         pattern: /\bAKIA[0-9A-Z]{16}\b/ },
+  { name: 'AWS secret access key',     pattern: /\b[A-Za-z0-9+/]{40}\b/ },
+  { name: 'GCP service-account key',   pattern: /"private_key"\s*:\s*"-----BEGIN/ },
+  { name: 'Azure storage account key', pattern: /[A-Za-z0-9+/]{86}==/ },
+  { name: 'GitHub personal access token (classic)', pattern: /\bghp_[A-Za-z0-9]{36}\b/ },
+  { name: 'GitHub fine-grained token', pattern: /\bgithub_pat_[A-Za-z0-9_]{82}\b/ },
+  { name: 'Slack bot token',           pattern: /\bxoxb-[0-9]+-[A-Za-z0-9-]+\b/ },
+  { name: 'Slack app-level token',     pattern: /\bxapp-[0-9]+-[A-Za-z0-9-]+\b/ },
+];
+
+/**
+ * Compute Shannon entropy of a string (bits per character, base-2).
+ */
+function shannonEntropy(s: string): number {
+  const freq: Record<string, number> = {};
+  for (const ch of s) freq[ch] = (freq[ch] || 0) + 1;
+  let entropy = 0;
+  const len = s.length;
+  for (const count of Object.values(freq)) {
+    const p = count / len;
+    entropy -= p * Math.log2(p);
+  }
+  return entropy;
+}
+
+const ENTROPY_THRESHOLD = 7.0;
+const ENTROPY_MIN_LENGTH = 20;
+
+/** Characters that distinguish high-entropy secrets from base64/hex padding */
+const MIXED_CHAR_SET = /[A-Za-z].*[0-9]|[0-9].*[A-Za-z]/;
+
+/**
+ * Values that look like they might have incidentally high entropy but are
+ * clearly not secrets: long URLs, file paths, semantic version strings.
+ */
+function isHighEntropyFalsePositive(value: string): boolean {
+  if (/^https?:\/\//.test(value)) return true;
+  if (/^[./]/.test(value)) return true;
+  if (/^v?\d+\.\d+/.test(value)) return true;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) return true; // UUID
+  return false;
+}
+
+function checkHighEntropy(value: string): boolean {
+  if (!value || value.length < ENTROPY_MIN_LENGTH) return false;
+  if (value.startsWith('$')) return false; // variable reference
+  if (isHighEntropyFalsePositive(value)) return false;
+  if (!MIXED_CHAR_SET.test(value)) return false; // pure hex/digits — too common
+  return shannonEntropy(value) >= ENTROPY_THRESHOLD;
+}
+
+function checkCloudKeyPattern(value: string): string | null {
+  for (const { name, pattern } of CLOUD_KEY_PATTERNS) {
+    if (pattern.test(value)) return name;
+  }
+  return null;
+}
+
+export const DV1011: Rule = {
+  id: 'DV1011', severity: 'warning',
+  description: 'High-entropy string or cloud credential pattern detected in ENV/ARG',
+  check(ctx) {
+    const violations: Violation[] = [];
+
+    function checkValue(key: string, value: string | undefined, line: number, instrType: 'ENV' | 'ARG') {
+      if (!value || value === '' || value.startsWith('$')) return;
+
+      // Cloud key pattern match
+      const cloudMatch = checkCloudKeyPattern(value);
+      if (cloudMatch) {
+        violations.push({
+          rule: 'DV1011', severity: 'warning',
+          message: `Possible ${cloudMatch} detected in ${instrType} "${key}". Remove credentials from Dockerfile and use runtime secrets.`,
+          line,
+        });
+        return;
+      }
+
+      // High-entropy detection
+      if (checkHighEntropy(value)) {
+        violations.push({
+          rule: 'DV1011', severity: 'warning',
+          message: `High-entropy value in ${instrType} "${key}" may be a hardcoded secret (entropy=${shannonEntropy(value).toFixed(2)}). Use build secrets or runtime environment variables.`,
+          line,
+        });
+      }
+    }
+
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV') {
+          const e = inst as EnvInstruction;
+          for (const pair of e.pairs) {
+            checkValue(pair.key, pair.value, inst.line, 'ENV');
+          }
+        }
+        if (inst.type === 'ARG') {
+          const a = inst as ArgInstruction;
+          checkValue(a.name, a.defaultValue, inst.line, 'ARG');
+        }
+      }
+    }
+
+    for (const arg of ctx.ast.globalArgs) {
+      checkValue(arg.name, arg.defaultValue, arg.line, 'ARG');
+    }
+
+    return violations;
+  },
+};
