@@ -8,22 +8,47 @@ const SEVERITY_MAP: Record<string, string> = {
   style: 'note',
 };
 
+const PRECISION_MAP: Record<string, string> = {
+  error: 'high',
+  warning: 'medium',
+  info: 'low',
+  style: 'low',
+};
+
+const DOCS_BASE = 'https://github.com/taku-tez/DockerVet#rules';
+
 interface ProcessResult {
   filename: string;
   violations: Violation[];
   exitCode: number;
 }
 
+function buildRuleEntry(id: string) {
+  const rule = RULE_MAP.get(id);
+  const severity = rule?.severity || 'info';
+  const description = rule?.description || id;
+  const ruleUrl = rule?.url || `${DOCS_BASE}`;
+  const helpText = `${description}\n\nSee: ${ruleUrl}`;
+  return {
+    id,
+    shortDescription: { text: description },
+    fullDescription: { text: description },
+    helpUri: ruleUrl,
+    help: {
+      text: helpText,
+      markdown: `**${id}**: ${description}\n\nSee [DockerVet Rules](${ruleUrl})`,
+    },
+    defaultConfiguration: { level: SEVERITY_MAP[severity] || 'note' },
+    properties: {
+      precision: PRECISION_MAP[severity] || 'low',
+      tags: ['security', 'dockerfile'],
+    },
+  };
+}
+
 export function formatSARIF(violations: Violation[], filename: string): string {
   const usedRules = new Set(violations.map(v => v.rule));
-  const rules = Array.from(usedRules).map(id => {
-    const rule = RULE_MAP.get(id);
-    return {
-      id,
-      shortDescription: { text: rule?.description || id },
-      defaultConfiguration: { level: SEVERITY_MAP[rule?.severity || 'info'] || 'note' },
-    };
-  });
+  const rules = Array.from(usedRules).map(id => buildRuleEntry(id));
 
   const sarif = {
     $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
@@ -59,24 +84,15 @@ export function formatSARIF(violations: Violation[], filename: string): string {
  * This ensures valid JSON output when processing multiple files.
  */
 export function formatSARIFBatch(results: ProcessResult[]): string {
-  const allViolations: Violation[] = [];
   const usedRules = new Set<string>();
-  
+
   for (const result of results) {
     for (const v of result.violations) {
-      allViolations.push(v);
       usedRules.add(v.rule);
     }
   }
 
-  const rules = Array.from(usedRules).map(id => {
-    const rule = RULE_MAP.get(id);
-    return {
-      id,
-      shortDescription: { text: rule?.description || id },
-      defaultConfiguration: { level: SEVERITY_MAP[rule?.severity || 'info'] || 'note' },
-    };
-  });
+  const rules = Array.from(usedRules).map(id => buildRuleEntry(id));
 
   const sarifResults = results.flatMap(result =>
     result.violations.map(v => ({
