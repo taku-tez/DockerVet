@@ -534,6 +534,16 @@ describe('DV3023 - Shell variable injection risk', () => {
   it('passes echo with quoted var (safe context)', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nARG MY_VAR\nRUN echo "$MY_VAR"'), 'DV3023')).toBe(false);
   });
+  it('passes ARG used only in --output filename (not URL injection)', () => {
+    // NEXUS_VERSION is in --output filename, not in the URL itself — should not flag as URL injection
+    expect(hasRule(lintDockerfile(
+      'FROM ubuntu\nARG NEXUS_VERSION=3.70.0\nARG NEXUS_DOWNLOAD_URL=https://download.sonatype.com/nexus-${NEXUS_VERSION}.tar.gz\n' +
+      'RUN curl -L ${NEXUS_DOWNLOAD_URL} --output nexus-${NEXUS_VERSION}-unix.tar.gz'
+    ), 'DV3023')).toBe(true); // should still flag NEXUS_DOWNLOAD_URL in URL position
+  });
+  it('flags ARG directly in curl URL position', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG DOWNLOAD_URL\nRUN curl -L ${DOWNLOAD_URL} --output file.tar.gz'), 'DV3023')).toBe(true);
+  });
 });
 
 describe('DV3024 - Downloaded file executed without checksum', () => {

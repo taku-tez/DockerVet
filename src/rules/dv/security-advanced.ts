@@ -633,11 +633,23 @@ export const DV3023: Rule = {
           }
 
           // Pattern 2: unquoted ARG variable in wget/curl URL
+          // Only flag if the variable appears in the URL argument position (not in --output/-o/-d/etc.)
           const urlRe = new RegExp(`(?:wget|curl)\\s+(?:[^"]*?)\\$(?:\\{${name}\\}|${name})(?!["\\'\\w])`);
           if (urlRe.test(args)) {
-            violations.push({ rule: 'DV3023', severity: 'warning', message: `Unquoted ARG $${name} in download URL. URL injection possible via --build-arg.`, line: inst.line });
-            flagged = true;
-            break;
+            // Check if ALL occurrences of this variable are in non-URL argument positions
+            // (e.g., --output, -o, -O, --data, -d, --header, etc.)
+            const nonUrlFlagRe = new RegExp(
+              `(?:--output|--data|--header|--user|--form|--upload-file|--cookie|--cacert|--key|--cert|--capath|--proxy|--range|--referer|-[oOdHuFTb])(?:[= ]\\S*)?[= ]\\S*\\$(?:\\{${name}\\}|${name})`,
+              'g'
+            );
+            const varRe = new RegExp(`\\$(?:\\{${name}\\}|${name})`, 'g');
+            const allCount = (args.match(varRe) || []).length;
+            const nonUrlCount = (args.match(nonUrlFlagRe) || []).length;
+            if (allCount > nonUrlCount) {
+              violations.push({ rule: 'DV3023', severity: 'warning', message: `Unquoted ARG $${name} in download URL. URL injection possible via --build-arg.`, line: inst.line });
+              flagged = true;
+              break;
+            }
           }
 
           // Pattern 3: unquoted ARG in find -exec path
