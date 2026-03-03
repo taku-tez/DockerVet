@@ -13189,5 +13189,145 @@
     "findings": 20,
     "fp": 0,
     "notes": "Go compiler. DL3003 cd vs WORKDIR (3x), DL3008 unpinned apt, DV5003 distroless suggestion."
+  },
+  {
+    "repo": "vercel/next.js",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 95,
+    "severities": {
+      "error": 1,
+      "warning": 51,
+      "info": 40,
+      "style": 3
+    },
+    "notableFindings": "DV1003 curl|sh in stats-action Dockerfile. DL3008 unpinned apt, DV1009 no digest, DV4012 consecutive COPY \u2014 all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "denoland/deno",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 1,
+      "warning": 3,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh for rustup install. DL3008 unpinned apt (3x) \u2014 all legitimate. Clean single Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "RocketChat/Rocket.Chat",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 177,
+    "severities": {
+      "error": 15,
+      "warning": 77,
+      "info": 62,
+      "style": 23
+    },
+    "notableFindings": "DV1003 curl|sh (3x), DL3020 ADD vs COPY (5x), DL3017 apk upgrade (3x), DV3024 tarball without checksum \u2014 all legitimate across official and community images.",
+    "improvements": []
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 95,
+    "severities": {
+      "error": 1,
+      "warning": 49,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh in Dockerfile.linux. DL3008/DL3041 unpinned packages, DV1009 no digest, DV1006 root \u2014 all legitimate. Multi-distro build images.",
+    "improvements": []
+  },
+  {
+    "repo": "langgenius/dify",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "All findings legitimate. DL3008 apt pinning, DV1009 no digest, DV4003 no WORKDIR. Clean AI platform Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "SeleniumHQ/docker-selenium",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 20,
+    "totalIssues": 95,
+    "severities": {
+      "error": 7,
+      "warning": 38,
+      "info": 48,
+      "style": 2
+    },
+    "notableFindings": "DV1001 correctly flags SE_SUPERVISORD_UNIX_SERVER_PASSWORD=secret. DL3044 self-referencing ENV (HOME, LANGUAGE). DV3018 chpasswd plaintext. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "loft-sh/devpod",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 79,
+    "severities": {
+      "error": 7,
+      "warning": 36,
+      "info": 36,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh (5x) in devcontainer/provider Dockerfiles. DL3004 sudo (2x). DL3008 apt pinning \u2014 all legitimate dev environment images.",
+    "improvements": []
+  },
+  {
+    "repo": "bytecodealliance/wasmtime",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 127,
+    "severities": {
+      "error": 3,
+      "warning": 65,
+      "info": 59,
+      "style": 0
+    },
+    "notableFindings": "DV3024 tarball without checksum (3x) \u2014 WASI SDK downloads. DL3008/DL3041 unpinned packages, DV1006 root \u2014 all legitimate CI build images.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-java",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "Clean single Dockerfile. DL3013 pip pinning, DL3042 pip cache, DV1006 root \u2014 all legitimate. Minimal findings.",
+    "improvements": []
+  },
+  {
+    "repo": "grafana/pyroscope",
+    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
+    "dockerfiles": 57,
+    "totalIssues": 397,
+    "severities": {
+      "error": 10,
+      "warning": 187,
+      "info": 196,
+      "style": 4
+    },
+    "notableFindings": "DL3020 ADD vs COPY (7x) in language-specific test images. DV1003 curl|sh (2x), DV3024 tarball (1x). Large test suite with many Dockerfiles. All legitimate.",
+    "improvements": []
   }
 ]
