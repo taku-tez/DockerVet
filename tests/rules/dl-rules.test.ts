@@ -966,6 +966,22 @@ describe('DL3052 - Unused ARG', () => {
   it('passes ARG used with braces', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nARG MY_VAR=foo\nRUN echo ${MY_VAR}'), 'DL3052')).toBe(false);
   });
+  it('passes ARG with inline comment that is used in RUN', () => {
+    // ARG FOO # some note — name is "FOO", comment is ignored; $FOO must not trigger DL3052
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG VERSION # eg, "1.0.0"\nRUN echo $VERSION'), 'DL3052')).toBe(false);
+  });
+  it('flags ARG with inline comment that is truly unused', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG UNUSED # eg, "1.0.0"\nRUN echo hi'), 'DL3052')).toBe(true);
+  });
+  it('skips BuildKit automatic platform ARGs (TARGETOS, TARGETARCH, etc.)', () => {
+    expect(hasRule(lintDockerfile('FROM golang AS build\nARG TARGETOS\nARG TARGETARCH\nRUN make build'), 'DL3052')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM golang AS build\nARG TARGETPLATFORM\nARG TARGETVARIANT\nRUN make build'), 'DL3052')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM golang AS build\nARG BUILDOS\nARG BUILDARCH\nARG BUILDPLATFORM\nRUN make build'), 'DL3052')).toBe(false);
+  });
+  it('skips DEBIAN_FRONTEND and related dpkg env ARGs', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG DEBIAN_FRONTEND=noninteractive\nRUN apt-get update'), 'DL3052')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu\nARG DEBCONF_NOWARNINGS\nARG DEBCONF_NONINTERACTIVE_SEEN\nRUN apt-get update'), 'DL3052')).toBe(false);
+  });
 });
 
 describe('DL3053 - ENV overrides ARG', () => {

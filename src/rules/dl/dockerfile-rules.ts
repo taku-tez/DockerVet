@@ -455,6 +455,16 @@ export const DL3051: Rule = {
 };
 
 // DL3052: ARG declared but not referenced
+// Well-known ARGs that are implicitly consumed by Docker BuildKit or system tools
+// and don't need explicit $VAR references in the Dockerfile.
+const IMPLICIT_ARGS = new Set([
+  // BuildKit automatic platform ARGs (https://docs.docker.com/build/building/variables/#pre-defined-build-arguments)
+  'TARGETOS', 'TARGETARCH', 'TARGETPLATFORM', 'TARGETVARIANT',
+  'BUILDOS', 'BUILDARCH', 'BUILDPLATFORM', 'BUILDVARIANT',
+  // Debian/Ubuntu dpkg/apt env vars consumed implicitly by package tools
+  'DEBIAN_FRONTEND', 'DEBCONF_NOWARNINGS', 'DEBCONF_NONINTERACTIVE_SEEN',
+]);
+
 export const DL3052: Rule = {
   id: 'DL3052', severity: 'style',
   description: 'ARG is declared but never referenced',
@@ -474,6 +484,7 @@ export const DL3052: Rule = {
     for (const arg of ctx.ast.globalArgs) {
       const name = arg.name;
       if (!name) continue;
+      if (IMPLICIT_ARGS.has(name)) continue;
       const re = new RegExp(`\\$\\{?${name}\\}?`);
       if (!re.test(combined)) {
         violations.push({ rule: 'DL3052', severity: 'style', message: `ARG ${name} is declared but never referenced in the Dockerfile.`, line: arg.line });
@@ -487,6 +498,7 @@ export const DL3052: Rule = {
         const ai = inst as ArgInstruction;
         const name = ai.name;
         if (!name) continue;
+        if (IMPLICIT_ARGS.has(name)) continue;
         const re = new RegExp(`\\$\\{?${name}\\}?`);
         if (!re.test(combined)) {
           violations.push({ rule: 'DL3052', severity: 'style', message: `ARG ${name} is declared but never referenced in the Dockerfile.`, line: ai.line });

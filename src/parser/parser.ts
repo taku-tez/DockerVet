@@ -163,7 +163,11 @@ function parseArgArgs(args: string, line: number): ArgInstruction {
       name: trimmed.slice(0, eqIdx), defaultValue,
     };
   }
-  return { type: 'ARG', raw: `ARG ${args}`, line, arguments: args, flags: {}, name: trimmed };
+  // Docker's ARG parser takes only the first whitespace-delimited token as the name;
+  // inline comments like `ARG FOO # some note` are stripped, so name = "FOO".
+  const spaceIdx = trimmed.indexOf(' ');
+  const name = spaceIdx >= 0 ? trimmed.slice(0, spaceIdx) : trimmed;
+  return { type: 'ARG', raw: `ARG ${args}`, line, arguments: args, flags: {}, name };
 }
 
 function parseLabelArgs(args: string, line: number): LabelInstruction {
