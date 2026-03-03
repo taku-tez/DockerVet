@@ -13582,5 +13582,123 @@
       "info": 36
     },
     "notes": "Clean scan, no FP. DL3020 ADD vs COPY (3x). DV3004 cert copy in test Dockerfiles (legitimate test certs). DL3007 latest (5x)."
+  },
+  {
+    "repo": "distribution/distribution",
+    "files": 7,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 2,
+      "warnings": 25,
+      "info": 30,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (13x), DV1009 no digest (13x), DV1006 root (7x). Standard Go Alpine multi-stage builds."
+  },
+  {
+    "repo": "stripe/stripe-cli",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 1,
+      "warnings": 3,
+      "info": 4
+    },
+    "notes": "Clean scan, no FP. Minimal Dockerfile with DL3017 --date label, DV2010/DV2011 apk upgrade."
+  },
+  {
+    "repo": "slackhq/nebula",
+    "files": 2,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 1,
+      "warnings": 7,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (3x), DL3020 ADD vs COPY, DV5003 distroless suggestion."
+  },
+  {
+    "repo": "meshery/meshery",
+    "files": 2,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 2,
+      "warnings": 10,
+      "info": 13,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1009 no digest (5x), DL3018 apk (4x), DL3020 ADD vs COPY (2x), DL3013 pip pinning."
+  },
+  {
+    "repo": "juanfont/headscale",
+    "files": 4,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "info": 22,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (13x), DV1009 (7x), DV3008 git clone (2x), DV3021 port warnings."
+  },
+  {
+    "repo": "kube-logging/logging-operator",
+    "files": 6,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 4,
+      "warnings": 21,
+      "info": 18,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (13x), DL3020 ADD vs COPY (4x), DL3028 gem pinning (3x)."
+  },
+  {
+    "repo": "go-swagger/go-swagger",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 11,
+      "info": 3,
+      "style": 2
+    },
+    "notes": "FP found: DL3052 flagged BUILDKIT_SBOM_SCAN_CONTEXT/STAGE as unused ARGs — these are BuildKit magic ARGs for SBOM attestation. Fixed.",
+    "improvements": [
+      "Fixed DL3052: skip BuildKit SBOM attestation ARGs (BUILDKIT_SBOM_SCAN_CONTEXT, BUILDKIT_SBOM_SCAN_STAGE)"
+    ]
+  },
+  {
+    "repo": "ArchiveBox/ArchiveBox",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 44,
+      "info": 20
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (38x). DV4017 correctly flags writable PATH dir. DV4001 multiple pkg install RUNs."
+  },
+  {
+    "repo": "docusealco/docuseal",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 1,
+      "warnings": 20,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (18x), DL3021 COPY multi-arg (legitimate), DV3019 script without checksum."
+  },
+  {
+    "repo": "squidfunk/mkdocs-material",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 1,
+      "warnings": 11,
+      "info": 1
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (9x), DL3013 pip pinning, DL3017 label formatting, DV2010 apk upgrade."
   }
 ]
