@@ -13469,5 +13469,118 @@
     },
     "notableFindings": "DL3020 ADD vs COPY (8x), DV1001 correctly flags LDAP_ADMIN_PASSWORD/LDAP_PASSWORDS in dev doc LDAP Dockerfile. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "netbox-community/netbox-docker",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 26,
+      "info": 5
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (22x), DL3042 pip cache, DV1006 root."
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "files": 6,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 1,
+      "warnings": 49,
+      "info": 45
+    },
+    "notes": "Clean scan, no FP. DV4017 PATH writable /root/.cargo/bin in builder stage (legitimate Rust pattern). DV4009 chmod 777, DL3007 latest tag."
+  },
+  {
+    "repo": "zulip/docker-zulip",
+    "files": 1,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 2,
+      "info": 5,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1010 HEALTHCHECK curl --insecure, DV3008 git clone, DL3052 unused ARG."
+  },
+  {
+    "repo": "gogs/gogs",
+    "files": 2,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 28,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (22x), DV3009 EXPOSE 22 SSH (legitimate for git server)."
+  },
+  {
+    "repo": "labring/sealos",
+    "files": 44,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 118,
+      "info": 167
+    },
+    "notes": "Clean scan, no FP. Large monorepo. DL3016 npm pinning (22x), DL3018 apk pinning heavy, DV1008 COPY . (13x)."
+  },
+  {
+    "repo": "SeleniumHQ/docker-selenium",
+    "files": 20,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 7,
+      "warnings": 38,
+      "info": 48,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags SE_SUPERVISORD_UNIX_SERVER_PASSWORD=secret. DV3018 chpasswd plaintext. DV3024 tarball without checksum."
+  },
+  {
+    "repo": "jupyter/docker-stacks",
+    "files": 30,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 91,
+      "info": 43,
+      "style": 38
+    },
+    "notes": "Clean scan, no FP. DL3006 on  ARG (24x, legitimate). DV4012 consecutive COPY (38x style). Recipe/example Dockerfiles."
+  },
+  {
+    "repo": "tiangolo/uvicorn-gunicorn-fastapi-docker",
+    "files": 4,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 4,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. DV1006 root (4x), DV1009 no digest (4x). Minimal template Dockerfiles."
+  },
+  {
+    "repo": "openzipkin/zipkin",
+    "files": 13,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 0,
+      "warnings": 17,
+      "info": 36
+    },
+    "notes": "Clean scan, no FP. DV3023 unquoted ARG in download URL (4x, legitimate pattern). DV3021 EXPOSE 9200/3306 (service ports). DV1006 root (6x)."
+  },
+  {
+    "repo": "minio/operator",
+    "files": 8,
+    "date": "2026-03-04",
+    "findings": {
+      "errors": 3,
+      "warnings": 37,
+      "info": 36
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (3x). DV3004 cert copy in test Dockerfiles (legitimate test certs). DL3007 latest (5x)."
   }
 ]
