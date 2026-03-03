@@ -461,6 +461,8 @@ const IMPLICIT_ARGS = new Set([
   // BuildKit automatic platform ARGs (https://docs.docker.com/build/building/variables/#pre-defined-build-arguments)
   'TARGETOS', 'TARGETARCH', 'TARGETPLATFORM', 'TARGETVARIANT',
   'BUILDOS', 'BUILDARCH', 'BUILDPLATFORM', 'BUILDVARIANT',
+  // BuildKit SBOM attestation ARGs (https://docs.docker.com/build/metadata/attestations/sbom/)
+  'BUILDKIT_SBOM_SCAN_CONTEXT', 'BUILDKIT_SBOM_SCAN_STAGE',
   // Debian/Ubuntu dpkg/apt env vars consumed implicitly by package tools
   'DEBIAN_FRONTEND', 'DEBCONF_NOWARNINGS', 'DEBCONF_NONINTERACTIVE_SEEN',
 ]);
