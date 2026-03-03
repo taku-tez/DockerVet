@@ -16,26 +16,28 @@ on:
     # Run weekly on Monday at 08:00 UTC
     - cron: "0 8 * * 1"
 
+permissions:
+  contents: read
+
 jobs:
   dockervet:
     name: DockerVet Scan
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
       contents: read
+      security-events: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Run DockerVet
         run: |
-          # Use xargs to handle filenames with spaces safely
-          # Pin version: replace dockervet@latest with dockervet@x.y.z
-          find . -name 'Dockerfile*' -not -path '*/node_modules/*' | xargs npx --yes dockervet@latest --format sarif > dockervet-results.sarif || true
+          # Pinned to v0.1.0 — update intentionally when upgrading DockerVet
+          find . -name 'Dockerfile*' -not -path '*/node_modules/*' | xargs npx --yes dockervet@0.1.0 --format sarif > dockervet-results.sarif || true
 
       - name: Upload SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@ae9ef3a1d2e3413523c3741725c30064970cc0d4  # v3
         if: always()
         with:
           sarif_file: dockervet-results.sarif
