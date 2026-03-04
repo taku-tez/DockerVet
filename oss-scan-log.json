@@ -14430,5 +14430,117 @@
     },
     "notableFindings": "DV1006 root (16x), DV1009 no digest (16x), DL3018 apk pinning (8x), DV5003 distroless recommendation (6x) — all legitimate. Official Caddy Docker image variants.",
     "improvements": []
+  },
+  {
+    "repo": "TryGhost/Ghost",
+    "files": 5,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 16,
+      "info": 14
+    },
+    "notes": "Clean scan, no FP. Standard Node.js multi-stage builds. DL3008 apt pinning (10x), DV1006 root (4x), DV1009 digest (3x)."
+  },
+  {
+    "repo": "prisma/prisma",
+    "files": 4,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 1,
+      "warnings": 16,
+      "info": 17
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh in e2e test Dockerfile (legitimate). DL3025 CMD notation, DL3008 apt pinning."
+  },
+  {
+    "repo": "nuxt/nuxt",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 17,
+      "info": 5
+    },
+    "notes": "Clean scan, no FP. Playwright test Dockerfile with heavy DL3008 apt pinning (15x). DV5003 distroless suggestion."
+  },
+  {
+    "repo": "tandoorrecipes/recipes",
+    "files": 2,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 74,
+      "info": 12
+    },
+    "notes": "Clean scan, no FP. Very heavy DL3018 apk pinning (69x) in Python/Alpine multi-stage builds. DV1004 single-stage (2x)."
+  },
+  {
+    "repo": "gchq/CyberChef",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 2,
+      "info": 3,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Minimal well-structured Dockerfile with DV1009 digest pinning recommendations."
+  },
+  {
+    "repo": "typst/typst",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 9,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. Rust multi-stage build. DL3018 apk pinning (5x), DL3006 tonistiigi/xx untagged (cross-compilation helper, legitimate)."
+  },
+  {
+    "repo": "shaarli/Shaarli",
+    "files": 6,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 3,
+      "warnings": 112,
+      "info": 41
+    },
+    "notes": "Clean scan, no FP. DL3004 sudo in CI act Dockerfile (2x), DL3020 ADD (1x). Heavy DL3018 apk (47x) and DL3008 apt (41x) pinning. DV2005 deprecated MAINTAINER (4x)."
+  },
+  {
+    "repo": "pgadmin-org/pgadmin4",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 1,
+      "warnings": 32,
+      "info": 16,
+      "style": 18
+    },
+    "notes": "Clean scan, no FP. DL3017 apk upgrade (legitimate). Heavy DL3018 apk pinning (26x). DV4012 consecutive COPY (18x style)."
+  },
+  {
+    "repo": "roundcube/roundcubemail",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 23,
+      "info": 5
+    },
+    "notes": "Clean scan, no FP. PHP/Debian image with heavy DL3008 apt pinning (21x). DV4008 TODO comment, DV4007 DEBIAN_FRONTEND."
+  },
+  {
+    "repo": "phpmyadmin/docker",
+    "files": 4,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 25,
+      "info": 12
+    },
+    "notes": "Clean scan, no FP. DL3002 last USER root (3x across fpm variants). DL3018 apk pinning (17x). DV1009 digest (4x)."
   }
 ]
