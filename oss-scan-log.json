@@ -13700,5 +13700,145 @@
       "info": 1
     },
     "notes": "Clean scan, no FP. DL3018 apk pinning (9x), DL3013 pip pinning, DL3017 label formatting, DV2010 apk upgrade."
+  },
+  {
+    "repo": "siyuan-note/siyuan",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 14,
+    "severities": {
+      "error": 4,
+      "warning": 5,
+      "info": 4,
+      "style": 1
+    },
+    "notableFindings": "DL3020 ADD vs COPY (4x), DL3007 latest tag on alpine, DL3052 unused ARG. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "discourse/discourse_docker",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 91,
+    "severities": {
+      "error": 24,
+      "warning": 33,
+      "info": 33,
+      "style": 1
+    },
+    "notableFindings": "DL3020 ADD (13x), DL3004 sudo (9x), DV3011 sudo warning (8x), DV3023 unquoted ARG in URL. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "miniflux/v2",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 43,
+    "severities": {
+      "error": 4,
+      "warning": 16,
+      "info": 20,
+      "style": 3
+    },
+    "notableFindings": "DV1009 digest pinning (7x), DL3018 apk pinning (5x), DL3020 ADD (4x), RPM spec Dockerfile with DL3040/DL3041. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "meshery/meshery",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 26,
+    "severities": {
+      "error": 2,
+      "warning": 10,
+      "info": 13,
+      "style": 1
+    },
+    "notableFindings": "DV1009 digest pinning (5x), DL3018 apk pinning (4x), DL3013 pip pinning (2x), DL3020 ADD. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "komodorio/helm-dashboard",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 1,
+      "warning": 4,
+      "info": 5,
+      "style": 2
+    },
+    "notableFindings": "DL3006 untagged golang/alpine (2x), DL3007 latest, DL3020 ADD, DV4012 consecutive COPY. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openbao/openbao",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 67,
+    "severities": {
+      "error": 1,
+      "warning": 37,
+      "info": 29,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (14x), DL3008 apt pinning (14x), DV1009 digest (9x), DV1003 curl|sh in Dockerfile.ui. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "valkey-io/valkey-container",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 165,
+    "severities": {
+      "error": 0,
+      "warning": 135,
+      "info": 30,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (65x), DL3008 apt pinning (40x), DV3020 ADD remote URL (10x), DV3021 EXPOSE 6379 Redis port. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "glanceapp/glance",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV1009 digest (3x), DV3021 EXPOSE 8080 (2x), DV1006 root, DV1008 COPY broad source. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "usememos/memos",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 10,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (5x), DV1009 digest (2x), DL3002 last USER root, DV1008 COPY broad. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "serge-chat/serge",
+    "scannedAt": "2026-03-04T11:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (5x), DV1009 digest (4x), DV1006 root (2x), DV5003 distroless recommendation. All findings legitimate.",
+    "improvements": []
   }
 ]
