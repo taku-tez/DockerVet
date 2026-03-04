@@ -485,7 +485,7 @@ export const DV3021: Rule = {
       4445: { severity: 'warning', name: 'Selenium Grid' },
       4446: { severity: 'warning', name: 'Selenium Grid' },
       5000: { severity: 'info', name: 'Docker Registry / common web app port (Flask, etc.)' },
-      8080: { severity: 'info', name: 'HTTP alternate (admin UI)' },
+      // 8080 removed: too common as standard web app port (Java/Tomcat, Spring Boot, Node.js, etc.) to be meaningful
       8443: { severity: 'info', name: 'HTTPS alternate (admin UI)' },
     };
 
