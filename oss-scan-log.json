@@ -13840,5 +13840,145 @@
     },
     "notableFindings": "DL3008 apt pinning (5x), DV1009 digest (4x), DV1006 root (2x), DV5003 distroless recommendation. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "openresty/docker-openresty",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 33,
+    "totalIssues": 477,
+    "severities": {
+      "error": 15,
+      "warning": 328,
+      "info": 131,
+      "style": 3
+    },
+    "notableFindings": "DL3008 apt pinning (190x), DV3023 unquoted ARG in URL (25x), DV1006 root (32x). All findings legitimate for server base images.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/ruby",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 24,
+    "totalIssues": 634,
+    "severities": {
+      "error": 0,
+      "warning": 510,
+      "info": 124,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (244x), DL3008 apt pinning (206x). Standard official image patterns.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/php",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 70,
+    "totalIssues": 1944,
+    "severities": {
+      "error": 0,
+      "warning": 1419,
+      "info": 525,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt (540x), DL3018 apk (514x), DL3003 cd vs WORKDIR (160x), DV4001 large layer (150x). Massive multi-variant build matrix.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/node",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 78,
+    "severities": {
+      "error": 0,
+      "warning": 39,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (24x), DV1009 no digest. Clean official Node.js images.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/httpd",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 65,
+    "severities": {
+      "error": 0,
+      "warning": 53,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk (26x), DL3008 apt (21x). Standard Apache HTTPD builds.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/haproxy",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 276,
+    "severities": {
+      "error": 0,
+      "warning": 184,
+      "info": 92,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk (96x), DL3008 apt (72x). Multi-version HAProxy builds for Alpine/Debian.",
+    "improvements": []
+  },
+  {
+    "repo": "docker-library/mongo",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 24,
+    "totalIssues": 216,
+    "severities": {
+      "error": 6,
+      "warning": 90,
+      "info": 120,
+      "style": 0
+    },
+    "notableFindings": "DV3021 EXPOSE 27017 (24x) — legitimate for official MongoDB images. DL3008 apt, DV1009 no digest.",
+    "improvements": []
+  },
+  {
+    "repo": "frappe/frappe_docker",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 67,
+    "severities": {
+      "error": 1,
+      "warning": 59,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt (54x), DL3001 vim/nano (dev tools intentional), DV3008 git clone, DV1003 curl|sh — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "sonatype/docker-nexus3",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 44,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 24,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk (11x), DV3023 unquoted ARG (4x), DL3006 untagged. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "scannedAt": "2026-03-04T14:03:09+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 95,
+    "severities": {
+      "error": 1,
+      "warning": 49,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt (17x), DV1009 no digest (11x), DL3041 dnf (7x), DV4009 chmod 777 (2x). Clean Rust/multi-arch builds.",
+    "improvements": []
   }
 ]
