@@ -143,14 +143,21 @@ export const DL3016: Rule = {
       // Strip inline comments (# ...) before parsing package names
       const cleaned = m[1].replace(/#.*$/gm, '').trim();
       if (!cleaned) return; // bare "npm install" (from package.json)
-      const tokens = cleaned.split(/\s+/)
+      // Strip shell command substitutions $(...)  before tokenizing to avoid
+      // parsing their internals as package names (e.g., npm install -g $(jq -r '.packageManager' package.json))
+      const withoutSubshells = cleaned.replace(/\$\([^)]*\)/g, '__SUBSHELL__');
+      const tokens = withoutSubshells.split(/\s+/)
         // Strip trailing quotes/backslashes that appear when npm install is inside a shell string
         // e.g., su user -c "npm install eslint" → token becomes "eslint"
         .map(p => p.replace(/["'\\]+$/, ''))
+        // Strip leading quotes too (e.g., 'pkg or "pkg)
+        .map(p => p.replace(/^["']+/, ''))
         .filter(p => p);
       let skipNext = false;
       for (const token of tokens) {
         if (skipNext) { skipNext = false; continue; }
+        // Skip subshell placeholders
+        if (token === '__SUBSHELL__') continue;
         // Skip flags; if flag takes a value, skip the next token too
         if (token.startsWith('-')) {
           if (npmFlagsWithValue.has(token) || (token.startsWith('--') && token.includes('='))) {
@@ -161,6 +168,8 @@ export const DL3016: Rule = {
         // Skip paths, variables, file-like names, and scope-only tokens
         if (token.startsWith('.') || token.startsWith('/') || token.startsWith('$')) continue;
         if (fileExtensions.test(token)) continue; // e.g., package.json, package-lock.json
+        // Skip tokens with shell metacharacters (backticks, parentheses) that indicate dynamic values
+        if (/[`(){}]/.test(token)) continue;
         const pkg = token;
         if (!pkg.includes('@')) {
           violations.push({ rule: 'DL3016', severity: 'warning', message: `Pin versions in npm. Instead of \`npm install ${pkg}\` use \`npm install ${pkg}@<version>\``, line: inst.line });
