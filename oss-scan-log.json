@@ -13980,5 +13980,147 @@
     },
     "notableFindings": "DL3008 apt (17x), DV1009 no digest (11x), DL3041 dnf (7x), DV4009 chmod 777 (2x). Clean Rust/multi-arch builds.",
     "improvements": []
+  },
+  {
+    "repo": "vercel/next.js",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 95,
+    "severities": {
+      "error": 1,
+      "warning": 51,
+      "info": 40,
+      "style": 3
+    },
+    "notableFindings": "DL3008 apt pinning (26x), DV1009 no digest (19x), DV1005/DV1008 broad COPY (8x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "denoland/deno",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 9,
+    "severities": {
+      "error": 1,
+      "warning": 3,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DV1003 curl|sh, DV1004 no multi-stage, DL3008 apt pinning — all legitimate. Clean single Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "rustdesk/rustdesk",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 43,
+    "severities": {
+      "error": 3,
+      "warning": 30,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (26x), DL3002 last USER root, DV3024 tarball without checksum (2x). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 3,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 2,
+      "style": 1
+    },
+    "notableFindings": "DL3057, DV4003, DV4012 — minimal clean Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "miniflux/v2",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 43,
+    "severities": {
+      "error": 4,
+      "warning": 16,
+      "info": 20,
+      "style": 3
+    },
+    "notableFindings": "DV1009 no digest (7x), DL3018 apk pinning (5x), DL3020 ADD vs COPY (4x). DV3021 FP on port 8080 — fixed by removing 8080 from sensitive ports. All other findings legitimate.",
+    "improvements": [
+      "Fixed DV3021: removed port 8080 from sensitive ports list (too common as standard web app port)"
+    ]
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 95,
+    "severities": {
+      "error": 1,
+      "warning": 49,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (17x), DV1009 no digest (11x), DL3041 dnf pinning (7x), DV1006 root (6x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "valkey-io/valkey-container",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 165,
+    "severities": {
+      "error": 0,
+      "warning": 135,
+      "info": 30,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (65x), DL3008 apt pinning (40x), DV3021 EXPOSE 6379 across all variants — expected for Redis/Valkey container images.",
+    "improvements": []
+  },
+  {
+    "repo": "frappe/frappe_docker",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 67,
+    "severities": {
+      "error": 1,
+      "warning": 59,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (54x — heavy package list), DL3001 vim in RUN, DV3008 git clone (2x). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "owncloud/ocis",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 80,
+    "severities": {
+      "error": 0,
+      "warning": 57,
+      "info": 23,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (48x), DV1009 no digest (9x), DV3021 EXPOSE 9200 — OCIS uses 9200 as its own HTTP port (not Elasticsearch). Borderline but port-based detection can't distinguish service type.",
+    "improvements": []
+  },
+  {
+    "repo": "searxng/searxng",
+    "scannedAt": "2026-03-04T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 19,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DL3045 COPY without WORKDIR (6x), DV1006 root (3x), DV1009 no digest (3x). All legitimate. Clean Dockerfiles.",
+    "improvements": []
   }
 ]
