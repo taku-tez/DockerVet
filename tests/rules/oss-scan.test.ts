@@ -3631,3 +3631,883 @@ CMD ["/usr/bin/falco"]
     expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
   });
 });
+// This file will be appended to tests/rules/oss-scan.test.ts
+
+// ── anchore/grype patterns ─────────────────────────────────────────────
+
+describe('OSS: anchore/grype patterns', () => {
+  it('Dockerfile: distroless base with :latest tag, scratch final, good labels', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static-debian12:latest AS build
+
+FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+WORKDIR /tmp
+COPY grype /
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG VCS_REF
+ARG VCS_URL
+
+LABEL org.opencontainers.image.created=\$BUILD_DATE
+LABEL org.opencontainers.image.title="grype"
+LABEL org.opencontainers.image.description="A vulnerability scanner for container images and filesystems"
+LABEL org.opencontainers.image.source=\$VCS_URL
+LABEL org.opencontainers.image.revision=\$VCS_REF
+LABEL org.opencontainers.image.vendor="Anchore, Inc."
+LABEL org.opencontainers.image.version=\$BUILD_VERSION
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+
+ENTRYPOINT ["/grype"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK (multi-stage)
+  });
+
+  it('Dockerfile.debug: distroless debug-nonroot, single-stage', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static-debian12:debug-nonroot
+WORKDIR /tmp
+COPY grype /
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+LABEL org.opencontainers.image.created=\$BUILD_DATE
+LABEL org.opencontainers.image.title="grype"
+
+ENTRYPOINT ["/grype"]
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3007')).toBe(false);   // not :latest
+  });
+
+  it('Dockerfile.nonroot: distroless nonroot variant', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /tmp
+COPY grype /
+ENTRYPOINT ["/grype"]
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);   // no USER needed for distroless
+  });
+
+  it('test-fixtures: FROM scratch with ADD (should use COPY)', () => {
+    const v = lintContent(`FROM scratch
+ADD package.json /
+ADD target /target
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // ADD for local files
+  });
+
+  it('test-fixtures: image-alpine-match-coverage — untagged FROM + COPY . .', () => {
+    const v = lintContent(`FROM cgr.dev/chainguard/go AS builder
+
+FROM scratch
+COPY . .
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // untagged image
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY missing --chown or context
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);
+  });
+
+  it('test-fixtures: openjdk with wget (no version pin)', () => {
+    const v = lintContent(`FROM openjdk:15-slim-buster@sha256:1e069bf1c5c23adde58b29b82281b862e473d698ce7cc4e164194a0a2a1c044a
+COPY app.java /
+ENV PATH="/app/bin:\${PATH}"
+WORKDIR /
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV5001')).toBe(true);    // deprecated base image
+  });
+
+  it('test-fixtures: rust-auditable with :latest', () => {
+    const v = lintContent(`FROM docker.io/tofay/hello-rust-auditable:latest
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // :latest
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+  });
+
+  it('test-fixtures: centos-match-coverage — scratch + COPY . .', () => {
+    const v = lintContent(`FROM scratch
+COPY . .
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // missing CMD/ENTRYPOINT
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // missing EXPOSE
+  });
+
+  it('test-fixtures: node-subprocess with deprecated node:16', () => {
+    const v = lintContent(`FROM node:16-stretch@sha256:5810de52349af302a2c5dddf0a3f31174ef65d0eed8985959a5e83bb1084b79b
+COPY app.js /
+ENV PATH="/app/bin:\${PATH}"
+WORKDIR /
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV5001')).toBe(true);    // deprecated base
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // EOL OS
+  });
+
+  it('test-fixtures: debian-match-coverage multi-stage with CGO_ENABLED=0', () => {
+    const v = lintContent(`FROM docker.io/golang:1.16@sha256:92ccbb6513249c08e582ca3eafc5c9176dbc5cbfe73af245542c5c78250e9b49
+WORKDIR /go/src/github.com/anchore/test/
+COPY golang/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go-app .
+
+FROM scratch
+COPY --from=0 /go/src/github.com/anchore/test/go-app ./
+COPY . .
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY . .
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // no CMD/ENTRYPOINT
+  });
+});
+
+// ── aquasecurity/kube-bench patterns ───────────────────────────────────
+
+describe('OSS: aquasecurity/kube-bench patterns', () => {
+  it('Dockerfile: multi-stage golang + alpine with many anti-patterns', () => {
+    const v = lintContent(`FROM golang:1.26.0 AS build
+WORKDIR /go/src/github.com/aquasecurity/kube-bench/
+COPY makefile makefile
+COPY go.mod go.sum ./
+COPY main.go .
+COPY check/ check/
+COPY cmd/ cmd/
+COPY internal/ internal/
+ARG KUBEBENCH_VERSION
+RUN make build && cp kube-bench /go/bin/kube-bench
+
+ARG KUBECTL_VERSION TARGETARCH
+RUN wget -O /usr/local/bin/kubectl "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\${TARGETARCH}/kubectl"
+RUN wget -O kubectl.sha256 "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\${TARGETARCH}/kubectl.sha256"
+RUN /bin/bash -c 'echo "\$(<kubectl.sha256)  /usr/local/bin/kubectl" | sha256sum -c -'
+RUN chmod +x /usr/local/bin/kubectl
+
+FROM alpine:3.23.3 AS run
+WORKDIR /opt/kube-bench/
+RUN apk --no-cache add procps findutils
+RUN apk --no-cache upgrade apk-tools
+RUN apk update && apk upgrade && apk --no-cache add openssl
+RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
+RUN apk add gcompat
+RUN apk add jq
+RUN apk add bash
+
+ENV PATH=\$PATH:/usr/local/mount-from-host/bin:/go/bin
+
+COPY --from=build /go/bin/kube-bench /usr/local/bin/kube-bench
+COPY --from=build /usr/local/bin/kubectl /usr/local/bin/kubectl
+COPY entrypoint.sh .
+COPY cfg/ cfg/
+COPY helper_scripts/check_files_owner_in_dir.sh /go/bin/
+RUN chmod a+x /go/bin/check_files_owner_in_dir.sh
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["install"]
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // apk upgrade
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk --no-cache missing
+    expect(v.some(v => v.rule === 'DL3019')).toBe(true);    // apk add + upgrade in same layer
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // wget without checksum
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // LABEL maintainer
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+  });
+
+  it('Dockerfile.ubi: UBI minimal with yum + microdnf mix', () => {
+    const v = lintContent(`FROM golang:1.26.0 AS build
+WORKDIR /go/src/github.com/aquasecurity/kube-bench/
+COPY go.mod go.sum ./
+COPY main.go .
+RUN make build && cp kube-bench /go/bin/kube-bench
+
+ARG KUBECTL_VERSION TARGETARCH
+RUN wget -O /usr/local/bin/kubectl "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\${TARGETARCH}/kubectl"
+RUN chmod +x /usr/local/bin/kubectl
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal as run
+
+RUN microdnf install -y yum findutils openssl \\
+  && yum -y update-minimal --security --sec-severity=Moderate --sec-severity=Important --sec-severity=Critical \\
+  && yum update -y \\
+  && yum install -y glibc \\
+  && yum install -y procps \\
+  && yum install jq -y \\
+  && yum clean all \\
+  && microdnf remove yum || rpm -e -v yum \\
+  && microdnf clean all
+
+WORKDIR /opt/kube-bench/
+
+ENV PATH=\$PATH:/usr/local/mount-from-host/bin
+
+COPY --from=build /go/bin/kube-bench /usr/local/bin/kube-bench
+COPY --from=build /usr/local/bin/kubectl /usr/local/bin/kubectl
+COPY entrypoint.sh .
+COPY cfg/ cfg/
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["install"]
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // untagged FROM alias
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);    // yum install without version
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // wget without --progress
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+  });
+
+  it('Dockerfile.fips.ubi: FIPS build with UBI base', () => {
+    const v = lintContent(`FROM golang:1.26.0 AS build
+WORKDIR /go/src/github.com/aquasecurity/kube-bench/
+COPY go.mod go.sum ./
+COPY main.go .
+RUN make build-fips && cp kube-bench /go/bin/kube-bench
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal as run
+
+RUN microdnf install -y yum findutils openssl \\
+  && yum -y update-minimal --security \\
+  && yum install -y glibc procps jq \\
+  && yum clean all \\
+  && microdnf clean all
+
+WORKDIR /opt/kube-bench/
+
+COPY --from=build /go/bin/kube-bench /usr/local/bin/kube-bench
+COPY entrypoint.sh .
+COPY cfg/ cfg/
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["install"]
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // untagged alias
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);    // yum without version
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // no HEALTHCHECK
+  });
+});
+
+// ── projectdiscovery/nuclei patterns ───────────────────────────────────
+
+describe('OSS: projectdiscovery/nuclei patterns', () => {
+  it('Dockerfile: golang-alpine builder + alpine:latest runtime', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS builder
+
+RUN apk add build-base
+WORKDIR /app
+COPY . /app
+RUN make verify
+RUN make build
+
+FROM alpine:latest
+
+RUN apk add --no-cache bind-tools chromium ca-certificates
+COPY --from=builder /app/bin/nuclei /usr/local/bin/
+
+ENTRYPOINT ["nuclei"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // alpine:latest
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk add without --no-cache (builder)
+    expect(v.some(v => v.rule === 'DL3019')).toBe(true);    // apk add in separate layer
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // installing browser in container
+  });
+
+  it('Dockerfile.goreleaser: alpine:latest with labels', () => {
+    const v = lintContent(`FROM alpine:latest
+
+LABEL org.opencontainers.image.authors="ProjectDiscovery"
+LABEL org.opencontainers.image.description="Nuclei is a fast, customizable vulnerability scanner"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.title="nuclei"
+LABEL org.opencontainers.image.url="https://github.com/projectdiscovery/nuclei"
+
+RUN apk add --no-cache bind-tools chromium ca-certificates
+COPY nuclei /usr/local/bin/
+
+ENTRYPOINT ["nuclei"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // :latest
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk version pin
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // chromium in container
+  });
+});
+
+// ── snyk/cli patterns ──────────────────────────────────────────────────
+
+describe('OSS: snyk/cli patterns', () => {
+  it('.circleci/Dockerfile: massive CI build image with many violations', () => {
+    const v = lintContent(`FROM debian:bullseye
+
+ARG NODEVERSION
+ARG ARCH
+ARG GOVERSION
+
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    ca-certificates \\
+    curl \\
+    && rm -rf /var/lib/apt/lists/*
+
+RUN GOARCH=\$(echo "\$ARCH" | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/') \\
+    && curl -fsSL "https://go.dev/dl/go\${GOVERSION}.linux-\${GOARCH}.tar.gz" -o /tmp/go.tar.gz \\
+    && tar -C /usr/local -xzf /tmp/go.tar.gz \\
+    && rm /tmp/go.tar.gz
+
+ENV GOPATH=/go
+ENV PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH
+
+RUN curl -sL https://deb.nodesource.com/setup_\$(echo \$NODEVERSION | cut -f1 -d '.').x | bash -
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \\
+    composer \\
+    elixir \\
+    git \\
+    jq \\
+    make \\
+    maven \\
+    nodejs=\$(apt-cache policy nodejs | grep nodesource | xargs | cut -d " " -f2) \\
+    python3 \\
+    python3-pip \\
+    sudo \\
+    vim \\
+    zip \\
+    && apt-get auto-remove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+COPY .circleci/awscli-publickey.pub awscli-publickey.pub
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-\$ARCH.zip" -o "awscliv2.zip"
+RUN unzip -q awscliv2.zip
+RUN sudo ./aws/install
+
+RUN useradd circleci --create-home
+RUN echo "circleci ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER circleci
+
+RUN curl -s "https://get.sdkman.io" | bash
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+WORKDIR /
+ENTRYPOINT [""]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // apt pin versions
+    expect(v.some(v => v.rule === 'DL3004')).toBe(true);    // sudo usage
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // apt --no-install-recommends
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV3011')).toBe(true);    // curl pipe bash
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // too many RUN layers
+  });
+
+  it('.circleci/Dockerfile.scratch-e2e: alpine builder + scratch runtime', () => {
+    const v = lintContent(`FROM alpine:3 AS BUILDER
+
+ARG CLI_DOWNLOAD_BASE_URL
+ARG SNYK_VERSION
+
+RUN apk --no-cache add curl ca-certificates
+RUN curl --compressed -sL \\
+    "\${CLI_DOWNLOAD_BASE_URL}cli/v\${SNYK_VERSION}/snyk-linux" \\
+    -o /usr/local/bin/snyk \\
+    && chmod +x /usr/local/bin/snyk
+
+RUN curl -sL \\
+    https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox \\
+    -o /usr/local/bin/busybox \\
+    && chmod +x /usr/local/bin/busybox
+
+FROM scratch
+COPY --from=BUILDER /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=BUILDER /usr/local/bin/busybox /bin/busybox
+COPY --from=BUILDER /usr/local/bin/snyk /usr/local/bin/snyk
+ENV PATH="/usr/local/bin:/bin"
+ENTRYPOINT ["/bin/busybox", "sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk version pin
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // curl download without checksum
+  });
+
+  it('test/fixtures/docker/Dockerfile: minimal FROM scratch', () => {
+    const v = lintContent(`FROM scratch
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // empty image (no instructions)
+  });
+
+  it('test/fixtures/docker/Dockerfile.alpine-3.12.0: pinned alpine', () => {
+    const v = lintContent(`FROM alpine:3.12.0
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+  });
+
+  it('proxy/Dockerfile: massive proxy CI image with apt + curl-pipe-bash', () => {
+    const v = lintContent(`FROM --platform=\$TARGETPLATFORM golang:1.20-bullseye
+
+ARG NODEVERSION
+ARG ARCH
+
+RUN curl -sL https://deb.nodesource.com/setup_\$(echo \$NODEVERSION | cut -f1 -d '.').x | bash -
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \\
+    sudo \\
+    git \\
+    vim \\
+    make \\
+    maven \\
+    gradle \\
+    curl \\
+    gnupg \\
+    elixir \\
+    composer \\
+    jq \\
+    python3 \\
+    python3-pip \\
+    squid \\
+    traceroute \\
+    net-tools \\
+    iptables
+
+RUN apt-get auto-remove -y && apt-get clean -y && rm -rf /var/lib/apt/
+
+ADD .circleci/awscli-publickey.pub awscli-publickey.pub
+
+RUN useradd circleci --create-home
+RUN echo "circleci ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+RUN mkdir -p /app
+COPY . /app
+RUN chmod 777 /app && chown -R circleci /app
+
+USER circleci
+
+RUN cd /app && npm install
+
+RUN curl -s "https://get.sdkman.io" | bash
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+ENV http_proxy="http://localhost:3128"
+ENV https_proxy="http://localhost:3128"
+
+WORKDIR /app
+ENTRYPOINT ["/bin/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // apt version pin
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // apt lists not cleaned properly
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // --no-install-recommends
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // ADD for local file
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // curl pipe shell
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // layer count
+  });
+
+  it('squid_environment/Dockerfile: debian slim with build tools', () => {
+    const v = lintContent(`FROM debian:bullseye-slim
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \\
+    && apt-get -y install --no-install-recommends \\
+    build-essential \\
+    krb5-user krb5-kdc krb5-admin-server krb5-multidev libkrb5-dev \\
+    curl openssl ca-certificates \\
+    squid \\
+    && mkdir -p /etc/cliv2/bin && touch /etc/cliv2/bin/snyk
+
+ENTRYPOINT [ "/etc/cliv2/scripts/setup.sh" ]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // missing HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // build-essential in runtime
+  });
+});
+
+// ── anchore/syft patterns ──────────────────────────────────────────────
+
+describe('OSS: anchore/syft patterns', () => {
+  it('Dockerfile: distroless + scratch with :latest and good labels', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static-debian12:latest AS build
+
+FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+WORKDIR /tmp
+COPY syft /
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG VCS_REF
+ARG VCS_URL
+
+LABEL org.opencontainers.image.created=\$BUILD_DATE
+LABEL org.opencontainers.image.title="syft"
+LABEL org.opencontainers.image.description="CLI tool and library for generating SBOM"
+LABEL org.opencontainers.image.source=\$VCS_URL
+LABEL org.opencontainers.image.revision=\$VCS_REF
+LABEL org.opencontainers.image.vendor="Anchore, Inc."
+LABEL org.opencontainers.image.version=\$BUILD_VERSION
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+
+ENTRYPOINT ["/syft"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // :latest
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+  });
+
+  it('Dockerfile.debug: distroless debug-nonroot with explicit USER', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static-debian12:debug-nonroot
+WORKDIR /tmp
+COPY syft /
+USER nonroot
+ENTRYPOINT ["/syft"]
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);   // has USER
+  });
+
+  it('Dockerfile.nonroot: distroless nonroot with USER instruction', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /tmp
+COPY syft /
+USER nonroot
+ENTRYPOINT ["/syft"]
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+  });
+
+  it('test-fixtures: busybox with digest pin, no USER', () => {
+    const v = lintContent(`FROM busybox:1.31.1@sha256:95cf004f559831017cdf4628aaf1bb30133677be8702a8c5f2994629f637a209
+
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);   // pinned with tag+digest
+  });
+
+  it('test-fixtures: golang multi-stage cross-compile (elf/win/macos)', () => {
+    const v = lintContent(`FROM golang:1.21.1@sha256:cffaba795c36f07e372c7191b35ceaae114d74c31c3763d442982e3a4df3b39e as builder
+WORKDIR /app
+COPY go.sum go.mod app.go ./
+
+RUN GOOS=linux go build -o elf .
+RUN GOOS=windows go build -o win .
+RUN GOOS=darwin go build -o macos .
+
+FROM scratch
+
+WORKDIR /tmp
+COPY --from=builder /app/elf /
+COPY --from=builder /app/win /
+COPY --from=builder /app/macos /
+
+ENTRYPOINT ["/elf"]
+`);
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // multiple RUN in builder
+    expect(v.some(v => v.rule === 'DV5001')).toBe(true);    // deprecated golang version
+  });
+
+  it('test-fixtures: --platform=linux/amd64 golang-alpine, scratch final', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 golang:1.18.10-alpine
+
+FROM scratch
+
+COPY --from=0 /usr/local/go/bin/gofmt bin/gofmt
+`);
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform hardcoded
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY relative path
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);
+  });
+
+  it('test-fixtures: dotnet multi-stage with --platform and busybox', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:7d3a75ca5c8ac4679908ef7a2591b9bc257c62bd530167de32bba105148bb7be AS build
+ARG RUNTIME=win-x64
+WORKDIR /src
+
+COPY src/*.csproj .
+COPY src/packages.lock.json .
+RUN dotnet restore -r \$RUNTIME --verbosity normal --locked-mode
+
+COPY src/ .
+RUN dotnet publish -r \$RUNTIME --self-contained --no-restore -o /app
+
+FROM busybox
+WORKDIR /app
+COPY --from=build /app .
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // busybox untagged
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform hardcoded
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // multiple stages
+  });
+
+  it('test-fixtures: dotnet with runtime base and ENTRYPOINT', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:7d3a75ca5c8ac4679908ef7a2591b9bc257c62bd530167de32bba105148bb7be AS build
+ARG RUNTIME=win-x64
+WORKDIR /src
+COPY src/*.csproj .
+RUN dotnet restore -r \$RUNTIME --verbosity normal --locked-mode
+COPY src/ .
+RUN dotnet publish -r \$RUNTIME --no-restore -o /app
+
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/runtime:8.0@sha256:a6fc92280fbf2149cd6846d39c5bf7b9b535184e470aa68ef2847b9a02f6b99e
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "dotnetapp.dll"]
+`);
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform hardcoded
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+  });
+
+  it('test-fixtures: dotnet compile target with busybox:latest', () => {
+    const v = lintContent(`FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:3f93439f47fea888d94e6e228d0d0de841f4122ef46f8bfd04f8bd78cbce7ddb AS build
+ARG RUNTIME=win-x64
+WORKDIR /src
+
+COPY src/helloworld.csproj .
+RUN dotnet restore -r \$RUNTIME
+
+COPY src/*.cs .
+RUN dotnet publish -c Release -r \$RUNTIME --self-contained false -o /app
+
+FROM busybox:latest
+
+WORKDIR /app
+COPY --from=build /app .
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // :latest
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);
+  });
+
+  it('test-fixtures: golang builder with upx compression, alpine + scratch', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 golang:1.23.2-alpine AS builder
+
+RUN apk add --no-cache upx
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+COPY main.go main.go
+
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.Version=1.0.0" -o run-me .
+RUN upx --best --lzma --exact run-me
+
+FROM scratch
+
+COPY --from=builder /app/run-me /run-me
+ENTRYPOINT ["/run-me"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk version pin
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform hardcoded
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+  });
+
+  it('test-fixtures: jenkins war extract + scratch final', () => {
+    const v = lintContent(`FROM jenkins/jenkins:2.346.3-slim-jdk17@sha256:028fbbd9112c60ed086f5197fcba71992317864d27644e5949cf9c52ff4b65f0 AS base
+
+USER root
+
+WORKDIR /usr/share/jenkins
+
+RUN mkdir tmp
+WORKDIR /usr/share/jenkins/tmp
+
+RUN apt-get update 2>&1 > /dev/null && apt-get install -y less zip 2>&1 > /dev/null
+
+RUN unzip ../jenkins.war 2>&1 > /dev/null
+RUN rm -rf ./META-INF/MANIFEST.MF ./WEB-INF ./jsbundles ./scripts ./css
+
+WORKDIR /usr/share/jenkins
+RUN rm -rf jenkins.war
+RUN cd ./tmp && zip -r ../jenkins.war . && cd ..
+RUN rm -rf ./tmp
+
+FROM scratch
+COPY --from=base /usr/share/jenkins/jenkins.war /jenkins.war
+`);
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // cd instead of WORKDIR
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // apt version pin
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // apt lists
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // --no-install-recommends
+  });
+
+  it('test-fixtures: alpine base with wget and pip for java virtualpath', () => {
+    const v = lintContent(`FROM alpine:3.18.3@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3a4a54ba44a AS base
+
+RUN wget https://repo1.maven.org/maven2/org/jvnet/hudson/main/hudson-war/2.2.1/hudson-war-2.2.1.war
+RUN mv hudson-war-2.2.1.war hudson.war
+
+RUN apk add --no-cache python3 py3-pip
+COPY extract.py /extract.py
+RUN python extract.py
+
+FROM scratch
+COPY --from=base /slim /
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk version pin
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // wget without --progress
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // pip in container
+  });
+
+  it('test-fixtures: fedora kernel modules extraction', () => {
+    const v = lintContent(`FROM fedora:37@sha256:3f987b7657e944cf87a129cc262982d4f80e38bd98f7db313ccaf90ca7069dd2
+
+RUN dnf install 'dnf-command(download)' cpio xz -y
+RUN dnf download kernel-core-6.0.7-301.fc37 kernel-modules-6.0.7-301.fc37 -y
+
+RUN rpm2cpio kernel-core-*.rpm | cpio -t && \\
+    rpm2cpio kernel-core-*.rpm | cpio -idmv ./lib/modules/6.0.7-301.fc37.x86_64/vmlinuz
+
+RUN rpm2cpio kernel-modules-*.rpm | cpio -t && \\
+    rpm2cpio kernel-modules-*.rpm | cpio -idmv ./lib/modules/6.0.7-301.fc37.x86_64/kernel/drivers/tty/ttynull.ko.xz
+
+RUN unxz /lib/modules/6.0.7-301.fc37.x86_64/kernel/drivers/tty/ttynull.ko.xz
+
+FROM scratch
+
+COPY --from=0 /lib/modules/6.0.7-301.fc37.x86_64/vmlinuz /lib/modules/6.0.7-301.fc37.x86_64/vmlinuz
+COPY --from=0 /lib/modules/6.0.7-301.fc37.x86_64/kernel/drivers/tty/ttynull.ko /lib/modules/6.0.7-301.fc37.x86_64/kernel/drivers/tty/ttynull.ko
+`);
+    expect(v.some(v => v.rule === 'DL3040')).toBe(true);    // dnf install without version
+    expect(v.some(v => v.rule === 'DL3041')).toBe(true);    // dnf clean all missing
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // too many layers
+  });
+
+  it('test-fixtures: nix builder with scratch final', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 nixos/nix:2.28.2@sha256:4215204b5f65c7b756b26a6dd47a6af77f1d906e5edf62b184c95420a7dfa08f AS builder
+
+RUN mkdir -p /etc/nix && \\
+    echo 'filter-syscalls = false' > /etc/nix/nix.conf && \\
+    echo 'experimental-features = nix-command flakes' >> /etc/nix/nix.conf
+
+RUN mkdir -p /root/nix && \\
+    echo 'import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/46688f8eb5.tar.gz") {}' > /root/nix/pinned-nixpkgs.nix
+
+RUN nix-env -f /root/nix/pinned-nixpkgs.nix -iA jq
+
+RUN mkdir -p /nix-minimal && \\
+    for dep in \$(nix-store -q --requisites \$(which jq)); do \\
+        mkdir -p /nix-minimal\$(dirname \$dep) && \\
+        cp -a \$dep /nix-minimal\$dep; \\
+    done
+
+FROM scratch
+COPY --from=builder /nix-minimal/nix/store /nix/store
+`);
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform hardcoded
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // many layers
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // nixos in container
+  });
+
+  it('test-fixtures: php apache builder with unpinned apt packages', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 httpd:2.4.63-bookworm AS builder
+
+RUN apt update -y && apt install -y libapache2-mod-php php8.2-memcache php8.2-memcache php8.2-xml php8.2-mysqli php8.2-opcache
+
+FROM busybox:latest
+
+COPY --from=builder /usr/lib/apache2/ /usr/lib/apache2/
+COPY --from=builder /usr/lib/php/ /usr/lib/php/
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // busybox:latest
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // apt version pin
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // apt lists
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // --no-install-recommends
+    expect(v.some(v => v.rule === 'DL3027')).toBe(true);    // apt vs apt-get
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+  });
+
+  it('test-fixtures: rust auditable build + scratch', () => {
+    const v = lintContent(`FROM rust:1.82.0 AS builder
+
+WORKDIR /app
+
+RUN cargo install cargo-auditable --version 0.6.4 --locked
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo fetch
+RUN cargo auditable build --release
+
+FROM scratch
+
+COPY --from=builder /app/target/release/hello_world /usr/local/bin/hello_world
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1005')).toBe(false);   // has COPY (implicit command)
+  });
+
+  it('test-fixtures: python multi-site-package with many apt + pip installs', () => {
+    const v = lintContent(`FROM ubuntu:20.04@sha256:cc9cc8169c9517ae035cf293b15f06922cb8c6c864d625a72b7b18667f264b70 AS base
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3.8 python3.9 python3-pip python3-venv
+RUN python3.8 -m pip install --upgrade pip virtualenv==20.31.2
+RUN python3.9 -m pip install --upgrade pip virtualenv==20.31.2
+RUN python3.9 -m pip install click==8.0.3 beautifulsoup4==4.9.3
+RUN python3.8 -m pip install click==8.0.2 beautifulsoup4==4.9.2
+
+RUN mkdir -p /app/project1 /app/project2
+
+WORKDIR /app/project1
+RUN python3.9 -m venv --system-site-packages venv
+RUN /app/project1/venv/bin/pip install pyyaml==5.4.1
+
+WORKDIR /app/project2
+RUN python3.8 -m venv venv
+RUN /app/project2/venv/bin/pip install click==8.0.3
+
+FROM scratch
+COPY --from=base /app/ /app/
+COPY --from=base /usr/local/lib/python3.8/ /usr/local/lib/python3.8/
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // apt version pin
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // pip version pin
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // pip cache
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // too many layers
+    expect(v.some(v => v.rule === 'DV5001')).toBe(true);    // deprecated base (ubuntu 20.04)
+  });
+
+  it('test-fixtures: rockylinux with ADD and remove script', () => {
+    const v = lintContent(`FROM rockylinux:9.3.20231119@sha256:1097437745db73ba839d60b9b9b96e6648e62751519a1319bfccc849f6a3f74c
+
+ADD remove.sh /remove.sh
+RUN /remove.sh
+
+FROM scratch
+COPY --from=0 / /
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // ADD for local file
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // COPY / from stage
+  });
+
+  it('test-fixtures: php-fpm-alpine with complex apk + pecl build', () => {
+    const v = lintContent(`FROM --platform=linux/amd64 php:8.3.27-fpm-alpine3.21 AS builder
+
+RUN set -ex; \\
+    apk add --no-cache \\
+    imagemagick \\
+    rsync
+
+RUN set -ex; \\
+    apk add --no-cache --virtual .build-deps \\
+    \$PHPIZE_DEPS \\
+    autoconf \\
+    freetype-dev \\
+    icu-dev \\
+    libpng-dev \\
+    libzip-dev \\
+    postgresql-dev
+
+FROM busybox:latest
+
+COPY --from=builder /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm
+COPY --from=builder /usr/local/bin/php /usr/local/bin/php
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // busybox:latest
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // apk version pin
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // --platform
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
+  });
+});
