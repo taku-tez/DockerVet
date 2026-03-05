@@ -360,9 +360,22 @@ function checkHighEntropy(value: string): boolean {
   return shannonEntropy(value) >= ENTROPY_THRESHOLD;
 }
 
-function checkCloudKeyPattern(value: string): string | null {
+/** Pure hex string (GPG fingerprints, commit SHAs, checksums) */
+const PURE_HEX = /^[0-9A-Fa-f]+$/;
+
+/** Variable names that indicate GPG/PGP key material (not secrets) */
+const GPG_KEY_VAR = /(?:GPG|PGP|FINGERPRINT|KEY_?FPR|KEYID|KEY_ID|PUBKEY|SIGNING_KEY)/i;
+
+function checkCloudKeyPattern(value: string, varName?: string): string | null {
   for (const { name, pattern } of CLOUD_KEY_PATTERNS) {
-    if (pattern.test(value)) return name;
+    if (!pattern.test(value)) continue;
+    // AWS secret key pattern is broad (40 base64-ish chars).
+    // Exclude pure-hex values (GPG fingerprints, checksums) and GPG-related var names.
+    if (name === 'AWS secret access key') {
+      if (PURE_HEX.test(value)) continue;
+      if (varName && GPG_KEY_VAR.test(varName)) continue;
+    }
+    return name;
   }
   return null;
 }
@@ -377,7 +390,7 @@ export const DV1011: Rule = {
       if (!value || value === '' || value.startsWith('$')) return;
 
       // Cloud key pattern match
-      const cloudMatch = checkCloudKeyPattern(value);
+      const cloudMatch = checkCloudKeyPattern(value, key);
       if (cloudMatch) {
         violations.push({
           rule: 'DV1011', severity: 'warning',
