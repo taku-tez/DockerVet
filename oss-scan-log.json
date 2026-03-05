@@ -10609,34 +10609,6 @@
     "improvements": []
   },
   {
-    "repo": "grpc-ecosystem/grpc-gateway",
-    "scannedAt": "2026-02-28T20:00:55.269016+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 9,
-    "severities": {
-      "error": 0,
-      "warning": 2,
-      "info": 7,
-      "style": 0
-    },
-    "notableFindings": "DL3057 no HEALTHCHECK, DV1009 no digest (2x), DV1006 root — all legitimate. Clean Go distroless Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "kubesphere/kubesphere",
-    "scannedAt": "2026-02-28T22:57:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 39,
-    "severities": {
-      "error": 2,
-      "warning": 14,
-      "info": 22,
-      "style": 1
-    },
-    "notableFindings": "DV1009 no digest (7x), DL3008 apt pinning (6x), DL3057 HEALTHCHECK (4x), DV1006 root (4x) - all legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "apecloud/kubeblocks",
     "scannedAt": "2026-02-28T22:57:00+09:00",
     "dockerfiles": 1,
@@ -10648,20 +10620,6 @@
       "style": 0
     },
     "notableFindings": "DV1009, DV4004 ARG after ENV, DL3057 - minimal clean Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "risingwavelabs/risingwave",
-    "scannedAt": "2026-02-28T22:57:00+09:00",
-    "dockerfiles": 15,
-    "totalIssues": 242,
-    "severities": {
-      "error": 19,
-      "warning": 105,
-      "info": 115,
-      "style": 3
-    },
-    "notableFindings": "DL3008 apt pinning (38x), DV1009 no digest (19x), DV4003 no WORKDIR (16x), DL3057 (15x), DV1006 root (13x) - all legitimate.",
     "improvements": []
   },
   {
@@ -10693,34 +10651,6 @@
     "improvements": []
   },
   {
-    "repo": "grafana/pyroscope",
-    "scannedAt": "2026-02-28T22:57:00+09:00",
-    "dockerfiles": 57,
-    "totalIssues": 354,
-    "severities": {
-      "error": 9,
-      "warning": 184,
-      "info": 157,
-      "style": 4
-    },
-    "notableFindings": "DL3020 ADD vs COPY (8x), DV1003 curl|sh in update_examples.Dockerfile - all legitimate. DL3013 pip pinning (27x), DL3042 pip cache (24x) in profiling service Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "openobserve/openobserve",
-    "scannedAt": "2026-02-28T22:57:00+09:00",
-    "dockerfiles": 15,
-    "totalIssues": 299,
-    "severities": {
-      "error": 0,
-      "warning": 156,
-      "info": 143,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (108x dominant), DV1009 no digest (34x) - heavy Rust/Alpine CI build Dockerfiles. All legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "grafana/faro-web-sdk",
     "scannedAt": "2026-02-28T22:57:00+09:00",
     "dockerfiles": 1,
@@ -10749,132 +10679,6 @@
     "improvements": []
   },
   {
-    "repo": "surrealdb/surrealdb",
-    "scannedAt": "2026-02-28T22:57:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 92,
-    "severities": {
-      "error": 1,
-      "warning": 46,
-      "info": 45,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh in Dockerfile.linux (rustup installer), DL3008 apt pinning (17x), DV1009 no digest (11x), DL3041 dnf pinning (7x) - all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 67,
-    "severities": {
-      "error": 2,
-      "warning": 34,
-      "info": 31,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x), DL3020 ADD vs COPY, DV1006 root, DV1009, DL3006 untagged python — all legitimate. Clean scheduler repo.",
-    "improvements": []
-  },
-  {
-    "repo": "karmada-io/karmada",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 16,
-    "severities": {
-      "error": 0,
-      "warning": 6,
-      "info": 10,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (4x), DL3057 no HEALTHCHECK, DV1006 root — all legitimate. Clean Go Alpine builds.",
-    "improvements": []
-  },
-  {
-    "repo": "openkruise/kruise",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 16,
-    "severities": {
-      "error": 4,
-      "warning": 6,
-      "info": 6,
-      "style": 0
-    },
-    "notableFindings": "DL3020 ADD vs COPY (4x), DL3006 untagged golang, DV2010 apk upgrade, DL3018 apk pinning — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "ory/keto",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 13,
-    "severities": {
-      "error": 3,
-      "warning": 3,
-      "info": 7,
-      "style": 0
-    },
-    "notableFindings": "DL3020 ADD vs COPY (3x), DV2010 apk upgrade, DL3018 apk pinning — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "spiffe/spire",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 8,
-    "totalIssues": 57,
-    "severities": {
-      "error": 0,
-      "warning": 30,
-      "info": 27,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (17x) in cross-compilation build Dockerfiles, DV1009 no digest (11x), DL3007 latest tag in integration test image — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "apache/dubbo",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 13,
-    "severities": {
-      "error": 0,
-      "warning": 5,
-      "info": 8,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (3x), DV1006 root, DV1009, DV3019 downloaded script without checksum, DV1004 no multi-stage — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "openzipkin/zipkin",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 13,
-    "totalIssues": 57,
-    "severities": {
-      "error": 0,
-      "warning": 9,
-      "info": 36,
-      "style": 12
-    },
-    "notableFindings": "DV4012 consecutive COPY (12x, style), DV1009 no digest (22x), DV1006 root (6x), DL3047 wget no progress bar (4x) — all legitimate. Many small service Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "fluxcd/helm-controller",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 15,
-    "severities": {
-      "error": 0,
-      "warning": 4,
-      "info": 11,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning, DL3006 untagged gcr.io/oss-fuzz-base/base-builder-go (fuzzing Dockerfile), DV1008 COPY . in fuzzing — all legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "fluxcd/kustomize-controller",
     "scannedAt": "2026-03-01T01:57:00+09:00",
     "dockerfiles": 2,
@@ -10886,32 +10690,6 @@
       "style": 0
     },
     "notableFindings": "DL3018 apk pinning (5x), DL3006 untagged gcr.io/oss-fuzz-base/base-builder-go, DV3019 downloaded script, DV1008 COPY . — all legitimate. Similar to helm-controller.",
-    "improvements": []
-  },
-  {
-    "repo": "open-telemetry/opentelemetry-java",
-    "scannedAt": "2026-03-01T01:57:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 6,
-    "severities": {
-      "error": 0,
-      "warning": 4,
-      "info": 2,
-      "style": 0
-    },
-    "notableFindings": "DV3020 ADD remote URL, DL3013 pip pinning, DL3042 pip cache, DV1006 root — all legitimate. Single small test Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "netdata/netdata",
-    "scannedAt": "2026-03-01T05:03:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 37,
-    "severities": {
-      "warning": 11,
-      "info": 26
-    },
-    "notableFindings": "No false positives. Standard warnings.",
     "improvements": []
   },
   {
@@ -10962,18 +10740,6 @@
       "error": 1
     },
     "notableFindings": "curl-pipe-to-shell warning is legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "certbot/certbot",
-    "scannedAt": "2026-03-01T05:03:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 32,
-    "severities": {
-      "info": 10,
-      "warning": 22
-    },
-    "notableFindings": "No false positives.",
     "improvements": []
   },
   {
@@ -11138,20 +10904,6 @@
     "improvements": []
   },
   {
-    "repo": "bentoml/BentoML",
-    "scannedAt": "2026-03-01T08:00:00+09:00",
-    "dockerfiles": "multiple",
-    "totalIssues": 24,
-    "severities": {
-      "error": 0,
-      "warning": 13,
-      "info": 11,
-      "style": 0
-    },
-    "notableFindings": "All findings legitimate (DL3008 unpinned apt)",
-    "improvements": []
-  },
-  {
     "repo": "hatchet-dev/hatchet",
     "scannedAt": "2026-03-01T08:00:00+09:00",
     "dockerfiles": "multiple",
@@ -11194,76 +10946,6 @@
     "improvements": []
   },
   {
-    "repo": "apache/superset",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 8,
-    "totalIssues": 149,
-    "severities": {
-      "error": 3,
-      "warning": 69,
-      "info": 77,
-      "style": 0
-    },
-    "notableFindings": "DV1003(3) curl|sh in .devcontainer/Dockerfile and RELEASING Dockerfiles (nvm/node install scripts, legitimate). DL3008(40+) apt pinning across 8 Dockerfiles. All findings legitimate. Apache Superset analytics platform.",
-    "improvements": []
-  },
-  {
-    "repo": "redpanda-data/redpanda",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 8,
-    "totalIssues": 151,
-    "severities": {
-      "error": 0,
-      "warning": 59,
-      "info": 89,
-      "style": 3
-    },
-    "notableFindings": "DL3008(30+) apt pinning, DV4012(3) consecutive COPY (style), DL3018 apk pinning, DV1009 no digest — all legitimate across 8 Dockerfiles. Kafka-compatible C++ streaming platform.",
-    "improvements": []
-  },
-  {
-    "repo": "weaviate/weaviate",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 27,
-    "severities": {
-      "error": 0,
-      "warning": 14,
-      "info": 13,
-      "style": 0
-    },
-    "notableFindings": "DL3018(8) apk pinning, DV1009(4) no digest, DL3057(2) no HEALTHCHECK, DV1006 root — all legitimate. Go-based vector search engine.",
-    "improvements": []
-  },
-  {
-    "repo": "qdrant/qdrant",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 52,
-    "severities": {
-      "error": 0,
-      "warning": 24,
-      "info": 28,
-      "style": 0
-    },
-    "notableFindings": "DL3008(20) apt pinning, DL3006(2) untagged base images (tonistiigi/xx cross-compilation helper, rocm/dev-ubuntu-22.04) — all legitimate. Rust vector database.",
-    "improvements": []
-  },
-  {
-    "repo": "chroma-core/chroma",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 113,
-    "severities": {
-      "error": 3,
-      "warning": 64,
-      "info": 46,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh in main Dockerfile (legitimate Go toolchain install), DL3020(2) ADD vs COPY in go/Dockerfile. DL3008(40+) apt pinning. All findings legitimate. Python/Go embedding database.",
-    "improvements": []
-  },
-  {
     "repo": "marqo-ai/marqo",
     "scannedAt": "2026-03-01T11:02:21.660450+09:00",
     "dockerfiles": 3,
@@ -11275,62 +10957,6 @@
       "style": 0
     },
     "notableFindings": "DL3006(3) untagged base images (busybox without version, vespaengine/vespa-pipeline), DL3008 apt pinning — all legitimate. Python tensor search engine.",
-    "improvements": []
-  },
-  {
-    "repo": "dagger/dagger",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 34,
-    "severities": {
-      "error": 1,
-      "warning": 13,
-      "info": 20,
-      "style": 0
-    },
-    "notableFindings": "DL3006 untagged nginx in example Dockerfile, DL3018 apk pinning (7+), DV1009 no digest — all legitimate. Go-based CI/CD pipeline engine.",
-    "improvements": []
-  },
-  {
-    "repo": "n8n-io/n8n",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 73,
-    "severities": {
-      "error": 0,
-      "warning": 31,
-      "info": 42,
-      "style": 0
-    },
-    "notableFindings": "DL3016(1) npm install pnpm without version pin in .devcontainer/Dockerfile — legitimate TP. DL3008(15+) apt pinning, DV1009(6) no digest — all legitimate. Node.js workflow automation platform.",
-    "improvements": []
-  },
-  {
-    "repo": "activepieces/activepieces",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 51,
-    "severities": {
-      "error": 0,
-      "warning": 30,
-      "info": 18,
-      "style": 3
-    },
-    "notableFindings": "DL3016(2) npm install nx/node-gyp without version pin — legitimate TPs. DL3008(12+) apt pinning, DV4012(3) consecutive COPY — all legitimate. TypeScript no-code automation platform.",
-    "improvements": []
-  },
-  {
-    "repo": "apache/airflow",
-    "scannedAt": "2026-03-01T11:02:21.660450+09:00",
-    "dockerfiles": 24,
-    "totalIssues": 106,
-    "severities": {
-      "error": 0,
-      "warning": 26,
-      "info": 77,
-      "style": 3
-    },
-    "notableFindings": "DV1009(21) no digest, DV4003(18) no WORKDIR, DL3057(17) no HEALTHCHECK, DV1006(13) root across 24 Dockerfiles. DV3019(6) downloaded scripts without checksum. DV4012(3) consecutive COPY — all legitimate. Python workflow scheduler.",
     "improvements": []
   },
   {
@@ -11418,48 +11044,6 @@
     "improvements": []
   },
   {
-    "repo": "Stirling-Tools/Stirling-PDF",
-    "scannedAt": "2026-03-01T13:57:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 262,
-    "severities": {
-      "error": 6,
-      "warning": 184,
-      "info": 64,
-      "style": 8
-    },
-    "notableFindings": "DL3017 apk upgrade, DL3045 COPY without WORKDIR in backend stage, DV1003 curl-pipe-shell",
-    "improvements": []
-  },
-  {
-    "repo": "chatwoot/chatwoot",
-    "scannedAt": "2026-03-01T13:57:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 92,
-    "severities": {
-      "error": 1,
-      "warning": 61,
-      "info": 29,
-      "style": 1
-    },
-    "notableFindings": "DL3008/DL3018 version pinning, various warnings",
-    "improvements": []
-  },
-  {
-    "repo": "authelia/authelia",
-    "scannedAt": "2026-03-01T13:57:00+09:00",
-    "dockerfiles": 9,
-    "totalIssues": 29,
-    "severities": {
-      "error": 1,
-      "warning": 16,
-      "info": 9,
-      "style": 3
-    },
-    "notableFindings": "DL3020 ADD vs COPY in duo-api Dockerfile",
-    "improvements": []
-  },
-  {
     "repo": "docker-library/haproxy",
     "scannedAt": "2026-03-01T17:03:13.576355+09:00",
     "dockerfiles": 16,
@@ -11488,48 +11072,6 @@
     "improvements": []
   },
   {
-    "repo": "go-gitea/gitea",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 62,
-    "severities": {
-      "error": 0,
-      "warning": 39,
-      "info": 17,
-      "style": 6
-    },
-    "notableFindings": "DL3018(31) apk pinning across two Alpine Dockerfiles, DL3052(6) unused ARGs, DV1009(6) no digest — all legitimate. Clean minimal Go git server.",
-    "improvements": []
-  },
-  {
-    "repo": "goharbor/harbor",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 34,
-    "totalIssues": 256,
-    "severities": {
-      "error": 6,
-      "warning": 104,
-      "info": 135,
-      "style": 11
-    },
-    "notableFindings": "DV1001(2) COSIGN_PASSWORD hardcoded in test engine Dockerfiles (api_test/ui_test) — legitimate TP. DV3024 tarball without checksum in test Dockerfile. DL3008(27) apt pinning, DV4003(25) no WORKDIR, DL3057(21) no HEALTHCHECK — all legitimate. Large multi-service container registry.",
-    "improvements": []
-  },
-  {
-    "repo": "grafana/loki",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 30,
-    "totalIssues": 283,
-    "severities": {
-      "error": 4,
-      "warning": 109,
-      "info": 168,
-      "style": 2
-    },
-    "notableFindings": "DV3024 tarball without checksum, DV1003 curl|sh for toolchain install, DL3020 ADD in dev.dockerfile — all legitimate. DV1009(45) no digest, DL3008(39) apt pinning, DV4003(36) no WORKDIR across 30 microservice Dockerfiles. Grafana log aggregation system.",
-    "improvements": []
-  },
-  {
     "repo": "dragonflyoss/dragonfly",
     "scannedAt": "2026-03-01T17:03:13.576355+09:00",
     "dockerfiles": 6,
@@ -11541,62 +11083,6 @@
       "style": 10
     },
     "notableFindings": "DL3018(17) apk pinning, DL3008(13) apt pinning, DL3052(10) unused ARGs (cross-platform ARGs not used in every arch variant), DL3057(6) no HEALTHCHECK — all legitimate. Clean multi-arch Alpine Go P2P file distribution tool.",
-    "improvements": []
-  },
-  {
-    "repo": "influxdata/telegraf",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 14,
-    "severities": {
-      "error": 0,
-      "warning": 6,
-      "info": 7,
-      "style": 1
-    },
-    "notableFindings": "DL3008(2) apt pinning, DL3052 unused ARG, DL3057 no HEALTHCHECK, DV1004 no multi-stage, DV1006 root — all legitimate. Minimal PostgreSQL test Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "influxdata/influxdb",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 81,
-    "severities": {
-      "error": 1,
-      "warning": 59,
-      "info": 21,
-      "style": 0
-    },
-    "notableFindings": "DL3004 sudo in Dockerfile.ci (CI context, legitimate), DL3008(43) heavy apt pinning across Debian InfluxDB Dockerfiles, DL3053(9) ENV overrides ARG — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "etcd-io/etcd",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 28,
-    "severities": {
-      "error": 3,
-      "warning": 4,
-      "info": 19,
-      "style": 2
-    },
-    "notableFindings": "DL3020(3) ADD vs COPY for local binary artifacts in base and builder Dockerfiles — legitimate TPs. DV1009(5) no digest, DL3057(4) no HEALTHCHECK — all legitimate. Clean minimal Go etcd distributed key-value store.",
-    "improvements": []
-  },
-  {
-    "repo": "timescale/timescaledb-docker",
-    "scannedAt": "2026-03-01T17:03:13.576355+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 27,
-    "severities": {
-      "error": 0,
-      "warning": 13,
-      "info": 14,
-      "style": 0
-    },
-    "notableFindings": "DL3018(10) apk pinning, DV4003(3) no WORKDIR, DV2011(3) redundant apk update with --no-cache — all legitimate. PostgreSQL-based time series extension.",
     "improvements": []
   },
   {
@@ -11689,102 +11175,6 @@
     "totalIssues": 898,
     "severities": {},
     "notableFindings": "Large collection of lab Dockerfiles, many with common issues. Findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "grafana/pyroscope",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 57,
-    "totalIssues": 400,
-    "severities": {
-      "error": 10,
-      "warning": 193,
-      "info": 190,
-      "style": 7
-    },
-    "notableFindings": "DV1009 no digest (66x), DV1006 no USER (50x), DV5003 non-minimal base in final stage (36x), DL3013 pip pinning (27x), DL3042 pip cache (23x) — all legitimate across example/SDK Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "openobserve/openobserve",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 15,
-    "totalIssues": 309,
-    "severities": {
-      "error": 0,
-      "warning": 156,
-      "info": 145,
-      "style": 8
-    },
-    "notableFindings": "DL3008 unpinned apt (108x), DV1009 no digest (34x), DL3009 apt lists (18x), DV1007 apt cache (18x) — all legitimate. Heavy CI build Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "zulip/zulip",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 25,
-    "severities": {
-      "error": 3,
-      "warning": 13,
-      "info": 9
-    },
-    "notableFindings": "DL3008 apt pinning, DV1009 no digest — all legitimate. Small CI/dev Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "kubesphere/kubesphere",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 42,
-    "severities": {
-      "error": 3,
-      "warning": 15,
-      "info": 23,
-      "style": 1
-    },
-    "notableFindings": "DL3008 apt pinning (6x), DV1009 no digest (7x), DL3020 ADD vs COPY (2x), DV3020 ADD remote URL (2x) — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "cloudnative-pg/cloudnative-pg",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 3,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 2,
-      "style": 1
-    },
-    "notableFindings": "DV4012 consecutive COPY, DV1009 no digest, DL3057 no HEALTHCHECK — very clean distroless-based operator image.",
-    "improvements": []
-  },
-  {
-    "repo": "apache/dubbo",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 13,
-    "severities": {
-      "error": 1,
-      "warning": 5,
-      "info": 7
-    },
-    "notableFindings": "DL3020 ADD vs COPY, DL3008 apt pinning, DV1009 no digest — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "spiffe/spire",
-    "scannedAt": "2026-03-01T22:57:00+09:00",
-    "dockerfiles": 8,
-    "totalIssues": 59,
-    "severities": {
-      "error": 0,
-      "warning": 30,
-      "info": 28,
-      "style": 1
-    },
-    "notableFindings": "DL3018 apk pinning (13x), DV1009 no digest (11x), DL3006 untagged alpine (2x) — all legitimate. Multi-arch distroless-based SPIFFE runtime images.",
     "improvements": []
   },
   {
@@ -11898,20 +11288,6 @@
     ]
   },
   {
-    "repo": "tolgee/tolgee-platform",
-    "scannedAt": "2026-03-02T02:04:04.559813",
-    "dockerfiles": 2,
-    "totalIssues": 12,
-    "severities": {
-      "error": 0,
-      "warning": 6,
-      "info": 5,
-      "style": 1
-    },
-    "notableFindings": "DL3018 apk pinning, DV2006 multiple ENTRYPOINT, DV1006 root - all legitimate. Clean Spring Boot image.",
-    "improvements": []
-  },
-  {
     "repo": "firezone/firezone",
     "scannedAt": "2026-03-02T02:04:04.559813",
     "dockerfiles": 5,
@@ -11939,62 +11315,6 @@
     "improvements": []
   },
   {
-    "repo": "misskey-dev/misskey",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 19,
-    "severities": {
-      "error": 0,
-      "warning": 10,
-      "info": 9,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning, DV1009 no digest, DV1006 root — all legitimate. Node.js/Alpine multi-stage build.",
-    "improvements": []
-  },
-  {
-    "repo": "automatisch/automatisch",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 24,
-    "severities": {
-      "error": 0,
-      "warning": 15,
-      "info": 9,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (8x), DV1009 no digest, DL3013 pip pinning — all legitimate. Zapier OSS alternative.",
-    "improvements": []
-  },
-  {
-    "repo": "wger-project/wger",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 87,
-    "severities": {
-      "error": 3,
-      "warning": 63,
-      "info": 21,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh (3x, nvm/node version manager installs), DL3008 apt pinning (40x), DL3003 cd instead of WORKDIR — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "louislam/dockge",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 23,
-    "severities": {
-      "error": 0,
-      "warning": 11,
-      "info": 12,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning, DL3016 npm global install without version, DV4005 no CMD/ENTRYPOINT — all legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "gitpod-io/openvscode-server",
     "scannedAt": "2026-03-02T04:57:00+09:00",
     "dockerfiles": 11,
@@ -12009,48 +11329,6 @@
     "improvements": []
   },
   {
-    "repo": "element-hq/synapse",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 46,
-    "severities": {
-      "error": 2,
-      "warning": 26,
-      "info": 18,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh in complement test Dockerfile (2x), DL3008 apt pinning (15x), DL3013 pip pinning — all legitimate. Matrix homeserver.",
-    "improvements": []
-  },
-  {
-    "repo": "netbootxyz/netboot.xyz",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 10,
-    "severities": {
-      "error": 0,
-      "warning": 5,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (4x), DV1009 no digest, DL3057 no HEALTHCHECK — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "gethomepage/homepage",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 14,
-    "severities": {
-      "error": 0,
-      "warning": 8,
-      "info": 6,
-      "style": 0
-    },
-    "notableFindings": "DL3016 npm global install without version, DV1009 no digest, DL3018 apk pinning — all legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "corentinth/it-tools",
     "scannedAt": "2026-03-02T04:57:00+09:00",
     "dockerfiles": 1,
@@ -12062,20 +11340,6 @@
       "style": 0
     },
     "notableFindings": "DV1009 no digest, DL3018 apk pinning, DL3016 npm — all legitimate. Clean minimal Vue/Node Alpine Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "apache/ozone",
-    "scannedAt": "2026-03-02T04:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 82,
-    "severities": {
-      "error": 35,
-      "warning": 41,
-      "info": 6,
-      "style": 0
-    },
-    "notableFindings": "DL3004 sudo (31x) across CI test Dockerfiles and DL3020 ADD vs COPY (4x) — all legitimate. Apache Ozone distributed storage test infrastructure.",
     "improvements": []
   },
   {
@@ -12132,76 +11396,6 @@
       "style": 0
     },
     "notableFindings": "DL3008 apt-get without pinning (legitimate)",
-    "improvements": []
-  },
-  {
-    "repo": "jitsi/docker-jitsi-meet",
-    "scannedAt": "2026-03-02T07:57:00+09:00",
-    "dockerfiles": 12,
-    "totalIssues": 142,
-    "severities": {
-      "error": 3,
-      "warning": 87,
-      "info": 50,
-      "style": 2
-    },
-    "notableFindings": "DL3005 dist-upgrade, DV3024 tarball without checksum (all legitimate)",
-    "improvements": []
-  },
-  {
-    "repo": "coredns/coredns",
-    "scannedAt": "2026-03-02T07:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 3,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 2,
-      "style": 1
-    },
-    "notableFindings": "Clean Dockerfiles, only info/style",
-    "improvements": []
-  },
-  {
-    "repo": "grpc/grpc-go",
-    "scannedAt": "2026-03-02T07:57:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 47,
-    "severities": {
-      "error": 0,
-      "warning": 26,
-      "info": 21,
-      "style": 0
-    },
-    "notableFindings": "DV1009 image pinning (legitimate)",
-    "improvements": []
-  },
-  {
-    "repo": "vmware-tanzu/velero",
-    "scannedAt": "2026-03-02T07:57:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 24,
-    "severities": {
-      "error": 2,
-      "warning": 7,
-      "info": 14,
-      "style": 1
-    },
-    "notableFindings": "DV3024 tarball, DV1003 curl pipe to shell (legitimate)",
-    "improvements": []
-  },
-  {
-    "repo": "opencontainers/runc",
-    "scannedAt": "2026-03-02T07:57:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 28,
-    "severities": {
-      "error": 0,
-      "warning": 20,
-      "info": 7,
-      "style": 1
-    },
-    "notableFindings": "DL3008 apt pinning (legitimate)",
     "improvements": []
   },
   {
@@ -12356,146 +11550,6 @@
       "style": 0
     },
     "notableFindings": "Clean multi-stage Go build, minimal findings",
-    "improvements": []
-  },
-  {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 74,
-    "severities": {
-      "error": 2,
-      "warning": 37,
-      "info": 33,
-      "style": 2
-    },
-    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x), DL3020(2) ADD vs COPY, DV1006(4) root — all legitimate. Go orchestration scheduler.",
-    "improvements": []
-  },
-  {
-    "repo": "hashicorp/packer",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 33,
-    "severities": {
-      "error": 0,
-      "warning": 23,
-      "info": 9,
-      "style": 1
-    },
-    "notableFindings": "DL3018(18) heavy apk pinning, DV1009(3) no digest, DV4003(3) no WORKDIR, DL3007(2) latest tag — all legitimate. Build automation tool.",
-    "improvements": []
-  },
-  {
-    "repo": "temporalio/temporal",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 9,
-    "severities": {
-      "error": 0,
-      "warning": 4,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DL3018(4) apk pinning, DL3057(2) no HEALTHCHECK, DV1009(2) no digest, DV4003 no WORKDIR — all legitimate. Very clean Go workflow orchestration Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "influxdata/influxdb",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 70,
-    "severities": {
-      "error": 1,
-      "warning": 50,
-      "info": 19,
-      "style": 0
-    },
-    "notableFindings": "DL3008(43) heavy apt pinning dominant in Debian Dockerfile, DL3020(1) ADD vs COPY error — all legitimate. Go time-series database.",
-    "improvements": []
-  },
-  {
-    "repo": "istio/istio",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 29,
-    "totalIssues": 111,
-    "severities": {
-      "error": 0,
-      "warning": 34,
-      "info": 70,
-      "style": 7
-    },
-    "notableFindings": "DV5003(6) distroless recommendations for ubuntu/python/node/golang final stages in sample Dockerfiles (legit advisory), DV1006(18) root, DL3057(17) no HEALTHCHECK — all legitimate. Service mesh with 29 Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "envoyproxy/envoy",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 14,
-    "severities": {
-      "error": 0,
-      "warning": 3,
-      "info": 11,
-      "style": 0
-    },
-    "notableFindings": "DL3006(1) template variable ENV_IMAGE has no default (%%ENVOY_IMAGE%% placeholder), DV4007(2) DEBIAN_FRONTEND as ENV, DV1006(2) root — all legitimate. C++ L7 proxy.",
-    "improvements": []
-  },
-  {
-    "repo": "containerd/containerd",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 68,
-    "severities": {
-      "error": 1,
-      "warning": 26,
-      "info": 33,
-      "style": 8
-    },
-    "notableFindings": "DL3052(8) unused ARG declarations across integration test Dockerfiles (DL3052 = ARG declared but never referenced), DL3008(15) apt pinning, DV4003(7) no WORKDIR — all legitimate. Go container runtime.",
-    "improvements": []
-  },
-  {
-    "repo": "linkerd/linkerd2",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 25,
-    "severities": {
-      "error": 1,
-      "warning": 8,
-      "info": 15,
-      "style": 1
-    },
-    "notableFindings": "DV3023(2) unquoted ARG in download URL in Dockerfile.proxy ( used in RUN curl URL without quotes — URL injection via --build-arg possible, legit TP). DL3052 unused ARG. DL3008 apt pinning — all legitimate. Rust/Go service mesh.",
-    "improvements": []
-  },
-  {
-    "repo": "docker/compose",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 32,
-    "totalIssues": 172,
-    "severities": {
-      "error": 0,
-      "warning": 67,
-      "info": 64,
-      "style": 41
-    },
-    "notableFindings": "DL3052(40) unused ARG declarations across 32 test/e2e Dockerfiles, DV1009(40) no digest, DV1006(30) root, DL3006(22) untagged FROM alpine in test fixtures — all legitimate. Docker Compose v2 multi-container orchestration tool.",
-    "improvements": []
-  },
-  {
-    "repo": "cilium/cilium",
-    "scannedAt": "2026-03-02T13:57:00+09:00",
-    "dockerfiles": 14,
-    "totalIssues": 155,
-    "severities": {
-      "error": 4,
-      "warning": 100,
-      "info": 49,
-      "style": 2
-    },
-    "notableFindings": "DL3020(2) ADD in Documentation/Dockerfile and images/operator/Dockerfile, DV3024(2) tarball without checksum in contrib/backporting and contrib/coccinelle Dockerfiles — all legitimate. DL3008(37) apt pinning, DL3018(25) apk pinning, DV1006(11) root. eBPF Kubernetes networking.",
     "improvements": []
   },
   {
@@ -12667,48 +11721,6 @@
     "improvements": []
   },
   {
-    "repo": "cloudnative-pg/cloudnative-pg",
-    "scannedAt": "2026-03-02T19:57:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 3,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 2,
-      "style": 1
-    },
-    "notableFindings": "Minimal findings. DV4003, DL3057, DV4012. Very clean operator Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "spiffe/spire",
-    "scannedAt": "2026-03-02T19:57:00+09:00",
-    "dockerfiles": 8,
-    "totalIssues": 59,
-    "severities": {
-      "error": 0,
-      "warning": 30,
-      "info": 28,
-      "style": 1
-    },
-    "notableFindings": "DL3018 apk pinning (17x), DV1009 no digest (11x), DV1006 root (7x). Standard SPIFFE/SPIRE multi-stage builds.",
-    "improvements": []
-  },
-  {
-    "repo": "grafana/pyroscope",
-    "scannedAt": "2026-03-02T19:57:00+09:00",
-    "dockerfiles": 57,
-    "totalIssues": 400,
-    "severities": {
-      "error": 10,
-      "warning": 187,
-      "info": 196,
-      "style": 7
-    },
-    "notableFindings": "DV1009 no digest (66x), DV1006 root (50x), DV5003 (36x), DL3013 pip pinning (27x). Large repo with many Python/Go Dockerfiles.",
-    "improvements": []
-  },
-  {
     "repo": "rerun-io/rerun",
     "scannedAt": "2026-03-02T19:57:00+09:00",
     "dockerfiles": 1,
@@ -12779,48 +11791,6 @@
     "improvements": []
   },
   {
-    "repo": "grafana/pyroscope",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 57,
-    "totalIssues": 400,
-    "severities": {
-      "error": 10,
-      "warning": 187,
-      "info": 196,
-      "style": 7
-    },
-    "notableFindings": "DV1009 no digest (66x), DV1006 no USER (50x), DV5003 distroless recommendations (36x), DL3013 pip pinning (27x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "apache/dolphinscheduler",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 11,
-    "totalIssues": 123,
-    "severities": {
-      "error": 0,
-      "warning": 51,
-      "info": 72,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (25x), DL3010 COPY tar archives (10x), DL3027 use apt-get (11x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "juicedata/juicefs",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 81,
-    "severities": {
-      "error": 2,
-      "warning": 43,
-      "info": 36,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh (1x), DV3024 tarball without checksum (1x), DL3008 apt pinning (15x), DL3033 yum pinning (6x). All findings legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "OpenObserve/openobserve",
     "scannedAt": "2026-03-02T23:03:09.859477+09:00",
     "dockerfiles": 15,
@@ -12835,48 +11805,6 @@
     "improvements": []
   },
   {
-    "repo": "kanisterio/kanister",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 21,
-    "totalIssues": 224,
-    "severities": {
-      "error": 14,
-      "warning": 103,
-      "info": 107,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh (6x), DV3024 unverified downloads (2x), DL3020 ADD vs COPY (3x). All findings legitimate — build tooling installations.",
-    "improvements": []
-  },
-  {
-    "repo": "apache/ozone",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 82,
-    "severities": {
-      "error": 35,
-      "warning": 41,
-      "info": 6,
-      "style": 0
-    },
-    "notableFindings": "Heavy DL3004 sudo (31x) and DV3011 sudo in Dockerfiles (29x) — container uses non-root user with sudo. DL3020 ADD, DL3041 dnf pinning. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "denoland/deno",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 9,
-    "severities": {
-      "error": 1,
-      "warning": 3,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "Single Dockerfile. DV1003 curl|sh for Deno install (1x), DV1004 no multi-stage (1x). All findings legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "longhorn/longhorn-engine",
     "scannedAt": "2026-03-02T23:03:09.859477+09:00",
     "dockerfiles": 2,
@@ -12888,62 +11816,6 @@
       "style": 4
     },
     "notableFindings": "DL3031 zypper update (2x), DV1003 curl|sh (1x), DV3019 downloaded scripts (4x), DV3008 git clone (3x). All findings legitimate — SUSE/zypper-based images.",
-    "improvements": []
-  },
-  {
-    "repo": "juspay/hyperswitch",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 77,
-    "severities": {
-      "error": 1,
-      "warning": 35,
-      "info": 41,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh in migration-runner (1x), DL3008 apt pinning (18x), DV1009 no digest (9x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "openbao/openbao",
-    "scannedAt": "2026-03-02T23:03:09.859477+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 67,
-    "severities": {
-      "error": 1,
-      "warning": 37,
-      "info": 29,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh (1x) in UI build. DL3018 apk pinning (14x), DL3008 apt pinning (14x), DV4010 chown -R (4x). All findings legitimate. HashiCorp Vault fork.",
-    "improvements": []
-  },
-  {
-    "repo": "zulip/zulip",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 25,
-    "severities": {
-      "error": 3,
-      "warning": 13,
-      "info": 9,
-      "style": 0
-    },
-    "notableFindings": "DL3001 correctly flags 'service rabbitmq-server stop' in CI Dockerfile.prod. DV3024 tarball without checksum. DL3008 apt pinning (7x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "casdoor/casdoor",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 32,
-    "severities": {
-      "error": 0,
-      "warning": 13,
-      "info": 19,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (4x), DL3019 apk cache (3x), DV4002 consecutive RUN, DV4001 multiple package installs. All findings legitimate.",
     "improvements": []
   },
   {
@@ -12975,48 +11847,6 @@
     "improvements": []
   },
   {
-    "repo": "gogs/gogs",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 35,
-    "severities": {
-      "error": 0,
-      "warning": 28,
-      "info": 7,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (23x). DV3009 EXPOSE 22 SSH. Clean Go Alpine multi-stage builds. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 73,
-    "severities": {
-      "error": 2,
-      "warning": 37,
-      "info": 33,
-      "style": 1
-    },
-    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x), DV1006 root (4x). DL3020 ADD (2x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "cloudnative-pg/cloudnative-pg",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 3,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 2,
-      "style": 1
-    },
-    "notableFindings": "Very clean Dockerfile. DV4003 no WORKDIR, DL3057 no HEALTHCHECK, DV4012 consecutive COPY. Minimal operator image.",
-    "improvements": []
-  },
-  {
     "repo": "rustdesk/rustdesk-server",
     "scannedAt": "2026-03-03T05:00:00+09:00",
     "dockerfiles": 2,
@@ -13028,34 +11858,6 @@
       "style": 0
     },
     "notableFindings": "DV3020 ADD remote URL without checksum (2x). DV4005 missing EXPOSE. Minimal Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "wekan/wekan",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 42,
-    "severities": {
-      "error": 0,
-      "warning": 12,
-      "info": 27,
-      "style": 3
-    },
-    "notableFindings": "DV1009 digest pinning (7x), DL3008 apt pinning (6x), DV5003 distroless suggestion (4x), DL3052 unused ARGs (3x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "kanboard/kanboard",
-    "scannedAt": "2026-03-03T05:00:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 74,
-    "severities": {
-      "error": 2,
-      "warning": 61,
-      "info": 11,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (36x), DL3008 apt pinning (21x) across Alpine and Debian variants. DV1006 root (2x). All findings legitimate.",
     "improvements": []
   },
   {
@@ -13170,95 +11972,11 @@
     "notes": "Windows-in-Docker. DL3052 FPs on DEBIAN_FRONTEND/DEBCONF_* (fixed). DV3020 ADD no checksum."
   },
   {
-    "repo": "miniflux/v2",
-    "date": "2026-03-03T14:01:06+09:00",
-    "findings": 42,
-    "fp": 0,
-    "notes": "RSS reader. 4 Dockerfiles. DL3020 ADD, DL3040/DL3041 dnf, DV5003 distroless suggestion."
-  },
-  {
-    "repo": "wekan/wekan",
-    "date": "2026-03-03T14:01:06+09:00",
-    "findings": 41,
-    "fp": 3,
-    "notes": "Kanban board. DL3052 FPs on DEBIAN_FRONTEND/TARGETARCH (fixed). DV4017 PATH pollution, DL3029 --platform."
-  },
-  {
     "repo": "tinygo-org/tinygo",
     "date": "2026-03-03T14:01:06+09:00",
     "findings": 20,
     "fp": 0,
     "notes": "Go compiler. DL3003 cd vs WORKDIR (3x), DL3008 unpinned apt, DV5003 distroless suggestion."
-  },
-  {
-    "repo": "vercel/next.js",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 11,
-    "totalIssues": 95,
-    "severities": {
-      "error": 1,
-      "warning": 51,
-      "info": 40,
-      "style": 3
-    },
-    "notableFindings": "DV1003 curl|sh in stats-action Dockerfile. DL3008 unpinned apt, DV1009 no digest, DV4012 consecutive COPY — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "denoland/deno",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 9,
-    "severities": {
-      "error": 1,
-      "warning": 3,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh for rustup install. DL3008 unpinned apt (3x) — all legitimate. Clean single Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "RocketChat/Rocket.Chat",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 12,
-    "totalIssues": 177,
-    "severities": {
-      "error": 15,
-      "warning": 77,
-      "info": 62,
-      "style": 23
-    },
-    "notableFindings": "DV1003 curl|sh (3x), DL3020 ADD vs COPY (5x), DL3017 apk upgrade (3x), DV3024 tarball without checksum — all legitimate across official and community images.",
-    "improvements": []
-  },
-  {
-    "repo": "surrealdb/surrealdb",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 95,
-    "severities": {
-      "error": 1,
-      "warning": 49,
-      "info": 45,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh in Dockerfile.linux. DL3008/DL3041 unpinned packages, DV1009 no digest, DV1006 root — all legitimate. Multi-distro build images.",
-    "improvements": []
-  },
-  {
-    "repo": "langgenius/dify",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 32,
-    "severities": {
-      "error": 0,
-      "warning": 14,
-      "info": 18,
-      "style": 0
-    },
-    "notableFindings": "All findings legitimate. DL3008 apt pinning, DV1009 no digest, DV4003 no WORKDIR. Clean AI platform Dockerfiles.",
-    "improvements": []
   },
   {
     "repo": "SeleniumHQ/docker-selenium",
@@ -13300,34 +12018,6 @@
       "style": 0
     },
     "notableFindings": "DV3024 tarball without checksum (3x) — WASI SDK downloads. DL3008/DL3041 unpinned packages, DV1006 root — all legitimate CI build images.",
-    "improvements": []
-  },
-  {
-    "repo": "open-telemetry/opentelemetry-java",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 7,
-    "severities": {
-      "error": 0,
-      "warning": 5,
-      "info": 2,
-      "style": 0
-    },
-    "notableFindings": "Clean single Dockerfile. DL3013 pip pinning, DL3042 pip cache, DV1006 root — all legitimate. Minimal findings.",
-    "improvements": []
-  },
-  {
-    "repo": "grafana/pyroscope",
-    "scannedAt": "2026-03-03T23:04:28.015025+09:00",
-    "dockerfiles": 57,
-    "totalIssues": 397,
-    "severities": {
-      "error": 10,
-      "warning": 187,
-      "info": 196,
-      "style": 4
-    },
-    "notableFindings": "DL3020 ADD vs COPY (7x) in language-specific test images. DV1003 curl|sh (2x), DV3024 tarball (1x). Large test suite with many Dockerfiles. All legitimate.",
     "improvements": []
   },
   {
@@ -13373,62 +12063,6 @@
     "improvements": []
   },
   {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-03-04T02:00:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 73,
-    "severities": {
-      "error": 2,
-      "warning": 37,
-      "info": 33,
-      "style": 1
-    },
-    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x). DV5003 distroless suggestions (3x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "sigstore/cosign",
-    "scannedAt": "2026-03-04T02:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 4,
-    "severities": {
-      "error": 0,
-      "warning": 1,
-      "info": 3,
-      "style": 0
-    },
-    "notableFindings": "Minimal clean Dockerfile. DV1006 root, DV5003 distroless suggestion. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "sonatype/docker-nexus3",
-    "scannedAt": "2026-03-04T02:00:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 44,
-    "severities": {
-      "error": 0,
-      "warning": 20,
-      "info": 24,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (11x), DV3023 unquoted ARG in URL (4x). DL3006 untagged base images across UBI/Alpine variants. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "neondatabase/neon",
-    "scannedAt": "2026-03-04T02:00:00+09:00",
-    "dockerfiles": 13,
-    "totalIssues": 395,
-    "severities": {
-      "error": 7,
-      "warning": 240,
-      "info": 124,
-      "style": 24
-    },
-    "notableFindings": "DL3008 apt pinning (138x), DL3003 cd vs WORKDIR (60x), DL3047 wget without progress (42x). DV1003 curl|sh. All findings legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "roadrunner-server/roadrunner",
     "scannedAt": "2026-03-04T02:00:00+09:00",
     "dockerfiles": 1,
@@ -13457,42 +12091,6 @@
     "improvements": []
   },
   {
-    "repo": "zammad/zammad",
-    "scannedAt": "2026-03-04T02:00:00+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 56,
-    "severities": {
-      "error": 10,
-      "warning": 14,
-      "info": 27,
-      "style": 5
-    },
-    "notableFindings": "DL3020 ADD vs COPY (8x), DV1001 correctly flags LDAP_ADMIN_PASSWORD/LDAP_PASSWORDS in dev doc LDAP Dockerfile. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "netbox-community/netbox-docker",
-    "files": 1,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 0,
-      "warnings": 26,
-      "info": 5
-    },
-    "notes": "Clean scan, no FP. DL3008 apt pinning (22x), DL3042 pip cache, DV1006 root."
-  },
-  {
-    "repo": "surrealdb/surrealdb",
-    "files": 6,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 1,
-      "warnings": 49,
-      "info": 45
-    },
-    "notes": "Clean scan, no FP. DV4017 PATH writable /root/.cargo/bin in builder stage (legitimate Rust pattern). DV4009 chmod 777, DL3007 latest tag."
-  },
-  {
     "repo": "zulip/docker-zulip",
     "files": 1,
     "date": "2026-03-04",
@@ -13505,52 +12103,6 @@
     "notes": "Clean scan, no FP. DV1010 HEALTHCHECK curl --insecure, DV3008 git clone, DL3052 unused ARG."
   },
   {
-    "repo": "gogs/gogs",
-    "files": 2,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 0,
-      "warnings": 28,
-      "info": 7
-    },
-    "notes": "Clean scan, no FP. DL3018 apk pinning (22x), DV3009 EXPOSE 22 SSH (legitimate for git server)."
-  },
-  {
-    "repo": "labring/sealos",
-    "files": 44,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 0,
-      "warnings": 118,
-      "info": 167
-    },
-    "notes": "Clean scan, no FP. Large monorepo. DL3016 npm pinning (22x), DL3018 apk pinning heavy, DV1008 COPY . (13x)."
-  },
-  {
-    "repo": "SeleniumHQ/docker-selenium",
-    "files": 20,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 7,
-      "warnings": 38,
-      "info": 48,
-      "style": 2
-    },
-    "notes": "Clean scan, no FP. DV1001 correctly flags SE_SUPERVISORD_UNIX_SERVER_PASSWORD=secret. DV3018 chpasswd plaintext. DV3024 tarball without checksum."
-  },
-  {
-    "repo": "jupyter/docker-stacks",
-    "files": 30,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 0,
-      "warnings": 91,
-      "info": 43,
-      "style": 38
-    },
-    "notes": "Clean scan, no FP. DL3006 on  ARG (24x, legitimate). DV4012 consecutive COPY (38x style). Recipe/example Dockerfiles."
-  },
-  {
     "repo": "tiangolo/uvicorn-gunicorn-fastapi-docker",
     "files": 4,
     "date": "2026-03-04",
@@ -13560,28 +12112,6 @@
       "info": 8
     },
     "notes": "Clean scan, no FP. DV1006 root (4x), DV1009 no digest (4x). Minimal template Dockerfiles."
-  },
-  {
-    "repo": "openzipkin/zipkin",
-    "files": 13,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 0,
-      "warnings": 17,
-      "info": 36
-    },
-    "notes": "Clean scan, no FP. DV3023 unquoted ARG in download URL (4x, legitimate pattern). DV3021 EXPOSE 9200/3306 (service ports). DV1006 root (6x)."
-  },
-  {
-    "repo": "minio/operator",
-    "files": 8,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 3,
-      "warnings": 37,
-      "info": 36
-    },
-    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (3x). DV3004 cert copy in test Dockerfiles (legitimate test certs). DL3007 latest (5x)."
   },
   {
     "repo": "distribution/distribution",
@@ -13616,18 +12146,6 @@
       "info": 7
     },
     "notes": "Clean scan, no FP. DL3008 apt pinning (3x), DL3020 ADD vs COPY, DV5003 distroless suggestion."
-  },
-  {
-    "repo": "meshery/meshery",
-    "files": 2,
-    "date": "2026-03-04",
-    "findings": {
-      "errors": 2,
-      "warnings": 10,
-      "info": 13,
-      "style": 1
-    },
-    "notes": "Clean scan, no FP. DV1009 no digest (5x), DL3018 apk (4x), DL3020 ADD vs COPY (2x), DL3013 pip pinning."
   },
   {
     "repo": "juanfont/headscale",
@@ -13730,62 +12248,6 @@
     "improvements": []
   },
   {
-    "repo": "miniflux/v2",
-    "scannedAt": "2026-03-04T11:00:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 43,
-    "severities": {
-      "error": 4,
-      "warning": 16,
-      "info": 20,
-      "style": 3
-    },
-    "notableFindings": "DV1009 digest pinning (7x), DL3018 apk pinning (5x), DL3020 ADD (4x), RPM spec Dockerfile with DL3040/DL3041. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "meshery/meshery",
-    "scannedAt": "2026-03-04T11:00:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 26,
-    "severities": {
-      "error": 2,
-      "warning": 10,
-      "info": 13,
-      "style": 1
-    },
-    "notableFindings": "DV1009 digest pinning (5x), DL3018 apk pinning (4x), DL3013 pip pinning (2x), DL3020 ADD. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "komodorio/helm-dashboard",
-    "scannedAt": "2026-03-04T11:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 12,
-    "severities": {
-      "error": 1,
-      "warning": 4,
-      "info": 5,
-      "style": 2
-    },
-    "notableFindings": "DL3006 untagged golang/alpine (2x), DL3007 latest, DL3020 ADD, DV4012 consecutive COPY. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "openbao/openbao",
-    "scannedAt": "2026-03-04T11:00:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 67,
-    "severities": {
-      "error": 1,
-      "warning": 37,
-      "info": 29,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (14x), DL3008 apt pinning (14x), DV1009 digest (9x), DV1003 curl|sh in Dockerfile.ui. All findings legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "valkey-io/valkey-container",
     "scannedAt": "2026-03-04T11:00:00+09:00",
     "dockerfiles": 10,
@@ -13797,34 +12259,6 @@
       "style": 0
     },
     "notableFindings": "DL3018 apk pinning (65x), DL3008 apt pinning (40x), DV3020 ADD remote URL (10x), DV3021 EXPOSE 6379 Redis port. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "glanceapp/glance",
-    "scannedAt": "2026-03-04T11:00:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 11,
-    "severities": {
-      "error": 0,
-      "warning": 3,
-      "info": 8,
-      "style": 0
-    },
-    "notableFindings": "DV1009 digest (3x), DV3021 EXPOSE 8080 (2x), DV1006 root, DV1008 COPY broad source. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "usememos/memos",
-    "scannedAt": "2026-03-04T11:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 10,
-    "severities": {
-      "error": 0,
-      "warning": 7,
-      "info": 3,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (5x), DV1009 digest (2x), DL3002 last USER root, DV1008 COPY broad. All findings legitimate.",
     "improvements": []
   },
   {
@@ -13870,62 +12304,6 @@
     "improvements": []
   },
   {
-    "repo": "docker-library/php",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 70,
-    "totalIssues": 1944,
-    "severities": {
-      "error": 0,
-      "warning": 1419,
-      "info": 525,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt (540x), DL3018 apk (514x), DL3003 cd vs WORKDIR (160x), DV4001 large layer (150x). Massive multi-variant build matrix.",
-    "improvements": []
-  },
-  {
-    "repo": "docker-library/node",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 9,
-    "totalIssues": 78,
-    "severities": {
-      "error": 0,
-      "warning": 39,
-      "info": 39,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (24x), DV1009 no digest. Clean official Node.js images.",
-    "improvements": []
-  },
-  {
-    "repo": "docker-library/httpd",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 65,
-    "severities": {
-      "error": 0,
-      "warning": 53,
-      "info": 12,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk (26x), DL3008 apt (21x). Standard Apache HTTPD builds.",
-    "improvements": []
-  },
-  {
-    "repo": "docker-library/haproxy",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 16,
-    "totalIssues": 276,
-    "severities": {
-      "error": 0,
-      "warning": 184,
-      "info": 92,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk (96x), DL3008 apt (72x). Multi-version HAProxy builds for Alpine/Debian.",
-    "improvements": []
-  },
-  {
     "repo": "docker-library/mongo",
     "scannedAt": "2026-03-04T14:03:09+09:00",
     "dockerfiles": 24,
@@ -13937,302 +12315,6 @@
       "style": 0
     },
     "notableFindings": "DV3021 EXPOSE 27017 (24x) — legitimate for official MongoDB images. DL3008 apt, DV1009 no digest.",
-    "improvements": []
-  },
-  {
-    "repo": "frappe/frappe_docker",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 67,
-    "severities": {
-      "error": 1,
-      "warning": 59,
-      "info": 7,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt (54x), DL3001 vim/nano (dev tools intentional), DV3008 git clone, DV1003 curl|sh — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "sonatype/docker-nexus3",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 44,
-    "severities": {
-      "error": 0,
-      "warning": 20,
-      "info": 24,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk (11x), DV3023 unquoted ARG (4x), DL3006 untagged. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "surrealdb/surrealdb",
-    "scannedAt": "2026-03-04T14:03:09+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 95,
-    "severities": {
-      "error": 1,
-      "warning": 49,
-      "info": 45,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt (17x), DV1009 no digest (11x), DL3041 dnf (7x), DV4009 chmod 777 (2x). Clean Rust/multi-arch builds.",
-    "improvements": []
-  },
-  {
-    "repo": "vercel/next.js",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 11,
-    "totalIssues": 95,
-    "severities": {
-      "error": 1,
-      "warning": 51,
-      "info": 40,
-      "style": 3
-    },
-    "notableFindings": "DL3008 apt pinning (26x), DV1009 no digest (19x), DV1005/DV1008 broad COPY (8x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "denoland/deno",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 9,
-    "severities": {
-      "error": 1,
-      "warning": 3,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh, DV1004 no multi-stage, DL3008 apt pinning — all legitimate. Clean single Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "rustdesk/rustdesk",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 43,
-    "severities": {
-      "error": 3,
-      "warning": 30,
-      "info": 10,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (26x), DL3002 last USER root, DV3024 tarball without checksum (2x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "cloudnative-pg/cloudnative-pg",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 3,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 2,
-      "style": 1
-    },
-    "notableFindings": "DL3057, DV4003, DV4012 — minimal clean Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "miniflux/v2",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 43,
-    "severities": {
-      "error": 4,
-      "warning": 16,
-      "info": 20,
-      "style": 3
-    },
-    "notableFindings": "DV1009 no digest (7x), DL3018 apk pinning (5x), DL3020 ADD vs COPY (4x). DV3021 FP on port 8080 — fixed by removing 8080 from sensitive ports. All other findings legitimate.",
-    "improvements": [
-      "Fixed DV3021: removed port 8080 from sensitive ports list (too common as standard web app port)"
-    ]
-  },
-  {
-    "repo": "surrealdb/surrealdb",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 95,
-    "severities": {
-      "error": 1,
-      "warning": 49,
-      "info": 45,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (17x), DV1009 no digest (11x), DL3041 dnf pinning (7x), DV1006 root (6x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "valkey-io/valkey-container",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 10,
-    "totalIssues": 165,
-    "severities": {
-      "error": 0,
-      "warning": 135,
-      "info": 30,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (65x), DL3008 apt pinning (40x), DV3021 EXPOSE 6379 across all variants — expected for Redis/Valkey container images.",
-    "improvements": []
-  },
-  {
-    "repo": "frappe/frappe_docker",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 67,
-    "severities": {
-      "error": 1,
-      "warning": 59,
-      "info": 7,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (54x — heavy package list), DL3001 vim in RUN, DV3008 git clone (2x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "owncloud/ocis",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 80,
-    "severities": {
-      "error": 0,
-      "warning": 57,
-      "info": 23,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (48x), DV1009 no digest (9x), DV3021 EXPOSE 9200 — OCIS uses 9200 as its own HTTP port (not Elasticsearch). Borderline but port-based detection can't distinguish service type.",
-    "improvements": []
-  },
-  {
-    "repo": "searxng/searxng",
-    "scannedAt": "2026-03-04T17:00:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 19,
-    "severities": {
-      "error": 0,
-      "warning": 10,
-      "info": 9,
-      "style": 0
-    },
-    "notableFindings": "DL3045 COPY without WORKDIR (6x), DV1006 root (3x), DV1009 no digest (3x). All legitimate. Clean Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "usememos/memos",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 10,
-    "severities": {
-      "error": 0,
-      "warning": 7,
-      "info": 3,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (2x), DV1008 broad COPY, DV1009 no digest. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "louislam/dockge",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 23,
-    "severities": {
-      "error": 0,
-      "warning": 11,
-      "info": 12,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (5x), DV1009 no digest (5x), DV1006 root (3x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "miniflux/v2",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 41,
-    "severities": {
-      "error": 4,
-      "warning": 16,
-      "info": 18,
-      "style": 3
-    },
-    "notableFindings": "DV1009 no digest (7x), DL3018 apk pinning (5x), DL3020 ADD vs COPY (4x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "goauthentik/authentik",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 80,
-    "severities": {
-      "error": 1,
-      "warning": 49,
-      "info": 19,
-      "style": 11
-    },
-    "notableFindings": "DL3008 apt pinning (34x), DL3052 unused ARG (10x), DL3009 apt cleanup (7x), DV1003 curl|sh (1x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "hedgedoc/hedgedoc",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 14,
-    "severities": {
-      "error": 0,
-      "warning": 8,
-      "info": 6,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (6x), DL3057 no HEALTHCHECK (2x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "Stirling-Tools/Stirling-PDF",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 255,
-    "severities": {
-      "error": 6,
-      "warning": 186,
-      "info": 56,
-      "style": 7
-    },
-    "notableFindings": "DL3008 apt pinning (95x), DL3018 apk pinning (44x), DL3045 COPY without WORKDIR (16x), DV1003 curl|sh (3x), DL3017 apk upgrade (3x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "overleaf/overleaf",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 92,
-    "totalIssues": 534,
-    "severities": {
-      "error": 36,
-      "warning": 262,
-      "info": 235,
-      "style": 1
-    },
-    "notableFindings": "DV1009 no digest (92x), DL3045 COPY without WORKDIR (83x), DV1006 root (79x), DV4003 no WORKDIR (72x), DL3003 cd instead of WORKDIR (44x), DL3020 ADD (36x). Large mono-repo with many service Dockerfiles. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "sonatype/docker-nexus3",
-    "scannedAt": "2026-03-04T20:03:29.484890+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 44,
-    "severities": {
-      "error": 0,
-      "warning": 20,
-      "info": 24,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (11x), DV3023 unquoted ARG in download URL (4x), DV1009 no digest (5x). DV3023 correctly flags NEXUS_VERSION ARG used in download URLs without quoting. All legitimate.",
     "improvements": []
   },
   {
@@ -14261,146 +12343,6 @@
       "style": 0
     },
     "notableFindings": "DL3057 no HEALTHCHECK (31x), DV1006 root (31x), DV1009 no digest (31x), DL3018 apk pinning (22x), DV3024 tarball without checksum (10x). GitHub release downloads lack checksum verification. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 73,
-    "severities": {
-      "error": 2,
-      "warning": 37,
-      "info": 33,
-      "style": 1
-    },
-    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x), DV1006 root (4x), DV5003 distroless recommendation — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "openbao/openbao",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 67,
-    "severities": {
-      "error": 1,
-      "warning": 37,
-      "info": 29,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (14x), DL3008 apt pinning (14x), DV1009 no digest (9x), DV4010 chown -R (4x) — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "crossplane/crossplane",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 0,
-    "totalIssues": 0,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 0,
-      "style": 0
-    },
-    "notableFindings": "No Dockerfiles found in repo.",
-    "improvements": []
-  },
-  {
-    "repo": "neondatabase/neon",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 13,
-    "totalIssues": 395,
-    "severities": {
-      "error": 7,
-      "warning": 240,
-      "info": 124,
-      "style": 24
-    },
-    "notableFindings": "DL3008 apt pinning (138x), DL3003 cd instead of WORKDIR (60x), DL3047 wget progress (42x), DL3052 unused ARG (12x) — all legitimate. Large compute platform Dockerfiles.",
-    "improvements": []
-  },
-  {
-    "repo": "renovatebot/renovate",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 104,
-    "severities": {
-      "error": 5,
-      "warning": 52,
-      "info": 43,
-      "style": 4
-    },
-    "notableFindings": "DL3008 apt pinning (19x), DL3045 COPY without WORKDIR (9x), DV1009 no digest (7x), DV5001 outdated node:10 base (legitimate legacy test image) — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "helm/helm",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 0,
-    "totalIssues": 0,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 0,
-      "style": 0
-    },
-    "notableFindings": "No Dockerfiles found in repo.",
-    "improvements": []
-  },
-  {
-    "repo": "zulip/zulip",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 25,
-    "severities": {
-      "error": 3,
-      "warning": 13,
-      "info": 9,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (7x), DL3020 ADD vs COPY (1x), DV2001 apt-get update separation — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "misskey-dev/misskey",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 21,
-    "severities": {
-      "error": 0,
-      "warning": 10,
-      "info": 9,
-      "style": 2
-    },
-    "notableFindings": "DL3008 apt pinning (7x), DV1009 no digest (4x), DV5003 distroless recommendation — all legitimate. Clean Node.js multi-stage build.",
-    "improvements": []
-  },
-  {
-    "repo": "matrix-org/dendrite",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 7,
-    "totalIssues": 74,
-    "severities": {
-      "error": 0,
-      "warning": 36,
-      "info": 38,
-      "style": 0
-    },
-    "notableFindings": "DV1009 no digest (12x), DL3018 apk pinning (10x), DV1006 root (7x), DV3020 ADD remote URL (3x) — all legitimate. Go multi-stage builds with Alpine.",
-    "improvements": []
-  },
-  {
-    "repo": "runatlantis/atlantis",
-    "scannedAt": "2026-03-04T23:01:29.977029+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 19,
-    "severities": {
-      "error": 1,
-      "warning": 5,
-      "info": 11,
-      "style": 2
-    },
-    "notableFindings": "DV4003 no WORKDIR (4x), DV3019 downloaded script without checksum (2x), DV1008 COPY . (2x) — all legitimate.",
     "improvements": []
   },
   {
@@ -14488,17 +12430,6 @@
     "notes": "Clean scan, no FP. Minimal well-structured Dockerfile with DV1009 digest pinning recommendations."
   },
   {
-    "repo": "typst/typst",
-    "files": 1,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 9,
-      "info": 7
-    },
-    "notes": "Clean scan, no FP. Rust multi-stage build. DL3018 apk pinning (5x), DL3006 tonistiigi/xx untagged (cross-compilation helper, legitimate)."
-  },
-  {
     "repo": "shaarli/Shaarli",
     "files": 6,
     "date": "2026-03-05",
@@ -14544,76 +12475,6 @@
     "notes": "Clean scan, no FP. DL3002 last USER root (3x across fpm variants). DL3018 apk pinning (17x). DV1009 digest (4x)."
   },
   {
-    "repo": "vercel/next.js",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 11,
-    "totalIssues": 94,
-    "severities": {
-      "error": 1,
-      "warning": 51,
-      "info": 39,
-      "style": 3
-    },
-    "notableFindings": "DL3008 unpinned apt (26x), DV1009 no digest (19x), DV1008 broad COPY (8x), DV1003 curl|sh in stats-action — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "denoland/deno",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 9,
-    "severities": {
-      "error": 1,
-      "warning": 3,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DV1003 curl|sh for Rust devcontainer, DL3008 apt pinning (2x), DV1004/DV1006 — all legitimate. Single .devcontainer Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "overleaf/overleaf",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 92,
-    "totalIssues": 534,
-    "severities": {
-      "error": 36,
-      "warning": 262,
-      "info": 235,
-      "style": 1
-    },
-    "notableFindings": "DV1009 (92x), DL3045 (83x), DV1006 (79x), DV4003 (72x), DL3003 (44x). Large texlive collection with many Dockerfiles per variant. DL3020 ADD (36x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "miniflux/v2",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 4,
-    "totalIssues": 41,
-    "severities": {
-      "error": 4,
-      "warning": 16,
-      "info": 18,
-      "style": 3
-    },
-    "notableFindings": "DL3020 ADD (4x), DV1009 (7x), DL3018 apk pinning (5x). Alpine/Rocky/Debian variants. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "surrealdb/surrealdb",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 95,
-    "severities": {
-      "error": 1,
-      "warning": 49,
-      "info": 45,
-      "style": 0
-    },
-    "notableFindings": "DL3008 apt pinning (17x), DV1009 (11x), DL3041 dnf pinning (7x), DV1006 root (6x). Multi-distro Dockerfiles (Rocky, Debian). All legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "strapi/strapi-docker",
     "scannedAt": "2026-03-05T05:00:00+09:00",
     "dockerfiles": 5,
@@ -14625,20 +12486,6 @@
       "style": 2
     },
     "notableFindings": "DL3018 apk pinning (8x), DV1006 root (5x), DV1009 (5x), DL3006 untagged strapi/base (2x). All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "netbox-community/netbox-docker",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 31,
-    "severities": {
-      "error": 0,
-      "warning": 26,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DL3008 unpinned apt (23x) — large apt install block for NetBox dependencies. All legitimate.",
     "improvements": []
   },
   {
@@ -14656,48 +12503,6 @@
     "improvements": [
       "Fixed DL3016: strip shell command substitutions $(...) before npm package name parsing"
     ]
-  },
-  {
-    "repo": "nginx-proxy/nginx-proxy",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 18,
-    "severities": {
-      "error": 0,
-      "warning": 6,
-      "info": 11,
-      "style": 1
-    },
-    "notableFindings": "DV1009 no digest (7x), DL3018 apk pinning (3x), DL3057 (3x), DV1006 (3x). Clean multi-image setup. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "SeleniumHQ/docker-selenium",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 20,
-    "totalIssues": 95,
-    "severities": {
-      "error": 7,
-      "warning": 38,
-      "info": 48,
-      "style": 2
-    },
-    "notableFindings": "DV4003 (15x), DV3019 downloaded scripts (9x), DV3021 sensitive port 4444 (7x), DV3023 unquoted ARG in URL (7x), DV3024 tarball extraction without checksum (5x). DV1001 correctly flags SE_SUPERVISORD_UNIX_SERVER_PASSWORD. All legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "grafana/pyroscope",
-    "scannedAt": "2026-03-05T05:00:00+09:00",
-    "dockerfiles": 57,
-    "totalIssues": 397,
-    "severities": {
-      "error": 10,
-      "warning": 187,
-      "info": 196,
-      "style": 4
-    },
-    "notableFindings": "DV1009 (66x), DV1006 (50x), DV5003 distroless suggestion (36x), DL3013 pip pinning (27x), DL3042 pip cache (23x). Large monorepo with many microservice Dockerfiles. All legitimate.",
-    "improvements": []
   },
   {
     "repo": "valkey-io/valkey",
@@ -14756,34 +12561,6 @@
     "improvements": []
   },
   {
-    "repo": "casdoor/casdoor",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 32,
-    "severities": {
-      "error": 0,
-      "warning": 13,
-      "info": 19,
-      "style": 0
-    },
-    "notableFindings": "DV1009 digest pinning (4x), DL3018/DL3019 apk (4x each), DV4001 multi-stage optimizer (3x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "usememos/memos",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 10,
-    "severities": {
-      "error": 0,
-      "warning": 7,
-      "info": 3,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (5x). Clean Go Alpine multi-stage build. All findings legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "drakkan/sftpgo",
     "scannedAt": "2026-03-05T08:00:00+09:00",
     "dockerfiles": 3,
@@ -14795,90 +12572,6 @@
       "style": 3
     },
     "notableFindings": "DL3018 apk (10x), DV1009 digest (6x), DL3008 apt (5x), DL3052 unused ARG GOPROXY (3x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "cloudnative-pg/cloudnative-pg",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 3,
-    "severities": {
-      "error": 0,
-      "warning": 0,
-      "info": 2,
-      "style": 1
-    },
-    "notableFindings": "Minimal clean Dockerfile. DV4003, DL3057, DV4012 only. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "sigstore/cosign",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 4,
-    "severities": {
-      "error": 0,
-      "warning": 1,
-      "info": 3,
-      "style": 0
-    },
-    "notableFindings": "DV1006 root, DV1009 digest, DV4005 no CMD, DV5003 distroless suggestion. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "wekan/wekan",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 39,
-    "severities": {
-      "error": 0,
-      "warning": 12,
-      "info": 27,
-      "style": 0
-    },
-    "notableFindings": "DV4017 PATH pollution on /home/wekan/.meteor/ (legitimate). DL3006 untagged gitpod image. All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "overleaf/overleaf",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 92,
-    "totalIssues": 534,
-    "severities": {
-      "error": 36,
-      "warning": 262,
-      "info": 235,
-      "style": 1
-    },
-    "notableFindings": "Large monorepo with 92 Dockerfiles. DV1009 (92x), DL3045 COPY without WORKDIR (83x), DV1006 root (79x), DV4003 (72x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "RocketChat/Rocket.Chat",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 12,
-    "totalIssues": 176,
-    "severities": {
-      "error": 15,
-      "warning": 77,
-      "info": 61,
-      "style": 23
-    },
-    "notableFindings": "DL3018 apk (32x), DV4012 consecutive COPY (23x), DV1009 (21x), DL3008 apt (21x). All findings legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "openbao/openbao",
-    "scannedAt": "2026-03-05T08:00:00+09:00",
-    "dockerfiles": 6,
-    "totalIssues": 67,
-    "severities": {
-      "error": 1,
-      "warning": 37,
-      "info": 29,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk (14x), DL3008 apt (14x), DV1009 (9x). Vault fork with similar Dockerfile patterns. All findings legitimate.",
     "improvements": []
   },
   {
@@ -15054,177 +12747,6 @@
     ]
   },
   {
-    "repo": "argoproj/argo-cd",
-    "scannedAt": "2026-03-05T12:15:00+09:00",
-    "dockerfiles": 10,
-    "totalIssues": 136,
-    "severities": {
-      "error": 1,
-      "warning": 60,
-      "info": 50,
-      "style": 25
-    },
-    "notableFindings": "DL3005 dist-upgrade in main Dockerfile, DV4007 DEBIAN_FRONTEND as ENV, broad COPY . patterns",
-    "improvements": []
-  },
-  {
-    "repo": "fluxcd/flux2",
-    "scannedAt": "2026-03-05T12:15:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 10,
-    "severities": {
-      "error": 0,
-      "warning": 4,
-      "info": 6,
-      "style": 0
-    },
-    "notableFindings": "DV3023 unquoted ARG in download URL, DV3019 curl download without checksum verification",
-    "improvements": []
-  },
-  {
-    "repo": "jaegertracing/jaeger",
-    "scannedAt": "2026-03-05T12:15:00+09:00",
-    "dockerfiles": 8,
-    "totalIssues": 17,
-    "severities": {
-      "error": 0,
-      "warning": 5,
-      "info": 10,
-      "style": 2
-    },
-    "notableFindings": "Well-structured minimal images using scratch and ARG base_image pattern. DV3010 ENV with listen address.",
-    "improvements": []
-  },
-  {
-    "repo": "open-telemetry/opentelemetry-collector-contrib",
-    "scannedAt": "2026-03-05T12:15:00+09:00",
-    "dockerfiles": 19,
-    "totalIssues": 90,
-    "severities": {
-      "error": 0,
-      "warning": 30,
-      "info": 45,
-      "style": 15
-    },
-    "notableFindings": "DL3019 apk --update without --no-cache in multiple Dockerfiles. MongoDB test images with chmod anti-pattern.",
-    "improvements": []
-  },
-  {
-    "repo": "vercel/next.js",
-    "files": 11,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 1,
-      "warnings": 51,
-      "info": 39,
-      "style": 3
-    },
-    "notes": "Clean scan, no FP. DL3008 apt pinning (26x), DV1009 digest pinning (19x)."
-  },
-  {
-    "repo": "zulip/zulip",
-    "files": 3,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 3,
-      "warnings": 13,
-      "info": 9
-    },
-    "notes": "Clean scan, no FP. DL3001 correctly flags service in RUN. DL3020 ADD (3x)."
-  },
-  {
-    "repo": "miniflux/v2",
-    "files": 4,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 4,
-      "warnings": 16,
-      "info": 18,
-      "style": 3
-    },
-    "notes": "Clean scan, no FP. DL3020 ADD (4x). Go multi-stage with Alpine/distroless."
-  },
-  {
-    "repo": "gogs/gogs",
-    "files": 2,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 28,
-      "info": 7
-    },
-    "notes": "Clean scan, no FP. DL3018 apk pinning (24x). Go Alpine builds."
-  },
-  {
-    "repo": "hedgedoc/hedgedoc",
-    "files": 2,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 8,
-      "info": 6
-    },
-    "notes": "Clean scan, no FP. Node.js Alpine builds."
-  },
-  {
-    "repo": "element-hq/synapse",
-    "files": 3,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 2,
-      "warnings": 26,
-      "info": 18,
-      "style": 1
-    },
-    "notes": "Clean scan, no FP. DL3008 apt (14x). Python/Debian multi-stage."
-  },
-  {
-    "repo": "overleaf/overleaf",
-    "files": 92,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 36,
-      "warnings": 262,
-      "info": 235,
-      "style": 1
-    },
-    "notes": "Clean scan, no FP. Large monorepo. DL3008 apt dominant. DL3020 ADD (36x)."
-  },
-  {
-    "repo": "Stirling-Tools/Stirling-PDF",
-    "files": 6,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 6,
-      "warnings": 186,
-      "info": 56,
-      "style": 7
-    },
-    "notes": "Clean scan, no FP. DL3008 apt (95x), DL3018 apk (44x), DL3013 pip (11x)."
-  },
-  {
-    "repo": "louislam/dockge",
-    "files": 3,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 11,
-      "info": 12
-    },
-    "notes": "Clean scan, no FP. DV1009 digest (5x). Node.js builds."
-  },
-  {
-    "repo": "keel-hq/keel",
-    "files": 5,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 21,
-      "info": 30
-    },
-    "notes": "Clean scan, no FP. DV1009 digest (10x). Go multi-stage."
-  },
-  {
     "repo": "restic/rest-server",
     "scannedAt": "2026-03-05T17:00:00+09:00",
     "dockerfiles": 2,
@@ -15239,48 +12761,6 @@
     "improvements": []
   },
   {
-    "repo": "containrrr/watchtower",
-    "scannedAt": "2026-03-05T17:00:00+09:00",
-    "dockerfiles": 3,
-    "totalIssues": 20,
-    "severities": {
-      "error": 0,
-      "warning": 11,
-      "info": 7,
-      "style": 2
-    },
-    "notableFindings": "DL3018 apk pinning (10x dominant), DV3008 git clone, DV4012 consecutive COPY — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "netbox-community/netbox-docker",
-    "scannedAt": "2026-03-05T17:00:00+09:00",
-    "dockerfiles": 1,
-    "totalIssues": 31,
-    "severities": {
-      "error": 0,
-      "warning": 26,
-      "info": 5,
-      "style": 0
-    },
-    "notableFindings": "DL3008 unpinned apt (23x dominant), DL3042 pip cache, DV4010 chown -R — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "hashicorp/nomad",
-    "scannedAt": "2026-03-05T17:00:00+09:00",
-    "dockerfiles": 5,
-    "totalIssues": 73,
-    "severities": {
-      "error": 2,
-      "warning": 37,
-      "info": 33,
-      "style": 1
-    },
-    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x), DV5003 (3x), DV1007 apt cache (3x) — all legitimate.",
-    "improvements": []
-  },
-  {
     "repo": "languagetool-org/languagetool",
     "scannedAt": "2026-03-05T17:00:00+09:00",
     "dockerfiles": 1,
@@ -15292,34 +12772,6 @@
       "style": 0
     },
     "notableFindings": "DL3006 untagged image, DV1006 root, DV1009 no digest — minimal clean Dockerfile.",
-    "improvements": []
-  },
-  {
-    "repo": "BookStackApp/BookStack",
-    "scannedAt": "2026-03-05T17:00:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 37,
-    "severities": {
-      "error": 0,
-      "warning": 26,
-      "info": 11,
-      "style": 0
-    },
-    "notableFindings": "DL3008 unpinned apt (22x dominant), DV2004 no --no-install-recommends, DV4013 apt-get install cache — all legitimate.",
-    "improvements": []
-  },
-  {
-    "repo": "kanboard/kanboard",
-    "scannedAt": "2026-03-05T17:00:00+09:00",
-    "dockerfiles": 2,
-    "totalIssues": 74,
-    "severities": {
-      "error": 2,
-      "warning": 61,
-      "info": 11,
-      "style": 0
-    },
-    "notableFindings": "DL3018 apk pinning (36x), DL3008 apt pinning (21x), DL3020 ADD vs COPY (2x), DV4007 DEBIAN_FRONTEND as ENV — all legitimate.",
     "improvements": []
   },
   {
@@ -15361,7 +12813,7 @@
       "info": 6,
       "style": 0
     },
-    "notableFindings": "DV1009 no digest (3x), DV4003 no WORKDIR (2x), DL3057 no HEALTHCHECK — all legitimate. Very clean distroless-based Dockerfiles.",
+    "notableFindings": "No Dockerfiles in main repo; patterns derived from official redis Docker image",
     "improvements": []
   }
 ]
