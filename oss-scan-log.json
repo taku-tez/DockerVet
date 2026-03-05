@@ -14880,5 +14880,177 @@
     },
     "notableFindings": "DL3018 apk (14x), DL3008 apt (14x), DV1009 (9x). Vault fork with similar Dockerfile patterns. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "withastro/astro",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 125,
+    "severities": {
+      "error": 0,
+      "warning": 69,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (40x), DV1006 root (23x), DV1009 no digest (23x), DV5003 distroless recommendation (21x). All devcontainer Dockerfiles — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gofr-dev/gofr",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 96,
+    "severities": {
+      "error": 0,
+      "warning": 52,
+      "info": 44,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (22x), DL3018 apk pinning (21x), DV1006 root (11x), DV1008 COPY . (10x). Example Dockerfiles — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "spree/spree",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 25,
+    "severities": {
+      "error": 0,
+      "warning": 21,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (20x), DV1009 no digest (2x), DL3057 no HEALTHCHECK. Clean Ruby-based Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/age",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 12,
+      "style": 1
+    },
+    "notableFindings": "DL3008 unpinned apt (10x), DV1009 no digest (3x), DL3009 apt cleanup (3x), DV1008 COPY . (2x). PostgreSQL extension build. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "eclipse-mosquitto/mosquitto",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 100,
+    "severities": {
+      "error": 0,
+      "warning": 66,
+      "info": 34,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (43x), DL3008 apt pinning (10x), DL3057 no HEALTHCHECK (6x), DV1004 no multi-stage (6x). MQTT broker Dockerfiles for multiple architectures — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "percona/percona-server-mongodb-operator",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 11,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DV4005 no CMD/ENTRYPOINT (5x — operator pattern), DV1009, DV1008 COPY ., DV4002. Clean minimal Dockerfiles.",
+    "improvements": []
+  },
+  {
+    "repo": "ScyllaDB/scylladb",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 9,
+      "style": 2
+    },
+    "notableFindings": "FP fixed: Dockerfile.in template (with @@IMAGE@@ placeholder) was being scanned — .in extension now excluded. Remaining findings (DL3003 cd, DL3025 CMD notation) all legitimate.",
+    "improvements": [
+      "Fixed: exclude .in template extension from Dockerfile scanning (autotools-style templates)"
+    ]
+  },
+  {
+    "repo": "dgraph-io/dgraph",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 46,
+    "severities": {
+      "error": 2,
+      "warning": 24,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (14x), DV1009 no digest (6x), DV1006 root (5x), DV5003 distroless recommendation (3x), DL3020 ADD vs COPY (2x). Graph database multi-stage builds — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "vercel/turborepo",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 43,
+    "severities": {
+      "error": 2,
+      "warning": 23,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (16x), DV1009 no digest (5x), DL3045 COPY without WORKDIR (3x). Devcontainer and example Dockerfiles — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "aquasecurity/cloudsploit",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DL3057, DV1009, DV5003, DV1008 COPY .. Minimal clean Node.js Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "kubevirt/containerized-data-importer",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 44,
+    "severities": {
+      "error": 2,
+      "warning": 33,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DL3041 unpinned dnf (26x), DV1004 no multi-stage (2x), DL3020 ADD vs COPY (2x). CentOS-based data importer Dockerfiles — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "phoenixframework/phoenix",
+    "scannedAt": "2026-03-05T11:04:16.965322+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "FP fixed: Dockerfile.eex (Elixir EEx template with <%= %> interpolation) was being scanned — .eex extension now excluded. No real Dockerfiles in repo.",
+    "improvements": [
+      "Fixed: exclude .eex template extension from Dockerfile scanning (Elixir EEx templates)"
+    ]
   }
 ]
