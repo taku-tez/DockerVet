@@ -6906,7 +6906,7 @@ ADD mgr_plugins.tar.gz /usr/share/ceph/mgr
 // ── longhorn/longhorn-engine patterns ──────────────────────────────────────
 
 describe('OSS: longhorn/longhorn-engine patterns', () => {
-  it('Dockerfile.dapper: 13 rules (DL3003, DL3042, DL3052…)', () => {
+  it('Dockerfile.dapper: 12 rules (DL3003, DL3042, DL3057…)', () => {
     const v = lintContent(`FROM registry.suse.com/bci/golang:1.25
 
 ARG DAPPER_HOST_ARCH
@@ -7022,7 +7022,7 @@ RUN curl -sSfLO https://github.com/docker/buildx/releases/download/v0.13.1/build
 `, 'Dockerfile.dapper');
     expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
     expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip install --no
-    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG http_proxy is declared but never referenced in the Docke
+    // DL3052 no longer fires for http_proxy/https_proxy (implicit proxy env vars)
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
     expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell. Download 
     expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
@@ -7137,7 +7137,7 @@ CMD ["longhorn"]
 // ── longhorn/longhorn-manager patterns ──────────────────────────────────────
 
 describe('OSS: longhorn/longhorn-manager patterns', () => {
-  it('Dockerfile.dapper: 13 rules (DL3001, DL3031, DL3036…)', () => {
+  it('Dockerfile.dapper: 12 rules (DL3001, DL3031, DL3036…)', () => {
     const v = lintContent(`FROM registry.suse.com/bci/golang:1.25
 
 ARG DAPPER_HOST_ARCH
@@ -7179,7 +7179,7 @@ RUN curl -sSfLO https://github.com/docker/buildx/releases/download/v0.13.1/build
     expect(v.some(v => v.rule === 'DL3031')).toBe(true);    // Do not use zypper update. Pin package versions for reproduci
     expect(v.some(v => v.rule === 'DL3036')).toBe(true);    // zypper clean missing after zypper use
     expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // Avoid use of wget without progress bar. Use `wget --progress
-    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG http_proxy is declared but never referenced in the Docke
+    // DL3052 no longer fires for http_proxy (implicit proxy env var)
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
     expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell. Download 
     expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size

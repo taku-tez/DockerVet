@@ -465,6 +465,23 @@ const IMPLICIT_ARGS = new Set([
   'BUILDKIT_SBOM_SCAN_CONTEXT', 'BUILDKIT_SBOM_SCAN_STAGE',
   // Debian/Ubuntu dpkg/apt env vars consumed implicitly by package tools
   'DEBIAN_FRONTEND', 'DEBCONF_NOWARNINGS', 'DEBCONF_NONINTERACTIVE_SEEN',
+  // pip/uv env vars — ARG declarations make these available as env vars during build,
+  // pip and uv read them implicitly without explicit $VAR references
+  'PIP_INDEX_URL', 'PIP_EXTRA_INDEX_URL', 'PIP_TRUSTED_HOST',
+  'PIP_NO_CACHE_DIR', 'PIP_DISABLE_PIP_VERSION_CHECK', 'PIP_DEFAULT_TIMEOUT',
+  'PIP_KEYRING_PROVIDER', 'PIP_CERT', 'PIP_CLIENT_CERT',
+  'UV_INDEX_URL', 'UV_EXTRA_INDEX_URL', 'UV_KEYRING_PROVIDER',
+  'UV_CACHE_DIR', 'UV_NO_CACHE', 'UV_SYSTEM_PYTHON', 'UV_COMPILE_BYTECODE',
+  // Network proxy env vars consumed implicitly by curl, wget, pip, apt, etc.
+  'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY',
+  'http_proxy', 'https_proxy', 'no_proxy', 'FTP_PROXY', 'ALL_PROXY',
+  // Go env vars consumed implicitly by go build/install
+  'GOFLAGS', 'GOPROXY', 'GONOSUMCHECK', 'GONOSUMDB', 'GOPRIVATE',
+  // npm/yarn env vars
+  'NPM_CONFIG_REGISTRY', 'NPM_TOKEN', 'YARN_CACHE_FOLDER',
+  // Rust env vars
+  'CARGO_REGISTRIES_CRATES_IO_PROTOCOL', 'CARGO_NET_GIT_FETCH_WITH_CLI',
+  'RUSTUP_HOME', 'CARGO_HOME',
 ]);
 
 export const DL3052: Rule = {
