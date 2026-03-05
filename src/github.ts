@@ -43,7 +43,7 @@ export function parseGitHubURL(input: string): GitHubRef {
  * Covers template formats (need preprocessing) and documentation formats
  * (e.g. Dockerfile.5.md is the Dockerfile man page, not a real Dockerfile).
  */
-const NON_DOCKERFILE_EXTENSIONS = /\.(erb|j2|jinja|jinja2|tmpl|tpl|template|md|rst|txt|adoc|html|htm|pdf|yaml|yml|json|toml|xml)$/i;
+const NON_DOCKERFILE_EXTENSIONS = /\.(erb|eex|j2|jinja|jinja2|tmpl|tpl|template|in|md|rst|txt|adoc|html|htm|pdf|yaml|yml|json|toml|xml)$/i;
 
 /**
  * Template markers that may appear anywhere in the filename (not just as final extension).
