@@ -6773,3 +6773,3356 @@ ENTRYPOINT [ "/usr/bin/stream-generator" ]
   });
 
 });
+// ── ceph/ceph patterns ──────────────────────────────────────
+
+describe('OSS: ceph/ceph patterns', () => {
+  it('Dockerfile.build: 3 rules (DV1006, DV4003, DV4005)', () => {
+    const v = lintContent(`ARG DISTRO
+
+FROM scratch as bootstrap
+ARG CEPH_CTR_SRC=/usr/local/src/ceph
+COPY \\
+    src/script/lib-build.sh \\
+    src/script/run-make.sh \\
+    \${CEPH_CTR_SRC}/src/script/
+COPY debian \${CEPH_CTR_SRC}/debian
+COPY \\
+    ceph.spec.in \\
+    do_cmake.sh \\
+    install-deps.sh \\
+    run-make-check.sh \\
+    src/script/buildcontainer-setup.sh \\
+    \${CEPH_CTR_SRC}/
+
+
+FROM \$DISTRO
+ARG DISTRO
+ARG CEPH_CTR_SRC=/usr/local/src/ceph
+ARG CLEAN_DNF=yes
+ARG CEPH_BASE_BRANCH=main
+ARG SCCACHE_VERSION=v0.8.2
+ARG SCCACHE_REPO=https://github.com/mozilla/sccache
+ARG WITH_CRIMSON=true
+ARG FOR_MAKE_CHECK=1
+COPY --from=bootstrap \${CEPH_CTR_SRC} \${CEPH_CTR_SRC}
+# Note that we do not use ENV for the following. This is because we do not
+# want them permamently stored in the container's layer.
+RUN DISTRO=\$DISTRO \\
+    CEPH_BASE_BRANCH=\$CEPH_BASE_BRANCH \\
+    CLEAN_DNF=\$CLEAN_DNF \\
+    CEPH_CTR_SRC=\${CEPH_CTR_SRC} \\
+    WITH_CRIMSON=\${WITH_CRIMSON} \\
+    FOR_MAKE_CHECK=\${FOR_MAKE_CHECK} \\
+    bash -x \${CEPH_CTR_SRC}/buildcontainer-setup.sh
+RUN \\
+    SCCACHE_URL="\${SCCACHE_REPO}/releases/download/\${SCCACHE_VERSION}/sccache-\${SCCACHE_VERSION}-\$(uname -m)-unknown-linux-musl.tar.gz"; \\
+    echo "\${SCCACHE_URL}"; \\
+    curl -sS -L \$SCCACHE_URL | tar --no-anchored --strip-components=1 -C /usr/local/bin/ -xzf - sccache
+`, 'Dockerfile.build');
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the final stage.
+  });
+
+  it('src/cephadm/box/docker/ceph/Dockerfile: 6 rules (DL3013, DL3042, DV1006…)', () => {
+    const v = lintContent(`FROM quay.ceph.io/ceph-ci/ceph:main
+RUN pip3 install packaging
+EXPOSE 8443
+`, 'src/cephadm/box/docker/ceph/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install packaging` use 
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip install --no
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "quay.ceph.io/ceph-ci/ceph" with a digest (
+    expect(v.some(v => v.rule === 'DV3021')).toBe(true);    // EXPOSE 8443 (HTTPS alternate (admin UI)) may expose a sensit
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('src/cephadm/containers/keepalived/Dockerfile: 5 rules (DL3007, DL3057, DV1006, DV1009, DV4003)', () => {
+    const v = lintContent(`FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+
+RUN microdnf install --assumeyes --nodocs \\
+    bash       \\
+    iproute    \\
+    keepalived-2.2.4 \\
+ && rm /etc/keepalived/keepalived.conf && microdnf clean all
+
+COPY /skel /
+
+RUN chmod +x init.sh
+
+CMD ["./init.sh"]
+
+# Build specific labels
+LABEL maintainer="Guillaume Abrioux <gabrioux@redhat.com>"
+LABEL com.redhat.component="keepalived-container"
+LABEL version=2.2.4
+LABEL name="keepalived"
+LABEL description="keepalived for Ceph"
+LABEL summary="Provides keepalived on RHEL 9 for Ceph."
+LABEL io.k8s.display-name="Keepalived on RHEL 9"
+LABEL io.openshift.tags="Ceph keepalived"
+`, 'src/cephadm/containers/keepalived/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "registry.access.redhat.com/ubi9/ubi-minima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('src/pybind/mgr/rook/ci/Dockerfile: 2 rules (DV1006, DV1009)', () => {
+    const v = lintContent(`FROM quay.io/ceph/daemon-base:latest-main
+COPY ./tmp_build/orchestrator /usr/share/ceph/mgr/orchestrator
+COPY ./tmp_build/rook /usr/share/ceph/mgr/rook
+COPY ./tmp_build/ceph/ /usr/lib/python3.9/site-packages/ceph/
+`, 'src/pybind/mgr/rook/ci/Dockerfile');
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "quay.io/ceph/daemon-base" with a digest (e
+  });
+
+  it('src/script/kubejacker/Dockerfile: 2 rules (DV1006, DV1009)', () => {
+    const v = lintContent(`FROM ceph/daemon-base:latest-master
+# for openSUSE, use:
+# FROM registry.opensuse.org/home/ssebastianwagner/rook-ceph/images/opensuse/leap:latest
+
+
+#ADD bin.tar.gz /usr/bin/
+#ADD lib.tar.gz /usr/lib64/
+
+# Assume developer is using default paths (i.e. /usr/local), so
+# build binaries will be looking for libs there.
+#ADD eclib.tar.gz /usr/local/lib64/ceph/erasure-code/
+#ADD clslib.tar.gz /usr/local/lib64/rados-classes/
+
+ADD python_common.tar.gz /usr/share/ceph/python_common
+ADD mgr_plugins.tar.gz /usr/share/ceph/mgr
+`, 'src/script/kubejacker/Dockerfile');
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ceph/daemon-base" with a digest (e.g., ima
+  });
+
+});
+
+
+// ── longhorn/longhorn-engine patterns ──────────────────────────────────────
+
+describe('OSS: longhorn/longhorn-engine patterns', () => {
+  it('Dockerfile.dapper: 13 rules (DL3003, DL3042, DL3052…)', () => {
+    const v = lintContent(`FROM registry.suse.com/bci/golang:1.25
+
+ARG DAPPER_HOST_ARCH
+ARG SRC_BRANCH=master
+ARG SRC_TAG
+ARG http_proxy
+ARG https_proxy
+
+ENV HOST_ARCH=\${DAPPER_HOST_ARCH} ARCH=\${DAPPER_HOST_ARCH}
+ENV PROTOBUF_VER_PY=4.24.3
+ENV DAPPER_DOCKER_SOCKET true
+ENV DAPPER_ENV TAG REPO DRONE_REPO DRONE_PULL_REQUEST DRONE_COMMIT_REF SKIP_TASKS
+ENV DAPPER_OUTPUT bin coverage.out
+# For filesystem freeze tests, our container must be able to see the filesystem mounted in the host mount namespace.
+# Usually, instance-manager runs with the equivalent of "-v /:/host". For integration testing, use "-v /tmp:/host/tmp"
+# and mount filesystems to /tmp to simulate this without bind mounting everything.
+ENV DAPPER_RUN_ARGS --privileged --tmpfs /go/src/github.com/longhorn/longhorn-engine/integration/.venv:exec --tmpfs /go/src/github.com/longhorn/longhorn-engine/integration/.tox:exec -v /dev:/host/dev -v /proc:/host/proc --mount type=bind,source=/tmp,destination=/host/tmp,bind-propagation=rslave
+ENV DAPPER_SOURCE /go/src/github.com/longhorn/longhorn-engine
+ENV SRC_BRANCH \${SRC_BRANCH}
+ENV SRC_TAG \${SRC_TAG}
+
+ENV LONGHORN_INSTANCE_MANAGER_BRANCH="master"
+
+WORKDIR \${DAPPER_SOURCE}
+ENTRYPOINT ["./scripts/entry"]
+CMD ["ci"]
+
+RUN for i in {1..10}; do \\
+        zypper -n addrepo --refresh https://download.opensuse.org/repositories/system:/snappy/SLE_15/system:snappy.repo && \\
+        zypper --gpg-auto-import-keys ref && break || sleep 1; \\
+    done
+
+RUN if [ \${ARCH} == "amd64" ]; then \\
+        zypper -n install autoconf libtool libunwind-devel; \\
+    fi
+
+# TODO: use default python3 if SLE upgrade system python version to python3.11
+RUN zypper -n install cmake curl git less file gcc python311 python311-pip python311-devel \\
+    libkmod-devel libnl3-devel linux-glibc-devel pkg-config psmisc qemu-tools fuse \\
+    bash-completion librdmacm1 librdmacm-utils libibverbs xsltproc docbook-xsl-stylesheets \\
+    perl-Config-General libaio-devel glibc-devel-static glibc-devel sg3_utils iptables libltdl7 \\
+    libdevmapper1_03 iproute2 jq unzip zlib-devel zlib-devel-static \\
+    rpm-build rdma-core-devel gcc-c++ docker open-iscsi e2fsprogs && \\
+    rm -rf /var/cache/zypp/*
+
+# Install golangci-lint
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$(go env GOPATH)/bin latest
+
+# Install Minio
+ENV MINIO_URL_amd64=https://dl.min.io/server/minio/release/linux-amd64/archive/minio.RELEASE.2021-12-20T22-07-16Z \\
+    MINIO_URL_arm64=https://dl.min.io/server/minio/release/linux-arm64/archive/minio.RELEASE.2021-12-20T22-07-16Z \\
+    MINIO_URL=MINIO_URL_\${ARCH}
+RUN curl -sSfL \${!MINIO_URL} -o /usr/bin/minio && chmod +x /usr/bin/minio
+
+# Install libqcow
+RUN curl -sSfL https://s3-us-west-1.amazonaws.com/rancher-longhorn/libqcow-alpha-20181117.tar.gz | tar xvzf - -C /usr/src && \\
+    cd /usr/src/libqcow-20181117 && \\
+    ./configure && \\
+    make -j\$(nproc) && \\
+    make install && \\
+    ldconfig
+
+# GRPC health probe
+ENV GRPC_HEALTH_PROBE_amd64=https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.3.2/grpc_health_probe-linux-amd64 \\
+    GRPC_HEALTH_PROBE_arm64=https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.3.2/grpc_health_probe-linux-arm64 \\
+    GRPC_HEALTH_PROBE=GRPC_HEALTH_PROBE_\${ARCH}
+
+RUN curl -sSfL \${!GRPC_HEALTH_PROBE} -o /usr/local/bin/grpc_health_probe && \\
+    chmod +x /usr/local/bin/grpc_health_probe
+
+# TODO: use default python3 if SLE upgrade system python version to python3.11
+RUN ln -sf /usr/bin/python3.11 /usr/bin/python3 & \\
+    ln -sf /usr/bin/pip3.11 /usr/bin/pip3 && \\
+    pip3 install grpcio==1.58.0 grpcio_tools==1.58.0 protobuf==\${PROTOBUF_VER_PY}
+
+RUN git clone https://github.com/longhorn/dep-versions.git -b \${SRC_BRANCH} /usr/src/dep-versions && \\
+    cd /usr/src/dep-versions && \\
+    if [ -n "\${SRC_TAG}" ] && git show-ref --tags \${SRC_TAG} > /dev/null 2>&1; then \\
+        echo "Checking out tag \${SRC_TAG}"; \\
+        cd /usr/src/dep-versions && git checkout tags/\${SRC_TAG}; \\
+    fi
+
+# Build liblonghorn
+RUN export REPO_OVERRIDE="" && \\
+    export COMMIT_ID_OVERRIDE="" && \\
+    bash /usr/src/dep-versions/scripts/build-liblonghorn.sh "\${REPO_OVERRIDE}" "\${COMMIT_ID_OVERRIDE}"
+
+# Build TGT
+RUN export REPO_OVERRIDE="" && \\
+    export COMMIT_ID_OVERRIDE="" && \\
+    bash /usr/src/dep-versions/scripts/build-tgt.sh "\${REPO_OVERRIDE}" "\${COMMIT_ID_OVERRIDE}"
+
+# Build cache for tox
+RUN mkdir integration/
+
+COPY integration/setup.py integration/tox.ini integration/requirements.txt integration/flake8-requirements.txt integration/
+
+RUN cd integration && \\
+    pip3 install tox==4.11.3; \\
+    tox --notest
+
+# Build longhorn-instance-manager for integration testing
+RUN cd /go/src/github.com/longhorn && \\
+    git clone https://github.com/longhorn/longhorn-instance-manager.git -b \${LONGHORN_INSTANCE_MANAGER_BRANCH} && \\
+    cd longhorn-instance-manager && \\
+    go build -o ./longhorn-instance-manager -tags netgo -ldflags "-linkmode external -extldflags -static" && \\
+    install longhorn-instance-manager /usr/local/bin
+
+# Docker Builx: The docker version in dapper is too old to have buildx. Install it manually.
+RUN curl -sSfLO https://github.com/docker/buildx/releases/download/v0.13.1/buildx-v0.13.1.linux-\${ARCH} && \\
+    chmod +x buildx-v0.13.1.linux-\${ARCH} && \\
+    mv buildx-v0.13.1.linux-\${ARCH} /usr/local/bin/buildx
+`, 'Dockerfile.dapper');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip install --no
+    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG http_proxy is declared but never referenced in the Docke
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell. Download 
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "registry.suse.com/bci/golang" with a diges
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4008')).toBe(true);    // TODO/FIXME/HACK comment found. Resolve before production use
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12" instead o
+  });
+
+  it('package/Dockerfile: 13 rules (DL3003, DL3031, DL3036…)', () => {
+    const v = lintContent(`FROM registry.suse.com/bci/bci-base:15.7 AS builder
+
+ARG ARCH=amd64
+ARG SRC_BRANCH=master
+ARG SRC_TAG
+
+RUN zypper -n ref && \\
+    zypper update -y
+
+RUN for i in {1..10}; do \\
+        zypper -n addrepo --refresh https://download.opensuse.org/repositories/system:/snappy/SLE_15_SP7/system:snappy.repo && \\
+        zypper -n addrepo --refresh https://download.opensuse.org/repositories/network:/utilities/SLE_15_SP7/network:utilities.repo && \\
+        zypper --gpg-auto-import-keys ref && break || sleep 1; \\
+    done
+
+RUN zypper -n install cmake curl git gcc wget xsltproc docbook-xsl-stylesheets jq && \\
+    rm -rf /var/cache/zypp/*
+
+RUN git clone https://github.com/longhorn/dep-versions.git -b \${SRC_BRANCH} /usr/src/dep-versions && \\
+    cd /usr/src/dep-versions && \\
+    if [ -n "\${SRC_TAG}" ] && git show-ref --tags \${SRC_TAG} > /dev/null 2>&1; then \\
+        echo "Checking out tag \${SRC_TAG}"; \\
+        cd /usr/src/dep-versions && git checkout tags/\${SRC_TAG}; \\
+    fi
+
+# Build liblonghorn
+RUN export REPO_OVERRIDE="" && \\
+    export COMMIT_ID_OVERRIDE="" && \\
+    bash /usr/src/dep-versions/scripts/build-liblonghorn.sh "\${REPO_OVERRIDE}" "\${COMMIT_ID_OVERRIDE}"
+
+# Build TGT
+RUN export REPO_OVERRIDE="" && \\
+    export COMMIT_ID_OVERRIDE="" && \\
+    bash /usr/src/dep-versions/scripts/build-tgt.sh "\${REPO_OVERRIDE}" "\${COMMIT_ID_OVERRIDE}"
+
+# Install grpc_health_probe
+RUN GRPC_HEALTH_PROBE_DOWNLOAD_URL=\$(wget -qO- https://api.github.com/repos/grpc-ecosystem/grpc-health-probe/releases/latest | jq -r '.assets[] | select(.name | test("linux.*'"\${ARCH}"'"; "i")) | .browser_download_url') && \\
+    wget \${GRPC_HEALTH_PROBE_DOWNLOAD_URL} -O /usr/local/bin/grpc_health_probe && \\
+    chmod +x /usr/local/bin/grpc_health_probe
+
+FROM registry.suse.com/bci/bci-base:15.7 AS release
+
+ARG ARCH=amd64
+
+RUN zypper -n ref && \\
+    zypper update -y
+
+RUN for i in {1..10}; do \\
+        zypper -n addrepo --refresh https://download.opensuse.org/repositories/system:/snappy/SLE_15_SP7/system:snappy.repo && \\
+        zypper -n addrepo --refresh https://download.opensuse.org/repositories/network:/utilities/SLE_15_SP7/network:utilities.repo && \\
+        zypper --gpg-auto-import-keys ref && break || sleep 1; \\
+    done
+
+RUN zypper -n install nfs-client nfs4-acl-tools cifs-utils libaio1 sg3_utils \\
+    iputils iproute2 qemu-tools e2fsprogs jq && \\
+    rm -rf /var/cache/zypp/*
+
+# Copy pre-built binaries from builder
+COPY --from=builder \\
+    /usr/local/bin/grpc_health_probe \\
+    /usr/sbin/tgt-admin \\
+    /usr/sbin/tgt-setup-lun \\
+    /usr/sbin/tgtadm \\
+    /usr/sbin/tgtd \\
+    /usr/sbin/tgtimg \\
+    /usr/local/bin/
+
+COPY bin/longhorn /usr/local/bin/
+COPY bin/longhorn-instance-manager /usr/local/bin/
+
+COPY package/launch-simple-longhorn package/engine-manager package/launch-simple-file /usr/local/bin/
+
+# Add Tini
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/\${TINI_VERSION}/tini-\${ARCH} /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
+
+CMD ["longhorn"]
+`, 'package/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3031')).toBe(true);    // Do not use zypper update. Pin package versions for reproduci
+    expect(v.some(v => v.rule === 'DL3036')).toBe(true);    // zypper clean missing after zypper use
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // Avoid use of wget without progress bar. Use `wget --progress
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "registry.suse.com/bci/bci-base" with a dig
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV3020')).toBe(true);    // ADD with remote URL lacks integrity verification. Use ADD --
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+});
+
+
+// ── longhorn/longhorn-manager patterns ──────────────────────────────────────
+
+describe('OSS: longhorn/longhorn-manager patterns', () => {
+  it('Dockerfile.dapper: 13 rules (DL3001, DL3031, DL3036…)', () => {
+    const v = lintContent(`FROM registry.suse.com/bci/golang:1.25
+
+ARG DAPPER_HOST_ARCH
+ARG http_proxy
+ARG https_proxy
+
+ENV HOST_ARCH=\${DAPPER_HOST_ARCH} ARCH=\${DAPPER_HOST_ARCH}
+ENV DAPPER_SOURCE=/go/src/github.com/longhorn/longhorn-manager
+ENV DAPPER_OUTPUT="./bin coverage.out"
+ENV DAPPER_DOCKER_SOCKET=true
+ENV DAPPER_ENV="IMAGE REPO VERSION TAG TESTS DRONE_REPO DRONE_PULL_REQUEST DRONE_COMMIT_REF NO_PACKAGE ARCHS"
+ENV DAPPER_RUN_ARGS="--privileged \\
+    --tmpfs /go/src/github.com/longhorn/longhorn/integration/.venv:exec \\
+    --tmpfs /go/src/github.com/longhorn/longhorn/integration/.tox:exec \\
+    -v /dev:/host/dev"
+ENV TRASH_CACHE=\${DAPPER_SOURCE}/.trash-cache
+ENV HOME=\${DAPPER_SOURCE}
+
+WORKDIR \${DAPPER_SOURCE}
+
+ENTRYPOINT ["./scripts/entry"]
+CMD ["ci"]
+
+RUN zypper -n ref && \\
+    zypper update -y
+
+RUN zypper -n install gcc ca-certificates git wget curl vim less file python3-tox python3-devel iptables libdevmapper1_03 libltdl7 awk docker zip unzip && \\
+    rm -rf /var/cache/zypp/*
+
+# Install golangci-lint
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$(go env GOPATH)/bin latest
+
+# Docker Builx: The docker version in dapper is too old to have buildx. Install it manually.
+RUN curl -sSfLO https://github.com/docker/buildx/releases/download/v0.13.1/buildx-v0.13.1.linux-\${ARCH} && \\
+    chmod +x buildx-v0.13.1.linux-\${ARCH} && \\
+    mv buildx-v0.13.1.linux-\${ARCH} /usr/local/bin/buildx \\
+`, 'Dockerfile.dapper');
+    expect(v.some(v => v.rule === 'DL3001')).toBe(true);    // Avoid using vim in RUN. It does not make sense in a Docker c
+    expect(v.some(v => v.rule === 'DL3031')).toBe(true);    // Do not use zypper update. Pin package versions for reproduci
+    expect(v.some(v => v.rule === 'DL3036')).toBe(true);    // zypper clean missing after zypper use
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // Avoid use of wget without progress bar. Use `wget --progress
+    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG http_proxy is declared but never referenced in the Docke
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell. Download 
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "registry.suse.com/bci/golang" with a diges
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12" instead o
+  });
+
+  it('package/Dockerfile: 8 rules (DL3031, DL3036, DL3057…)', () => {
+    const v = lintContent(`# syntax=docker/dockerfile:1.21.0
+FROM registry.suse.com/bci/golang:1.25 AS builder
+
+WORKDIR /app
+
+# Copy the build script and source code
+COPY . /app
+
+# Make the build script executable
+RUN chmod +x /app/scripts/build
+
+# Run the build script
+RUN /app/scripts/build
+
+FROM registry.suse.com/bci/bci-base:15.7 AS release
+
+ARG TARGETPLATFORM
+RUN if [ "\$TARGETPLATFORM" != "linux/amd64" ] && [ "\$TARGETPLATFORM" != "linux/arm64" ]; then \\
+    echo "Error: Unsupported TARGETPLATFORM: \$TARGETPLATFORM" && \\
+    exit 1; \\
+    fi
+
+ENV ARCH=\${TARGETPLATFORM#linux/}
+
+RUN zypper -n ref && \\
+    zypper update -y
+
+RUN zypper -n install \\
+    iputils \\
+    iproute2 \\
+    nfs-client \\
+    cifs-utils \\
+    bind-utils \\
+    e2fsprogs \\
+    xfsprogs \\
+    zip \\
+    unzip \\
+    kmod \\
+    smartmontools \\
+    && zypper clean --all
+
+COPY --from=builder /app/bin/longhorn-manager-\${ARCH} /usr/local/sbin/longhorn-manager
+
+COPY --from=builder /app/package/launch-manager /app/package/nsmounter /usr/local/sbin/
+
+EXPOSE 9500
+CMD ["launch-manager"]
+`, 'package/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3031')).toBe(true);    // Do not use zypper update. Pin package versions for reproduci
+    expect(v.some(v => v.rule === 'DL3036')).toBe(true);    // zypper clean missing after zypper use
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "registry.suse.com/bci/golang" with a diges
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+});
+
+
+// ── rook/rook patterns ──────────────────────────────────────
+
+describe('OSS: rook/rook patterns', () => {
+  it('images/ceph/Dockerfile: 8 rules (DL3006, DL3041, DL3057…)', () => {
+    const v = lintContent(`# Copyright 2016 The Rook Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# see Makefile for the BASEIMAGE definition
+FROM BASEIMAGE
+
+# env vars for s5cmd
+ARG S5CMD_VERSION
+ARG S5CMD_ARCH
+
+# 'ip' tool must be installed for Multus.
+# Doing a 'dnf install' sometimes breaks CI when centos repos go down or have other package build errors.
+RUN dnf install -y --repo baseos --setopt=install_weak_deps=False iproute && dnf clean all
+
+
+# Install the s5cmd package to interact with s3 gateway
+RUN curl --fail -sSL -o /s5cmd.tar.gz https://github.com/peak/s5cmd/releases/download/v\${S5CMD_VERSION}/s5cmd_\${S5CMD_VERSION}_\${S5CMD_ARCH}.tar.gz && \\
+    mkdir /s5cmd && \\
+    tar xf /s5cmd.tar.gz -C /s5cmd && \\
+    install /s5cmd/s5cmd /usr/local/bin/s5cmd && \\
+    rm -rf /s5cmd.tar.gz /s5cmd
+
+COPY rook toolbox.sh set-ceph-debug-level /usr/local/bin/
+COPY ceph-monitoring /etc/ceph-monitoring
+COPY rook-external /etc/rook-external/
+RUN useradd rook -u 2016 # 2016 is the UID of the rook user and also the year of the first commit in the project
+USER 2016
+ENTRYPOINT ["/usr/local/bin/rook"]
+CMD [""]
+`, 'images/ceph/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag "BASEIMAG
+    expect(v.some(v => v.rule === 'DL3041')).toBe(true);    // Specify version with dnf install -y baseos-<version>
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "BASEIMAGE" with a digest (e.g., image@sha2
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $S5CMD_VERSION in download URL. URL injection p
+    expect(v.some(v => v.rule === 'DV3024')).toBe(true);    // Tarball downloaded and extracted without checksum verificati
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('tests/scripts/pythonwebserver/Dockerfile: 4 rules (DL3020, DV1006, DV1009, DV5003)', () => {
+    const v = lintContent(`FROM python:3
+ADD server.py /
+EXPOSE 8080
+CMD [ "python", "./server.py"]
+`, 'tests/scripts/pythonwebserver/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "python" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/python3-debian12" instead 
+  });
+
+});
+
+
+// ── openebs/lvm-localpv patterns ──────────────────────────────────────
+
+describe('OSS: openebs/lvm-localpv patterns', () => {
+  it('buildscripts/fio/Dockerfile: 6 rules (DL3018, DL3057, DV1006…)', () => {
+    const v = lintContent(`FROM alpine:3.22.1
+
+RUN apk update && \\
+    apk add --no-cache fio && \\
+    rm -rf /var/cache/apk/*
+
+ENTRYPOINT ["fio"]
+`, 'buildscripts/fio/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add fio` use `apk a
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2011')).toBe(true);    // apk update is redundant when using apk add --no-cache. The -
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('buildscripts/lvm-driver/Dockerfile: 7 rules (DL3018, DL3057, DV1006…)', () => {
+    const v = lintContent(`# Copyright 2019-2020 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM alpine:3.22.1
+RUN apk add --no-cache lvm2 lvm2-extra util-linux device-mapper
+RUN apk add --no-cache btrfs-progs-extra xfsprogs xfsprogs-extra e2fsprogs e2fsprogs-extra
+RUN apk add --no-cache ca-certificates libc6-compat
+
+ARG DBUILD_DATE
+ARG DBUILD_REPO_URL
+ARG DBUILD_SITE_URL
+
+COPY lvm-driver /usr/local/bin/
+
+LABEL org.label-schema.name="lvm-driver"
+LABEL org.label-schema.description="OpenEBS LVM LocalPV Driver"
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.build-date=\$DBUILD_DATE
+LABEL org.label-schema.vcs-url=\$DBUILD_REPO_URL
+LABEL org.label-schema.url=\$DBUILD_SITE_URL
+
+ENTRYPOINT ["/usr/local/bin/lvm-driver"]
+EXPOSE 7676
+`, 'buildscripts/lvm-driver/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add lvm2` use `apk 
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected. Consider
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('buildscripts/lvm-driver/Dockerfile.buildx: 12 rules (DL3018, DL3019, DL3057…)', () => {
+    const v = lintContent(`# Copyright 2019-2020 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM golang:1.24.7-alpine AS build
+
+ARG BRANCH
+ARG RELEASE_TAG
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT=""
+
+ENV GO111MODULE=on \\
+  GOOS=\${TARGETOS} \\
+  GOARCH=\${TARGETARCH} \\
+  GOARM=\${TARGETVARIANT} \\
+  DEBIAN_FRONTEND=noninteractive \\
+  PATH="/root/go/bin:\${PATH}" \\
+  BRANCH=\${BRANCH} \\
+  RELEASE_TAG=\${RELEASE_TAG}
+
+WORKDIR /go/src/github.com/openebs/lvm-localpv/
+
+RUN apk add make git bash gcc musl-dev
+
+COPY go.mod go.sum ./
+# Get dependencies - will also be cached if we won't change mod/sum
+RUN go mod download
+
+COPY . .
+
+RUN make buildx.csi-driver
+
+FROM alpine:3.22.1
+RUN apk add --no-cache lvm2 lvm2-extra util-linux device-mapper
+RUN apk add --no-cache btrfs-progs-extra xfsprogs xfsprogs-extra e2fsprogs e2fsprogs-extra
+RUN apk add --no-cache ca-certificates
+
+ARG DBUILD_DATE
+ARG DBUILD_REPO_URL
+ARG DBUILD_SITE_URL
+
+COPY --from=build /go/src/github.com/openebs/lvm-localpv/bin/lvm-driver/lvm-driver /usr/local/bin/lvm-driver
+
+LABEL org.label-schema.name="lvm-driver"
+LABEL org.label-schema.description="OpenEBS LVM LocalPV Driver"
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.build-date=\$DBUILD_DATE
+LABEL org.label-schema.vcs-url=\$DBUILD_REPO_URL
+LABEL org.label-schema.url=\$DBUILD_SITE_URL
+
+ENTRYPOINT ["/usr/local/bin/lvm-driver"]
+EXPOSE 7676
+`, 'buildscripts/lvm-driver/Dockerfile.buildx');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add make` use `apk 
+    expect(v.some(v => v.rule === 'DL3019')).toBe(true);    // Use the --no-cache switch to avoid the need to use --update 
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected. Consider
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);    // DEBIAN_FRONTEND=noninteractive is set as ENV. Use ARG instea
+    expect(v.some(v => v.rule === 'DV4017')).toBe(true);    // PATH contains potentially writable directory "/root/go/bin" 
+  });
+
+  it('deprecated/e2e-tests/Dockerfile: 11 rules (DL3008, DL3013, DL3015…)', () => {
+    const v = lintContent(`# Copyright 2020-2021 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM ubuntu:18.04
+
+LABEL maintainer="OpenEBS"
+
+#Installing necessary ubuntu packages
+RUN rm -rf /var/lib/apt/lists/* && \\
+    apt-get clean && \\
+    apt-get update --fix-missing || true && \\
+    apt-get install -y python python-pip netcat iproute2 jq sshpass bc git\\
+    curl openssh-client
+
+#Installing ansible
+RUN pip install --no-cache-dir ansible==2.7.3
+
+RUN pip install --no-cache-dir ruamel.yaml.clib==0.1.2
+
+#Installing openshift
+RUN pip install --no-cache-dir openshift==0.11.2
+
+#Installing jmespath
+RUN pip install --no-cache-dir jmespath
+
+RUN touch /mnt/parameters.yml
+
+#Installing Kubectl
+ENV KUBE_LATEST_VERSION="v1.20.0"
+RUN curl -L https://storage.googleapis.com/kubernetes-release/release/\${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && \\
+    chmod +x /usr/local/bin/kubectl
+        
+#Adding hosts entries and making ansible folders
+RUN mkdir /etc/ansible/ /ansible && \\
+    echo "[local]" >> /etc/ansible/hosts && \\
+    echo "127.0.0.1" >> /etc/ansible/hosts
+
+#Copying Necessary Files
+COPY ./e2e-tests ./e2e-tests
+`, 'deprecated/e2e-tests/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install jmespath` use `
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set. Use abso
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('deprecated/e2e-tests/experiments/lvm-localpv-provisioner/Dockerfile: 11 rules (DL3008, DL3009, DL3015…)', () => {
+    const v = lintContent(`# Copyright 2020-2021 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM ubuntu:20.04
+
+RUN apt-get update
+
+RUN apt-get install lvm2 -y
+
+CMD [ "bash" ]
+
+##########################################################################
+# This Dockerfile is used to create the image \`quay.io/w3aman/lvmutils:ci\`#
+# which is being used in the daemonset in the file \`lvm_utils_ds.yml\`    #
+# Here we install lvm utils in the image so that lvm command can be run  #
+# from the container, mainly to create volume groups on nodes.           #
+##########################################################################`, 'deprecated/e2e-tests/experiments/lvm-localpv-provisioner/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*`
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);    // apt-get update should be combined with apt-get install in th
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV2008')).toBe(true);    // apt-get update and apt-get install should be in the same RUN
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+});
+
+
+// ── openebs/zfs-localpv patterns ──────────────────────────────────────
+
+describe('OSS: openebs/zfs-localpv patterns', () => {
+  it('buildscripts/zfs-driver/Dockerfile: 8 rules (DL3057, DV1006, DV1009…)', () => {
+    const v = lintContent(`# Copyright 2019-2020 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM ubuntu:18.04
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update; exit 0
+RUN apt-get -y install rsyslog libssl-dev xfsprogs ca-certificates
+RUN apt-get -y install btrfs-progs netcat
+
+ARG DBUILD_DATE
+ARG DBUILD_REPO_URL
+ARG DBUILD_SITE_URL
+
+COPY zfs-driver /usr/local/bin/
+COPY entrypoint.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+LABEL org.label-schema.name="zfs-driver"
+LABEL org.label-schema.description="OpenEBS ZFS LocalPV Driver"
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.build-date=\$DBUILD_DATE
+LABEL org.label-schema.vcs-url=\$DBUILD_REPO_URL
+LABEL org.label-schema.url=\$DBUILD_SITE_URL
+
+ENTRYPOINT ["/usr/local/bin/zfs-driver"]
+EXPOSE 7676 7777
+`, 'buildscripts/zfs-driver/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);    // apt-get update should be combined with apt-get install in th
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('buildscripts/zfs-driver/zfs-driver.Dockerfile: 15 rules (DL3008, DL3009, DL3015…)', () => {
+    const v = lintContent(`FROM golang:1.24.12 AS build
+
+ARG BRANCH
+ARG RELEASE_TAG
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT=""
+
+ENV GO111MODULE=on \\
+  GOOS=\${TARGETOS} \\
+  GOARCH=\${TARGETARCH} \\
+  GOARM=\${TARGETVARIANT} \\
+  DEBIAN_FRONTEND=noninteractive \\
+  PATH="/root/go/bin:\${PATH}" \\
+  BRANCH=\${BRANCH} \\
+  RELEASE_TAG=\${RELEASE_TAG}
+
+WORKDIR /go/src/github.com/openebs/zfs-localpv/
+
+RUN apt-get update && apt-get install -y make git
+
+COPY go.mod go.sum ./
+# Get dependencies - will also be cached if we won't change mod/sum
+RUN go mod download
+
+COPY . .
+
+RUN make buildx.csi-driver
+
+FROM ubuntu:18.04
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update; exit 0
+RUN apt-get -y install rsyslog libssl-dev xfsprogs ca-certificates
+RUN apt-get -y install btrfs-progs netcat
+
+ARG DBUILD_DATE
+ARG DBUILD_REPO_URL
+ARG DBUILD_SITE_URL
+
+COPY --from=build /go/src/github.com/openebs/zfs-localpv/bin/zfs-driver/zfs-driver /usr/local/bin/zfs-driver
+
+LABEL org.label-schema.name="zfs-driver"
+LABEL org.label-schema.description="OpenEBS ZFS LocalPV Driver"
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.build-date=\$DBUILD_DATE
+LABEL org.label-schema.vcs-url=\$DBUILD_REPO_URL
+LABEL org.label-schema.url=\$DBUILD_SITE_URL
+
+ENTRYPOINT ["/usr/local/bin/zfs-driver"]
+EXPOSE 7676 7777
+`, 'buildscripts/zfs-driver/zfs-driver.Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);    // apt-get update should be combined with apt-get install in th
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);    // DEBIAN_FRONTEND=noninteractive is set as ENV. Use ARG instea
+    expect(v.some(v => v.rule === 'DV4017')).toBe(true);    // PATH contains potentially writable directory "/root/go/bin" 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('deprecated/e2e-tests/Dockerfile: 12 rules (DL3008, DL3013, DL3015…)', () => {
+    const v = lintContent(`# Copyright 2020-2021 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM ubuntu:18.04
+
+LABEL maintainer="OpenEBS"
+
+#Installing necessary ubuntu packages
+RUN rm -rf /var/lib/apt/lists/* && \\
+    apt-get clean && \\
+    apt-get update --fix-missing || true && \\
+    apt-get install -y python python-pip netcat iproute2 jq sshpass bc git\\
+    curl openssh-client
+
+#Installing ansible
+RUN pip install ansible==2.7.3
+
+RUN pip install ruamel.yaml.clib==0.1.2
+
+#Installing openshift
+RUN pip install openshift==0.11.2
+
+#Installing jmespath
+RUN pip install jmespath
+
+RUN touch /mnt/parameters.yml
+
+#Installing Kubectl
+ENV KUBE_LATEST_VERSION="v1.20.0"
+RUN curl -L https://storage.googleapis.com/kubernetes-release/release/\${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && \\
+    chmod +x /usr/local/bin/kubectl
+        
+#Adding hosts entries and making ansible folders
+RUN mkdir /etc/ansible/ /ansible && \\
+    echo "[local]" >> /etc/ansible/hosts && \\
+    echo "127.0.0.1" >> /etc/ansible/hosts
+
+#Copying Necessary Files
+COPY ./e2e-tests ./e2e-tests`, 'deprecated/e2e-tests/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install jmespath` use `
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip install --no
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set. Use abso
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('deprecated/e2e-tests/experiments/zfs-localpv-provisioner/Dockerfile: 13 rules (DL3008, DL3009, DL3015…)', () => {
+    const v = lintContent(`# Copyright 2020-2021 The OpenEBS Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+##########################################################################
+# This Dockerfile is used to create the image \`quay.io/w3aman/zfsutils:ci\`#
+# which is being used in the daemonset in the file \`zfs_utils_ds.yml\`    #
+# Here we install zfs utils in the image so that zfs command can be run  #
+# from the container, mainly to create zpool on desired nodes.           #
+##########################################################################
+
+FROM ubuntu:20.04
+
+RUN apt-get update
+
+RUN apt-get install sudo -y
+
+RUN apt-get install zfsutils-linux -y
+
+CMD [ "bash" ]`, 'deprecated/e2e-tests/experiments/zfs-localpv-provisioner/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*`
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);    // apt-get update should be combined with apt-get install in th
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV2008')).toBe(true);    // apt-get update and apt-get install should be in the same RUN
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected. Consider
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+});
+
+
+// ── seaweedfs/seaweedfs patterns ──────────────────────────────────────
+
+describe('OSS: seaweedfs/seaweedfs patterns', () => {
+  it('docker/Dockerfile.e2e: 5 rules (DL3008, DL3057, DV1006, DV1009, DV5003)', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+
+LABEL author="Chris Lu"
+
+# Use faster mirrors and optimize package installation
+# Note: This e2e test image intentionally runs as root for simplicity and compatibility.
+# Production images (Dockerfile.go_build) use proper user isolation with su-exec.
+# For testing purposes, running as root avoids permission complexities and dependency
+# on Alpine-specific tools like su-exec (not available in Ubuntu repos).
+RUN apt-get update && \\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \\
+    --no-install-recommends \\
+    --no-install-suggests \\
+    curl \\
+    fio \\
+    fuse \\
+    ca-certificates \\
+    && apt-get clean \\
+    && rm -rf /var/lib/apt/lists/* \\
+    && rm -rf /tmp/* \\
+    && rm -rf /var/tmp/*
+RUN mkdir -p /etc/seaweedfs /data/filerldb2
+
+COPY ./weed /usr/bin/
+COPY ./filer.toml /etc/seaweedfs/filer.toml
+COPY ./entrypoint_e2e.sh /entrypoint.sh
+
+# volume server grpc port
+EXPOSE 18080
+# volume server http port
+EXPOSE 8080
+# filer server grpc port
+EXPOSE 18888
+# filer server http port
+EXPOSE 8888
+# master server shared grpc port
+EXPOSE 19333
+# master server shared http port
+EXPOSE 9333
+
+VOLUME /data
+WORKDIR /data
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+`, 'docker/Dockerfile.e2e');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('docker/Dockerfile.foundationdb_large: 14 rules (DL3003, DL3008, DL3015…)', () => {
+    const v = lintContent(`FROM golang:1.24 AS builder
+
+RUN apt-get update && \\
+    apt-get install -y build-essential wget ca-certificates && \\
+    rm -rf /var/lib/apt/lists/*
+
+ARG FDB_VERSION=7.4.5
+ENV FDB_VERSION=\${FDB_VERSION}
+ARG TARGETARCH
+
+# Install FoundationDB client libraries with SHA256 checksum verification
+# Known SHA256 checksums for FoundationDB client packages (verified 2025-01-19)
+# To add checksums for new versions: run docker/get_fdb_checksum.sh <version> <arch>
+RUN cd /tmp && \\
+    case "\${TARGETARCH}" in \\
+        "amd64") FDB_ARCH="amd64"; PACKAGE_ARCH="amd64" ;; \\
+        "arm64") FDB_ARCH="arm64"; PACKAGE_ARCH="aarch64" ;; \\
+        *) echo "Unsupported architecture: \${TARGETARCH}" >&2; exit 1 ;; \\
+    esac && \\
+    case "\${FDB_VERSION}_\${FDB_ARCH}" in \\
+        "7.4.5_amd64") \\
+            EXPECTED_SHA256="eea6b98cf386a0848655b2e196d18633662a7440a7ee061c10e32153c7e7e112" ;; \\
+        "7.4.5_arm64") \\
+            EXPECTED_SHA256="f2176b86b7e1b561c3632b4e6e7efb82e3b8f57c2ff0d0ac4671e742867508aa" ;; \\
+        "7.3.43_amd64") \\
+            EXPECTED_SHA256="c3fa0a59c7355b914a1455dac909238d5ea3b6c6bc7b530af8597e6487c1651a" ;; \\
+        "7.3.43_arm64") \\
+            echo "ERROR: FoundationDB \${FDB_VERSION} does not publish arm64 client packages." >&2; \\
+            echo "Please upgrade to 7.4.5+ when targeting arm64." >&2; \\
+            exit 1 ;; \\
+        *) \\
+            echo "ERROR: No checksum available for FDB version \${FDB_VERSION} on \${FDB_ARCH}" >&2; \\
+            echo "This is a security requirement. To add verification:" >&2; \\
+            echo "  1. Run: docker/get_fdb_checksum.sh \${FDB_VERSION} \${FDB_ARCH}" >&2; \\
+            echo "  2. Add the checksum to this Dockerfile" >&2; \\
+            echo "Refusing to proceed without checksum verification." >&2; \\
+            exit 1 ;; \\
+    esac && \\
+    PACKAGE="foundationdb-clients_\${FDB_VERSION}-1_\${PACKAGE_ARCH}.deb" && \\
+    wget --timeout=30 --tries=3 https://github.com/apple/foundationdb/releases/download/\${FDB_VERSION}/\${PACKAGE} && \\
+    echo "\${EXPECTED_SHA256}  \${PACKAGE}" | sha256sum -c - || \\
+        (echo "ERROR: Checksum verification failed for FoundationDB \${FDB_VERSION} (\${FDB_ARCH})" >&2; \\
+         echo "Expected: \${EXPECTED_SHA256}" >&2; \\
+         echo "This indicates either a corrupted download or potential tampering." >&2; \\
+         exit 1) && \\
+    dpkg -i \${PACKAGE} && \\
+    rm \${PACKAGE}
+
+# Set up FoundationDB environment variables for CGO
+ENV CGO_CFLAGS="-I/usr/include/foundationdb"
+ENV CGO_LDFLAGS="-lfdb_c"
+
+# build SeaweedFS sources; prefer local context but fall back to git clone if context only has docker files
+ARG SOURCE_REF=master
+WORKDIR /go/src/github.com/seaweedfs/seaweedfs
+COPY . .
+RUN set -euo pipefail && \\
+    if [ ! -d weed ]; then \\
+        echo "Local build context does not include SeaweedFS sources; cloning \${SOURCE_REF}" >&2; \\
+        mkdir -p /tmp/local-context && cp -a /go/src/github.com/seaweedfs/seaweedfs/. /tmp/local-context && \\
+        cd / && rm -rf /go/src/github.com/seaweedfs/seaweedfs && \\
+        git clone --depth 1 --branch \${SOURCE_REF} https://github.com/seaweedfs/seaweedfs /go/src/github.com/seaweedfs/seaweedfs && \\
+        cp -a /tmp/local-context/. /go/src/github.com/seaweedfs/seaweedfs/docker/ && \\
+        rm -rf /tmp/local-context && \\
+        cd /go/src/github.com/seaweedfs/seaweedfs; \\
+    fi && \\
+    cd weed \\
+  && COMMIT_SHA=\$(git rev-parse --short HEAD 2>/dev/null || echo "unknown") \\
+  && export LDFLAGS="-X github.com/seaweedfs/seaweedfs/weed/util/version.COMMIT=\${COMMIT_SHA}" \\
+  && go install -tags "5BytesOffset foundationdb" -ldflags "\${LDFLAGS}"
+
+
+FROM debian:bookworm-slim AS final
+LABEL author="Chris Lu"
+
+# Install runtime dependencies first
+RUN apt-get update && \\
+    apt-get install -y --no-install-recommends \\
+    ca-certificates \\
+    curl \\
+    fuse \\
+    wget && \\
+    rm -rf /var/lib/apt/lists/*
+
+# Reuse FoundationDB artifacts installed during the build stage
+COPY --from=builder /usr/lib/libfdb_c* /usr/lib/
+COPY --from=builder /usr/lib/foundationdb /usr/lib/foundationdb
+COPY --from=builder /usr/bin/fdb* /usr/bin/
+RUN ldconfig
+
+# Copy SeaweedFS binary and configuration
+COPY --from=builder /go/bin/weed /usr/bin/
+RUN mkdir -p /etc/seaweedfs
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/filer_foundationdb.toml /etc/seaweedfs/filer.toml
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/entrypoint.sh /entrypoint.sh
+
+# Create non-root user
+RUN groupadd -g 1000 seaweed && \\
+    useradd -u 1000 -g seaweed -s /bin/bash -m seaweed
+
+# volume server gprc port
+EXPOSE 18080
+# volume server http port
+EXPOSE 8080
+# filer server gprc port
+EXPOSE 18888
+# filer server http port
+EXPOSE 8888
+# master server shared gprc port
+EXPOSE 19333
+# master server shared http port
+EXPOSE 9333
+# s3 server http port
+EXPOSE 8333
+# webdav server http port
+EXPOSE 7333
+
+# Create data directory and set proper ownership for seaweed user
+RUN mkdir -p /data && \\
+    chown -R seaweed:seaweed /data && \\
+    chown -R seaweed:seaweed /etc/seaweedfs && \\
+    chmod 755 /entrypoint.sh
+
+VOLUME /data
+
+WORKDIR /data
+
+# Switch to non-root user
+USER seaweed
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+`, 'docker/Dockerfile.foundationdb_large');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // Avoid use of wget without progress bar. Use `wget --progress
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $FDB_VERSION in download URL. URL injection pos
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);    // ARG defined after ENV. Define ARG before ENV for better buil
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('docker/Dockerfile.go_build: 10 rules (DL3003, DL3006, DL3018…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine as builder
+RUN apk add git g++ fuse
+RUN mkdir -p /go/src/github.com/seaweedfs/
+ARG BRANCH=\${BRANCH:-master}
+# Clone with full history and all tags to ensure all commits are available
+RUN git clone --no-single-branch --tags https://github.com/seaweedfs/seaweedfs /go/src/github.com/seaweedfs/seaweedfs
+ARG TAGS
+RUN cd /go/src/github.com/seaweedfs/seaweedfs && \\
+    (git checkout \$BRANCH || \\
+     (echo "Checkout failed, fetching all history..." && \\
+      git fetch --all --tags --prune && \\
+      git checkout \$BRANCH) || \\
+     (echo "ERROR: Branch/commit \$BRANCH not found in repository" && \\
+      echo "Available branches:" && git branch -a && exit 1))
+RUN cd /go/src/github.com/seaweedfs/seaweedfs/weed \\
+  && export LDFLAGS="-X github.com/seaweedfs/seaweedfs/weed/util/version.COMMIT=\$(git rev-parse --short HEAD)" \\
+  && CGO_ENABLED=0 go install -tags "\$TAGS" -ldflags "-extldflags -static \${LDFLAGS}"
+
+FROM alpine AS final
+LABEL author="Chris Lu"
+COPY --from=builder /go/bin/weed /usr/bin/
+RUN mkdir -p /etc/seaweedfs
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/filer.toml /etc/seaweedfs/filer.toml
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/entrypoint.sh /entrypoint.sh
+
+# FIPS 140-3 mode is ON by default (Go 1.24+)
+# To disable: docker run -e GODEBUG=fips140=off ...
+
+# Install dependencies and create non-root user
+RUN apk add --no-cache fuse curl su-exec && \\
+    addgroup -g 1000 seaweed && \\
+    adduser -D -u 1000 -G seaweed seaweed
+
+# volume server gprc port
+EXPOSE 18080
+# volume server http port
+EXPOSE 8080
+# filer server gprc port
+EXPOSE 18888
+# filer server http port
+EXPOSE 8888
+# master server shared gprc port
+EXPOSE 19333
+# master server shared http port
+EXPOSE 9333
+# s3 server http port
+EXPOSE 8333
+# webdav server http port
+EXPOSE 7333
+
+# Create data directory and set proper ownership for seaweed user
+RUN mkdir -p /data/filerldb2 && \\
+    chown -R seaweed:seaweed /data && \\
+    chown -R seaweed:seaweed /etc/seaweedfs && \\
+    chmod 755 /entrypoint.sh
+
+VOLUME /data
+WORKDIR /data
+
+# Entrypoint will handle permission fixes and user switching
+ENTRYPOINT ["/entrypoint.sh"]
+`, 'docker/Dockerfile.go_build');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag "alpine" 
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DL3019')).toBe(true);    // Use the --no-cache switch to avoid the need to use --update 
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+  });
+
+  it('docker/Dockerfile.local: 6 rules (DL3006, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM alpine AS final
+LABEL author="Chris Lu"
+COPY  ./weed /usr/bin/weed
+RUN chmod +x /usr/bin/weed && ls -la /usr/bin/weed
+RUN mkdir -p /etc/seaweedfs
+COPY ./filer.toml /etc/seaweedfs/filer.toml
+COPY ./entrypoint.sh /entrypoint.sh
+
+# Install dependencies and create non-root user
+RUN apk add --no-cache fuse curl su-exec && \\
+    addgroup -g 1000 seaweed && \\
+    adduser -D -u 1000 -G seaweed seaweed
+
+# volume server grpc port
+EXPOSE 18080
+# volume server http port
+EXPOSE 8080
+# filer server grpc port
+EXPOSE 18888
+# filer server http port
+EXPOSE 8888
+# master server shared grpc port
+EXPOSE 19333
+# master server shared http port
+EXPOSE 9333
+# s3 server http port
+EXPOSE 8333
+# webdav server http port
+EXPOSE 7333
+
+# Create data directory and set proper ownership for seaweed user
+RUN mkdir -p /data/filerldb2 && \\
+    chown -R seaweed:seaweed /data && \\
+    chown -R seaweed:seaweed /etc/seaweedfs && \\
+    chmod 755 /entrypoint.sh
+
+VOLUME /data
+WORKDIR /data
+
+# Entrypoint will handle permission fixes and user switching
+ENTRYPOINT ["/entrypoint.sh"]
+`, 'docker/Dockerfile.local');
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag "alpine" 
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add fuse` use `apk 
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+  });
+
+  it('docker/Dockerfile.rocksdb_dev_env: 15 rules (DL3003, DL3008, DL3009…)', () => {
+    const v = lintContent(`FROM golang:1.24 AS builder
+
+RUN apt-get update
+RUN apt-get install -y build-essential libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev libzstd-dev
+
+ARG ROCKSDB_VERSION=v10.10.1
+ENV ROCKSDB_VERSION=\${ROCKSDB_VERSION}
+
+# build RocksDB
+RUN cd /tmp && \\
+    git clone https://github.com/facebook/rocksdb.git /tmp/rocksdb --depth 1 --single-branch --branch \$ROCKSDB_VERSION && \\
+    cd rocksdb && \\
+    PORTABLE=1 make -j"\$(nproc)" static_lib && \\
+    make install-static
+
+ENV CGO_CFLAGS="-I/tmp/rocksdb/include"
+ENV CGO_LDFLAGS="-L/tmp/rocksdb -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4 -lzstd"
+`, 'docker/Dockerfile.rocksdb_dev_env');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*`
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);    // apt-get update should be combined with apt-get install in th
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV2008')).toBe(true);    // apt-get update and apt-get install should be in the same RUN
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the final stage.
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12" instead o
+  });
+
+  it('docker/Dockerfile.rocksdb_large: 16 rules (DL3003, DL3006, DL3008…)', () => {
+    const v = lintContent(`FROM golang:1.24 AS builder
+
+RUN apt-get update
+RUN apt-get install -y build-essential libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev libzstd-dev
+
+ARG ROCKSDB_VERSION=v10.10.1
+ENV ROCKSDB_VERSION=\${ROCKSDB_VERSION}
+
+# build RocksDB
+RUN cd /tmp && \\
+    git clone https://github.com/facebook/rocksdb.git /tmp/rocksdb --depth 1 --single-branch --branch \$ROCKSDB_VERSION && \\
+    cd rocksdb && \\
+    PORTABLE=1 make -j"\$(nproc)" static_lib && \\
+    make install-static
+
+ENV CGO_CFLAGS="-I/tmp/rocksdb/include"
+ENV CGO_LDFLAGS="-L/tmp/rocksdb -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4 -lzstd"
+
+# build SeaweedFS
+RUN mkdir -p /go/src/github.com/seaweedfs/
+RUN git clone https://github.com/seaweedfs/seaweedfs /go/src/github.com/seaweedfs/seaweedfs
+ARG BRANCH=master
+RUN cd /go/src/github.com/seaweedfs/seaweedfs && git checkout \$BRANCH
+RUN cd /go/src/github.com/seaweedfs/seaweedfs/weed \\
+  && export LDFLAGS="-X github.com/seaweedfs/seaweedfs/weed/util/version.COMMIT=\$(git rev-parse --short HEAD)" \\
+  && go install -tags "5BytesOffset rocksdb" -ldflags "-extldflags -static \${LDFLAGS}"
+
+
+FROM alpine AS final
+LABEL author="Chris Lu"
+COPY --from=builder /go/bin/weed /usr/bin/
+RUN mkdir -p /etc/seaweedfs
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/filer_rocksdb.toml /etc/seaweedfs/filer.toml
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/entrypoint.sh /entrypoint.sh
+
+# Install dependencies and create non-root user
+RUN apk add --no-cache fuse snappy gflags curl su-exec && \\
+    addgroup -g 1000 seaweed && \\
+    adduser -D -u 1000 -G seaweed seaweed
+
+# volume server gprc port
+EXPOSE 18080
+# volume server http port
+EXPOSE 8080
+# filer server gprc port
+EXPOSE 18888
+# filer server http port
+EXPOSE 8888
+# master server shared gprc port
+EXPOSE 19333
+# master server shared http port
+EXPOSE 9333
+# s3 server http port
+EXPOSE 8333
+# webdav server http port
+EXPOSE 7333
+
+# Create data directory and set proper ownership for seaweed user
+RUN mkdir -p /data/filer_rocksdb && \\
+    chown -R seaweed:seaweed /data && \\
+    chown -R seaweed:seaweed /etc/seaweedfs && \\
+    chmod 755 /entrypoint.sh
+
+VOLUME /data
+
+WORKDIR /data
+
+# Entrypoint will handle permission fixes and user switching
+ENTRYPOINT ["/entrypoint.sh"]
+`, 'docker/Dockerfile.rocksdb_large');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag "alpine" 
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add fuse` use `apk 
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);    // apt-get update should be combined with apt-get install in th
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV2008')).toBe(true);    // apt-get update and apt-get install should be in the same RUN
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);    // ARG defined after ENV. Define ARG before ENV for better buil
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+  });
+
+  it('docker/Dockerfile.rocksdb_large_local: 9 rules (DL3003, DL3006, DL3018…)', () => {
+    const v = lintContent(`FROM chrislusf/rocksdb_dev_env as builder
+
+# build SeaweedFS
+RUN mkdir -p /go/src/github.com/seaweedfs/
+ADD . /go/src/github.com/seaweedfs/seaweedfs
+RUN ls -al /go/src/github.com/seaweedfs/ && \\
+  cd /go/src/github.com/seaweedfs/seaweedfs/weed \\
+  && export LDFLAGS="-X github.com/seaweedfs/seaweedfs/weed/util/version.COMMIT=\$(git rev-parse --short HEAD)" \\
+  && go install -tags "5BytesOffset rocksdb" -ldflags "-extldflags -static \${LDFLAGS}"
+
+
+FROM alpine AS final
+LABEL author="Chris Lu"
+COPY --from=builder /go/bin/weed /usr/bin/
+RUN mkdir -p /etc/seaweedfs
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/filer_rocksdb.toml /etc/seaweedfs/filer.toml
+COPY --from=builder /go/src/github.com/seaweedfs/seaweedfs/docker/entrypoint.sh /entrypoint.sh
+
+# Install dependencies and create non-root user
+RUN apk add --no-cache fuse snappy gflags curl tmux su-exec && \\
+    addgroup -g 1000 seaweed && \\
+    adduser -D -u 1000 -G seaweed seaweed
+
+# volume server gprc port
+EXPOSE 18080
+# volume server http port
+EXPOSE 8080
+# filer server gprc port
+EXPOSE 18888
+# filer server http port
+EXPOSE 8888
+# master server shared gprc port
+EXPOSE 19333
+# master server shared http port
+EXPOSE 9333
+# s3 server http port
+EXPOSE 8333
+# webdav server http port
+EXPOSE 7333
+
+# Create data directory and set proper ownership for seaweed user
+RUN mkdir -p /data/filer_rocksdb && \\
+    chown -R seaweed:seaweed /data && \\
+    chown -R seaweed:seaweed /etc/seaweedfs && \\
+    chmod 755 /entrypoint.sh
+
+VOLUME /data
+
+WORKDIR /data
+
+# Entrypoint will handle permission fixes and user switching
+ENTRYPOINT ["/entrypoint.sh"]
+`, 'docker/Dockerfile.rocksdb_large_local');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag "chrislus
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add fuse` use `apk 
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "chrislusf/rocksdb_dev_env" with a digest (
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+  });
+
+  it('docker/Dockerfile.s3tests: 6 rules (DL3008, DL3057, DV1006…)', () => {
+    const v = lintContent(`FROM ubuntu:20.04
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \\
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \\
+        git \\
+        sudo \\
+        debianutils \\
+        python3-pip \\
+        python3-virtualenv \\
+        python3-dev \\
+        libevent-dev \\
+        libffi-dev \\
+        libxml2-dev \\
+        libxslt-dev \\
+        zlib1g-dev && \\
+    DEBIAN_FRONTEND=noninteractive apt-get clean && \\
+    rm -rf /var/lib/apt/lists/* && \\
+    git clone https://github.com/ceph/s3-tests.git /opt/s3-tests
+
+WORKDIR /opt/s3-tests
+RUN ./bootstrap
+
+ENV \\
+    NOSETESTS_EXCLUDE="" \\
+    NOSETESTS_ATTR="" \\
+    NOSETESTS_OPTIONS="" \\
+    S3TEST_CONF="/s3tests.conf"
+
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["sleep 30 && exec ./virtualenv/bin/nosetests \${NOSETESTS_OPTIONS-} \${NOSETESTS_ATTR:+-a \$NOSETESTS_ATTR} \${NOSETESTS_EXCLUDE:+-e \$NOSETESTS_EXCLUDE}"]
+`, 'docker/Dockerfile.s3tests');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('docker/Dockerfile.tarantool.dev_env: 10 rules (DL3008, DL3009, DL3015…)', () => {
+    const v = lintContent(`FROM tarantool/tarantool:3.3.1 AS builder
+
+# install dependencies
+RUN apt update && \\
+  apt install -y git unzip cmake tt=2.7.0
+
+# init tt dir structure, create dir for app, create symlink
+RUN tt init && \\
+  mkdir app && \\
+  ln -sfn \${PWD}/app/ \${PWD}/instances.enabled/app
+
+# copy cluster configs
+COPY tarantool /opt/tarantool/app
+
+# build app
+RUN tt build app
+
+`, 'docker/Dockerfile.tarantool.dev_env');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3027')).toBe(true);    // Do not use apt as it is meant to be an end-user tool, use ap
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*`
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "tarantool/tarantool" with a digest (e.g., 
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('docker/admin_integration/Dockerfile.local: 5 rules (DL3007, DL3018, DL3057, DV1006, DV1009)', () => {
+    const v = lintContent(`FROM alpine:latest
+
+# Install required packages
+RUN apk add --no-cache \\
+    ca-certificates \\
+    fuse \\
+    curl \\
+    jq
+
+# Copy our locally built binary
+COPY weed-local /usr/bin/weed
+RUN chmod +x /usr/bin/weed
+
+# Create working directory
+WORKDIR /data
+
+# Default command
+ENTRYPOINT ["/usr/bin/weed"] `, 'docker/admin_integration/Dockerfile.local');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., image@sha256:
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.integration-test: 8 rules (DL3008, DL3015, DL3057…)', () => {
+    const v = lintContent(`# Dockerfile for RDMA Mount Integration Tests
+FROM ubuntu:22.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \\
+    curl \\
+    wget \\
+    ca-certificates \\
+    jq \\
+    bc \\
+    time \\
+    util-linux \\
+    coreutils \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create test directories
+RUN mkdir -p /usr/local/bin /test-results
+
+# Copy test scripts
+COPY scripts/run-integration-tests.sh /usr/local/bin/run-integration-tests.sh
+COPY scripts/test-rdma-mount.sh /usr/local/bin/test-rdma-mount.sh
+RUN chmod +x /usr/local/bin/*.sh
+
+# Default command
+CMD ["/usr/local/bin/run-integration-tests.sh"]
+`, 'seaweedfs-rdma-sidecar/Dockerfile.integration-test');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.mount-rdma: 9 rules (DL3008, DL3015, DL3057…)', () => {
+    const v = lintContent(`# Dockerfile for SeaweedFS Mount with RDMA support
+FROM ubuntu:22.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \\
+    fuse3 \\
+    curl \\
+    wget \\
+    ca-certificates \\
+    procps \\
+    util-linux \\
+    jq \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create necessary directories
+RUN mkdir -p /usr/local/bin /mnt/seaweedfs /var/log/seaweedfs
+
+# Copy SeaweedFS binary (will be built from context)
+COPY bin/weed /usr/local/bin/weed
+RUN chmod +x /usr/local/bin/weed
+
+# Copy mount helper scripts
+COPY scripts/mount-helper.sh /usr/local/bin/mount-helper.sh
+RUN chmod +x /usr/local/bin/mount-helper.sh
+
+# Create mount point
+RUN mkdir -p /mnt/seaweedfs
+
+# Set up FUSE permissions
+RUN echo 'user_allow_other' >> /etc/fuse.conf
+
+# Health check script
+COPY scripts/mount-health-check.sh /usr/local/bin/mount-health-check.sh
+RUN chmod +x /usr/local/bin/mount-health-check.sh
+
+# Expose mount point as volume
+VOLUME ["/mnt/seaweedfs"]
+
+# Default command
+CMD ["/usr/local/bin/mount-helper.sh"]
+`, 'seaweedfs-rdma-sidecar/Dockerfile.mount-rdma');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.performance-test: 8 rules (DL3008, DL3015, DL3057…)', () => {
+    const v = lintContent(`# Dockerfile for RDMA Mount Performance Tests
+FROM ubuntu:22.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \\
+    curl \\
+    wget \\
+    ca-certificates \\
+    jq \\
+    bc \\
+    time \\
+    util-linux \\
+    coreutils \\
+    fio \\
+    iozone3 \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create test directories
+RUN mkdir -p /usr/local/bin /performance-results
+
+# Copy test scripts
+COPY scripts/run-performance-tests.sh /usr/local/bin/run-performance-tests.sh
+RUN chmod +x /usr/local/bin/*.sh
+
+# Default command
+CMD ["/usr/local/bin/run-performance-tests.sh"]
+`, 'seaweedfs-rdma-sidecar/Dockerfile.performance-test');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.rdma-engine: 8 rules (DL3008, DL3015, DL3025…)', () => {
+    const v = lintContent(`# Multi-stage build for Rust RDMA Engine
+FROM rust:1.80-slim AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \\
+    pkg-config \\
+    libssl-dev \\
+    libudev-dev \\
+    build-essential \\
+    libc6-dev \\
+    linux-libc-dev \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Set work directory
+WORKDIR /app
+
+# Copy Rust project files
+COPY rdma-engine/Cargo.toml ./
+COPY rdma-engine/Cargo.lock ./
+COPY rdma-engine/src ./src
+
+# Build the release binary
+RUN cargo build --release
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \\
+    ca-certificates \\
+    libssl3 \\
+    curl \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN useradd -m -u 1001 appuser
+
+# Set work directory
+WORKDIR /app
+
+# Copy binary from builder stage
+COPY --from=builder /app/target/release/rdma-engine-server .
+
+# Change ownership
+RUN chown -R appuser:appuser /app
+
+# Set default socket path (can be overridden)
+ENV RDMA_SOCKET_PATH=/tmp/rdma/rdma-engine.sock
+
+# Create socket directory with proper permissions (before switching user)
+RUN mkdir -p /tmp/rdma && chown -R appuser:appuser /tmp/rdma
+
+USER appuser
+
+# Expose any needed ports (none for this service as it uses Unix sockets)
+# EXPOSE 18515
+
+# Health check - verify both process and socket using environment variable
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=3 \\
+    CMD pgrep rdma-engine-server >/dev/null && test -S "\$RDMA_SOCKET_PATH"
+
+# Default command using environment variable
+CMD sh -c "./rdma-engine-server --debug --ipc-socket \\"\$RDMA_SOCKET_PATH\\""
+`, 'seaweedfs-rdma-sidecar/Dockerfile.rdma-engine');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3025')).toBe(true);    // Use arguments JSON notation for CMD arguments
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "rust" with a digest (e.g., image@sha256:..
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.rdma-engine.simple: 7 rules (DL3008, DL3015, DL3025…)', () => {
+    const v = lintContent(`# Simplified Dockerfile for Rust RDMA Engine (using pre-built binary)
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \\
+    ca-certificates \\
+    libssl3 \\
+    curl \\
+    procps \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN useradd -m -u 1001 appuser
+
+# Set work directory
+WORKDIR /app
+
+# Copy pre-built binary from local build
+COPY ./rdma-engine/target/release/rdma-engine-server .
+
+# Change ownership
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Set default socket path (can be overridden)
+ENV RDMA_SOCKET_PATH=/tmp/rdma-engine.sock
+
+# Create socket directory
+RUN mkdir -p /tmp
+
+# Health check - verify both process and socket using environment variable
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=3 \\
+    CMD pgrep rdma-engine-server >/dev/null && test -S "\$RDMA_SOCKET_PATH"
+
+# Default command using environment variable
+CMD sh -c "./rdma-engine-server --debug --ipc-socket \\"\$RDMA_SOCKET_PATH\\""
+`, 'seaweedfs-rdma-sidecar/Dockerfile.rdma-engine.simple');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3025')).toBe(true);    // Use arguments JSON notation for CMD arguments
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "debian" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.sidecar: 5 rules (DL3018, DV1009, DV4002, DV4010, DV4012)', () => {
+    const v = lintContent(`# Multi-stage build for Go Sidecar
+FROM golang:1.24-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Set work directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY cmd/ ./cmd/
+COPY pkg/ ./pkg/
+
+# Build the binaries
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o demo-server ./cmd/demo-server
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o sidecar ./cmd/sidecar
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o test-rdma ./cmd/test-rdma
+
+# Runtime stage
+FROM alpine:3.18
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates curl jq
+
+# Create app user
+RUN addgroup -g 1001 appgroup && \\
+    adduser -D -s /bin/sh -u 1001 -G appgroup appuser
+
+# Set work directory
+WORKDIR /app
+
+# Copy binaries from builder stage
+COPY --from=builder /app/demo-server .
+COPY --from=builder /app/sidecar .
+COPY --from=builder /app/test-rdma .
+
+# Change ownership
+RUN chown -R appuser:appgroup /app
+USER appuser
+
+# Expose the demo server port
+EXPOSE 8081
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \\
+    CMD curl -f http://localhost:8081/health || exit 1
+
+# Default command (demo server)
+CMD ["./demo-server", "--port", "8081", "--enable-rdma", "--debug"]
+`, 'seaweedfs-rdma-sidecar/Dockerfile.sidecar');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('seaweedfs-rdma-sidecar/Dockerfile.test-client: 5 rules (DL3018, DL3057, DV1009, DV4010, DV4012)', () => {
+    const v = lintContent(`# Multi-stage build for Test Client
+FROM golang:1.23-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Set work directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY cmd/ ./cmd/
+COPY pkg/ ./pkg/
+
+# Build the test binaries
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o test-rdma ./cmd/test-rdma
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o demo-server ./cmd/demo-server
+
+# Runtime stage
+FROM alpine:3.18
+
+# Install runtime dependencies and testing tools
+RUN apk --no-cache add \\
+    ca-certificates \\
+    curl \\
+    jq \\
+    bash \\
+    wget \\
+    netcat-openbsd \\
+    && rm -rf /var/cache/apk/*
+
+# Create app user
+RUN addgroup -g 1001 appgroup && \\
+    adduser -D -s /bin/bash -u 1001 -G appgroup appuser
+
+# Set work directory
+WORKDIR /app
+
+# Copy binaries from builder stage
+COPY --from=builder /app/test-rdma .
+COPY --from=builder /app/demo-server .
+
+# Copy test scripts
+COPY tests/ ./tests/
+RUN chmod +x ./tests/*.sh
+
+# Change ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to app user
+USER appuser
+
+# Default command
+CMD ["/bin/bash"]
+`, 'seaweedfs-rdma-sidecar/Dockerfile.test-client');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('seaweedfs-rdma-sidecar/docker/Dockerfile.rdma-simulation: 9 rules (DL3008, DL3015, DV1004…)', () => {
+    const v = lintContent(`# RDMA Simulation Container with Soft-RoCE (RXE)
+# This container enables software RDMA over regular Ethernet
+
+FROM ubuntu:22.04
+
+# Install RDMA and networking tools
+RUN apt-get update && apt-get install -y \\
+    # System utilities
+    sudo \\
+    # RDMA core libraries
+    libibverbs1 \\
+    libibverbs-dev \\
+    librdmacm1 \\
+    librdmacm-dev \\
+    rdma-core \\
+    ibverbs-utils \\
+    infiniband-diags \\
+    # Network tools  
+    iproute2 \\
+    iputils-ping \\
+    net-tools \\
+    # Build tools
+    build-essential \\
+    pkg-config \\
+    cmake \\
+    # UCX dependencies
+    libnuma1 \\
+    libnuma-dev \\
+    # UCX library (pre-built) - try to install but don't fail if not available
+    # libucx0 \\
+    # libucx-dev \\
+    # Debugging tools
+    strace \\
+    gdb \\
+    valgrind \\
+    # Utilities
+    curl \\
+    wget \\
+    vim \\
+    htop \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Try to install UCX tools (optional, may not be available in all repositories)
+RUN apt-get update && \\
+    (apt-get install -y ucx-tools || echo "UCX tools not available in repository") && \\
+    rm -rf /var/lib/apt/lists/*
+
+# Create rdmauser for security (avoid conflict with system rdma group)
+RUN useradd -m -s /bin/bash -G sudo,rdma rdmauser && \\
+    echo "rdmauser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Create directories for RDMA setup
+RUN mkdir -p /opt/rdma-sim /var/log/rdma
+
+# Copy RDMA simulation scripts
+COPY docker/scripts/setup-soft-roce.sh /opt/rdma-sim/
+COPY docker/scripts/test-rdma.sh /opt/rdma-sim/
+COPY docker/scripts/ucx-info.sh /opt/rdma-sim/
+
+# Make scripts executable
+RUN chmod +x /opt/rdma-sim/*.sh
+
+# Set working directory
+WORKDIR /opt/rdma-sim
+
+# Switch to rdmauser
+USER rdmauser
+
+# Default command
+CMD ["/bin/bash"]
+
+# Health check for RDMA devices
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD /opt/rdma-sim/test-rdma.sh || exit 1
+
+# Expose common RDMA ports
+EXPOSE 18515 4791 4792
+`, 'seaweedfs-rdma-sidecar/docker/Dockerfile.rdma-simulation');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected. Consider
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('telemetry/server/Dockerfile: 6 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.25-alpine AS builder
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+WORKDIR /app
+COPY . .
+
+WORKDIR /app/telemetry/server
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o telemetry-server .
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates \\
+    && addgroup -S appgroup \\
+    && adduser -S appuser -G appgroup
+
+WORKDIR /home/appuser/
+COPY --from=builder /app/telemetry/server/telemetry-server .
+
+EXPOSE 8080
+
+USER appuser
+
+CMD ["./telemetry-server"]`, 'telemetry/server/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+  });
+
+  it('test/foundationdb/Dockerfile.build: 12 rules (DL3008, DL3015, DL3029…)', () => {
+    const v = lintContent(`# Simplified single-stage build for SeaweedFS with FoundationDB support
+# Force x86_64 platform to use AMD64 FoundationDB packages
+FROM --platform=linux/amd64 golang:1.24-bookworm
+
+ARG FOUNDATIONDB_VERSION=7.4.5
+ENV FOUNDATIONDB_VERSION=\${FOUNDATIONDB_VERSION}
+
+# Install system dependencies and FoundationDB
+RUN apt-get update && apt-get install -y \\
+    build-essential \\
+    wget \\
+    ca-certificates \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Install FoundationDB client libraries (x86_64 emulation) with checksum verification
+RUN set -euo pipefail \\
+    && echo "🏗️ Installing FoundationDB AMD64 package with x86_64 emulation..." \\
+    && case "\${FOUNDATIONDB_VERSION}" in \\
+        "7.4.5") EXPECTED_SHA256="eea6b98cf386a0848655b2e196d18633662a7440a7ee061c10e32153c7e7e112" ;; \\
+        "7.3.43") EXPECTED_SHA256="c3fa0a59c7355b914a1455dac909238d5ea3b6c6bc7b530af8597e6487c1651a" ;; \\
+        *) echo "Unsupported FoundationDB version \${FOUNDATIONDB_VERSION} for deterministic build" >&2; exit 1 ;; \\
+    esac \\
+    && PACKAGE="foundationdb-clients_\${FOUNDATIONDB_VERSION}-1_amd64.deb" \\
+    && wget -q https://github.com/apple/foundationdb/releases/download/\${FOUNDATIONDB_VERSION}/\${PACKAGE} \\
+    && echo "\${EXPECTED_SHA256}  \${PACKAGE}" | sha256sum -c - \\
+    && dpkg -i \${PACKAGE} \\
+    && rm \${PACKAGE} \\
+    && echo "🔍 Verifying FoundationDB installation..." \\
+    && ls -la /usr/include/foundationdb/ \\
+    && ls -la /usr/lib/*/libfdb_c* 2>/dev/null || echo "Library files:" \\
+    && find /usr -name "libfdb_c*" -type f 2>/dev/null \\
+    && ldconfig
+
+# Set up Go environment for CGO
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+ENV CGO_CFLAGS="-I/usr/include/foundationdb -I/usr/local/include/foundationdb -DFDB_USE_LATEST_API_VERSION"
+ENV CGO_LDFLAGS="-L/usr/lib -lfdb_c"
+
+# Create work directory
+WORKDIR /build
+
+# Copy source code
+COPY . .
+
+# Using Go 1.24 to match project requirements
+
+# Download dependencies (using versions from go.mod for deterministic builds)
+RUN go mod download
+
+# Build SeaweedFS with FoundationDB support
+RUN echo "🔨 Building SeaweedFS with FoundationDB support..." && \\
+    echo "🔍 Debugging: Checking headers before build..." && \\
+    find /usr -name "fdb_c.h" -type f 2>/dev/null || echo "No fdb_c.h found" && \\
+    ls -la /usr/include/foundationdb/ 2>/dev/null || echo "No foundationdb include dir" && \\
+    ls -la /usr/lib/libfdb_c* 2>/dev/null || echo "No libfdb_c libraries" && \\
+    echo "CGO_CFLAGS: \$CGO_CFLAGS" && \\
+    echo "CGO_LDFLAGS: \$CGO_LDFLAGS" && \\
+    go build -tags foundationdb -ldflags="-w -s" -o ./weed/weed ./weed && \\
+    chmod +x ./weed/weed && \\
+    echo "✅ Build successful!" && \\
+    ./weed/weed version
+
+# Test compilation (don't run tests as they need cluster)
+RUN echo "🧪 Compiling tests..." && \\
+    go test -tags foundationdb -c -o fdb_store_test ./weed/filer/foundationdb/ && \\
+    echo "✅ Tests compiled successfully!"
+
+# Create runtime directories
+RUN mkdir -p /var/fdb/config /usr/local/bin
+
+# Copy binaries to final location
+RUN cp weed/weed /usr/local/bin/weed && \\
+    cp fdb_store_test /usr/local/bin/fdb_store_test
+
+# Default command
+CMD ["/usr/local/bin/weed", "version"]
+`, 'test/foundationdb/Dockerfile.build');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // Do not use --platform flag with FROM
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $FOUNDATIONDB_VERSION in download URL. URL inje
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12" instead o
+  });
+
+  it('test/foundationdb/Dockerfile.build.arm64: 12 rules (DL3008, DL3015, DL3029…)', () => {
+    const v = lintContent(`# Multi-stage Dockerfile to build SeaweedFS with FoundationDB support for ARM64
+FROM --platform=linux/arm64 golang:1.24-bookworm AS builder
+
+ARG FOUNDATIONDB_VERSION=7.4.5
+ENV FOUNDATIONDB_VERSION=\${FOUNDATIONDB_VERSION}
+
+# Install build dependencies and download prebuilt FoundationDB clients
+SHELL ["/bin/bash", "-c"]
+RUN set -euo pipefail && \\
+    apt-get update && apt-get install -y \\
+    build-essential \\
+    git \\
+    wget \\
+    ca-certificates \\
+    && rm -rf /var/lib/apt/lists/* && \\
+    case "\${FOUNDATIONDB_VERSION}" in \\
+        "7.4.5") EXPECTED_SHA256="f2176b86b7e1b561c3632b4e6e7efb82e3b8f57c2ff0d0ac4671e742867508aa" ;; \\
+        *) echo "ERROR: No known ARM64 client checksum for FoundationDB \${FOUNDATIONDB_VERSION}. Please update this Dockerfile." >&2; exit 1 ;; \\
+    esac && \\
+    PACKAGE="foundationdb-clients_\${FOUNDATIONDB_VERSION}-1_aarch64.deb" && \\
+    wget --timeout=30 --tries=3 https://github.com/apple/foundationdb/releases/download/\${FOUNDATIONDB_VERSION}/\${PACKAGE} && \\
+    echo "\${EXPECTED_SHA256}  \${PACKAGE}" | sha256sum -c - && \\
+    dpkg -i \${PACKAGE} && \\
+    rm \${PACKAGE} && \\
+    ldconfig && \\
+    echo "✅ FoundationDB client libraries installed (prebuilt \${FOUNDATIONDB_VERSION})"
+
+# Set up Go environment for CGO
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+ENV GOARCH=arm64
+ENV CGO_CFLAGS="-I/usr/include -I/usr/include/foundationdb"
+ENV CGO_LDFLAGS="-L/usr/lib -lfdb_c"
+
+# Create work directory
+WORKDIR /build
+
+# Copy source code
+COPY . .
+
+# Download Go dependencies
+RUN go mod download
+
+# Build SeaweedFS with FoundationDB support
+RUN echo "🔨 Building SeaweedFS with FoundationDB support for ARM64..." && \\
+    echo "🔍 Debugging: Checking headers before build..." && \\
+    find /usr -name "fdb_c.h" -type f 2>/dev/null && \\
+    ls -la /usr/include/foundationdb/ 2>/dev/null && \\
+    ls -la /usr/lib/libfdb_c* 2>/dev/null && \\
+    echo "CGO_CFLAGS: \$CGO_CFLAGS" && \\
+    echo "CGO_LDFLAGS: \$CGO_LDFLAGS" && \\
+    go build -tags foundationdb -ldflags="-w -s" -o ./weed/weed ./weed && \\
+    chmod +x ./weed/weed && \\
+    echo "✅ Build successful!" && \\
+    ./weed/weed version
+
+# Runtime stage
+FROM --platform=linux/arm64 debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \\
+    ca-certificates \\
+    libssl3 \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy FoundationDB client library and headers from builder
+COPY --from=builder /usr/lib/libfdb_c* /usr/lib/
+COPY --from=builder /usr/include/foundationdb /usr/include/foundationdb
+RUN ldconfig
+
+# Copy SeaweedFS binary
+COPY --from=builder /build/weed/weed /usr/local/bin/weed
+
+# Create runtime directories
+RUN mkdir -p /var/fdb/config /data
+
+# Verify binary works
+RUN weed version
+
+# Expose SeaweedFS ports
+EXPOSE 9333 19333 8888 8333 18888
+
+# Default command
+CMD ["weed", "version"]
+
+`, 'test/foundationdb/Dockerfile.build.arm64');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // Do not use --platform flag with FROM
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $FOUNDATIONDB_VERSION in download URL. URL inje
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('test/foundationdb/Dockerfile.fdb-arm64: 11 rules (DL3008, DL3015, DL3029…)', () => {
+    const v = lintContent(`# FoundationDB server image for ARM64 using official prebuilt packages
+FROM --platform=linux/arm64 ubuntu:22.04
+
+ARG FOUNDATIONDB_VERSION=7.4.5
+ENV FOUNDATIONDB_VERSION=\${FOUNDATIONDB_VERSION}
+
+# Install prerequisites
+RUN apt-get update && apt-get install -y \\
+    ca-certificates \\
+    wget \\
+    python3 \\
+    libssl3 \\
+    libboost-system1.74.0 \\
+    libboost-filesystem1.74.0 \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Install FoundationDB server + client debs with checksum verification
+SHELL ["/bin/bash", "-c"]
+RUN set -euo pipefail && \\
+    apt-get update && \\
+    case "\${FOUNDATIONDB_VERSION}" in \\
+        "7.4.5") \\
+            CLIENT_SHA="f2176b86b7e1b561c3632b4e6e7efb82e3b8f57c2ff0d0ac4671e742867508aa"; \\
+            SERVER_SHA="d7b081afbbabfdf2452cfbdc5c7c895165457ae32d91fc7f9489da921ab02e26"; \\
+            ;; \\
+        *) \\
+            echo "Unsupported FoundationDB version \${FOUNDATIONDB_VERSION} for ARM64 runtime" >&2; \\
+            exit 1 ;; \\
+    esac && \\
+    for component in clients server; do \\
+        if [ "\${component}" = "clients" ]; then \\
+            EXPECTED_SHA="\${CLIENT_SHA}"; \\
+        else \\
+            EXPECTED_SHA="\${SERVER_SHA}"; \\
+        fi && \\
+        PACKAGE="foundationdb-\${component}_\${FOUNDATIONDB_VERSION}-1_aarch64.deb" && \\
+        PACKAGE_PATH="/tmp/\${PACKAGE}" && \\
+        wget --timeout=30 --tries=3 -O "\${PACKAGE_PATH}" \\
+            "https://github.com/apple/foundationdb/releases/download/\${FOUNDATIONDB_VERSION}/\${PACKAGE}" && \\
+        echo "\${EXPECTED_SHA}  \${PACKAGE_PATH}" | sha256sum -c - && \\
+        apt-get install -y "\${PACKAGE_PATH}" && \\
+        rm "\${PACKAGE_PATH}"; \\
+    done && \\
+    rm -rf /var/lib/apt/lists/* && \\
+    ldconfig && \\
+    echo "✅ Installed FoundationDB \${FOUNDATIONDB_VERSION} (server + clients)"
+
+# Prepare directories commonly bind-mounted by docker-compose
+RUN mkdir -p /var/fdb/{logs,data,config} /usr/lib/foundationdb
+
+# Provide a simple default command (docker-compose overrides this)
+CMD ["/bin/bash"]
+`, 'test/foundationdb/Dockerfile.fdb-arm64');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // Do not use --platform flag with FROM
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);    // Avoid use of wget without progress bar. Use `wget --progress
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "ubuntu" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected. Consider
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('test/foundationdb/Dockerfile.test: 11 rules (DL3008, DL3009, DL3015…)', () => {
+    const v = lintContent(`# Test environment with Go and FoundationDB support
+FROM golang:1.24-bookworm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \\
+    build-essential \\
+    wget \\
+    ca-certificates \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install FoundationDB client libraries with checksum verification
+RUN set -euo pipefail \\
+    && FDB_VERSION="7.4.5" \\
+    && EXPECTED_SHA256="eea6b98cf386a0848655b2e196d18633662a7440a7ee061c10e32153c7e7e112" \\
+    && PACKAGE="foundationdb-clients_\${FDB_VERSION}-1_amd64.deb" \\
+    && wget -q https://github.com/apple/foundationdb/releases/download/\${FDB_VERSION}/\${PACKAGE} \\
+    && echo "\${EXPECTED_SHA256}  \${PACKAGE}" | sha256sum -c - \\
+    && (dpkg -i \${PACKAGE} || apt-get install -f -y) \\
+    && rm \${PACKAGE}
+
+# Set up Go environment for CGO
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+
+# Set work directory
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Create directories
+RUN mkdir -p /test/results
+
+# Pre-download dependencies
+RUN go mod download
+
+# Default command (will be overridden)
+CMD ["go", "version"]
+`, 'test/foundationdb/Dockerfile.test');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*`
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected. Consider
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12" instead o
+  });
+
+  it('test/kafka/Dockerfile.kafka-gateway: 6 rules (DL3007, DL3018, DV1005…)', () => {
+    const v = lintContent(`# Dockerfile for Kafka Gateway Integration Testing
+FROM golang:1.24-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git make gcc musl-dev sqlite-dev
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the weed binaries with Kafka gateway support
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o weed ./weed
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o weed-sql ./cmd/weed-sql
+
+# Final stage
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates wget curl netcat-openbsd sqlite
+
+# Create non-root user
+RUN addgroup -g 1000 seaweedfs && \\
+    adduser -D -s /bin/sh -u 1000 -G seaweedfs seaweedfs
+
+# Set working directory
+WORKDIR /usr/bin
+
+# Copy binaries from builder
+COPY --from=builder /app/weed .
+COPY --from=builder /app/weed-sql .
+
+# Create data directory
+RUN mkdir -p /data && chown seaweedfs:seaweedfs /data
+
+# Copy startup script
+COPY test/kafka/scripts/kafka-gateway-start.sh /usr/bin/kafka-gateway-start.sh
+RUN chmod +x /usr/bin/kafka-gateway-start.sh
+
+# Switch to non-root user
+USER seaweedfs
+
+# Expose Kafka protocol port and pprof port
+EXPOSE 9093 10093
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \\
+  CMD nc -z localhost 9093 || exit 1
+
+# Default command
+CMD ["/usr/bin/kafka-gateway-start.sh"]
+`, 'test/kafka/Dockerfile.kafka-gateway');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('test/kafka/Dockerfile.seaweedfs: 7 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`# Dockerfile for building SeaweedFS components from the current workspace
+FROM golang:1.24-alpine AS builder
+
+RUN apk add --no-cache git make gcc musl-dev sqlite-dev
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=1 GOOS=linux go build -o /out/weed ./weed
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates curl wget netcat-openbsd sqlite
+
+COPY --from=builder /out/weed /usr/bin/weed
+
+WORKDIR /data
+
+EXPOSE 9333 19333 8080 18080 8888 18888 16777 17777
+
+ENTRYPOINT ["/usr/bin/weed"]
+`, 'test/kafka/Dockerfile.seaweedfs');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+  });
+
+  it('test/kafka/Dockerfile.test-setup: 8 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`# Dockerfile for Kafka Integration Test Setup
+FROM golang:1.24-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git make gcc musl-dev
+
+# Copy repository
+WORKDIR /app
+COPY . .
+
+# Build test setup utility from the test module
+WORKDIR /app/test/kafka
+RUN go mod download
+RUN CGO_ENABLED=1 GOOS=linux go build -o /out/test-setup ./cmd/setup
+
+# Final stage
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates curl jq netcat-openbsd
+
+# Copy binary from builder
+COPY --from=builder /out/test-setup /usr/bin/test-setup
+
+# Make executable
+RUN chmod +x /usr/bin/test-setup
+
+# Default command
+CMD ["/usr/bin/test-setup"]
+`, 'test/kafka/Dockerfile.test-setup');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('test/kafka/kafka-client-loadtest/Dockerfile.loadtest: 7 rules (DL3008, DL3015, DL3057…)', () => {
+    const v = lintContent(`# Kafka Client Load Test Runner Dockerfile
+# Multi-stage build for cross-platform support
+
+# Stage 1: Builder
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+# Copy go module files
+COPY test/kafka/kafka-client-loadtest/go.mod test/kafka/kafka-client-loadtest/go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY test/kafka/kafka-client-loadtest/ ./
+
+# Build the loadtest binary
+RUN CGO_ENABLED=0 GOOS=linux go build -o /kafka-loadtest ./cmd/loadtest
+
+# Stage 2: Runtime
+FROM ubuntu:22.04
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \\
+    ca-certificates \\
+    curl \\
+    jq \\
+    bash \\
+    netcat \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy built binary from builder stage
+COPY --from=builder /kafka-loadtest /usr/local/bin/kafka-loadtest
+RUN chmod +x /usr/local/bin/kafka-loadtest
+
+# Copy scripts and configuration
+COPY test/kafka/kafka-client-loadtest/scripts/ /scripts/
+COPY test/kafka/kafka-client-loadtest/config/ /config/
+
+# Create results directory
+RUN mkdir -p /test-results
+
+# Make scripts executable
+RUN chmod +x /scripts/*.sh
+
+WORKDIR /app
+
+# Default command runs the comprehensive load test
+CMD ["/usr/local/bin/kafka-loadtest", "-config", "/config/loadtest.yaml"]
+
+`, 'test/kafka/kafka-client-loadtest/Dockerfile.loadtest');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" instead of 
+  });
+
+  it('test/kafka/kafka-client-loadtest/Dockerfile.seaweedfs: 4 rules (DL3018, DL3057, DV1006, DV1009)', () => {
+    const v = lintContent(`# SeaweedFS Runtime Dockerfile for Kafka Client Load Tests
+# Optimized for fast builds - binary built locally and copied in
+FROM alpine:3.18
+
+# Install runtime dependencies
+RUN apk add --no-cache \\
+    ca-certificates \\
+    wget \\
+    netcat-openbsd \\
+    curl \\
+    tzdata \\
+    && rm -rf /var/cache/apk/*
+
+# Copy pre-built SeaweedFS binary (built locally for linux/amd64 or linux/arm64)
+# Cache-busting: Use build arg to force layer rebuild on every build
+ARG TARGETARCH=arm64
+ARG CACHE_BUST=unknown
+RUN echo "Building with cache bust: \${CACHE_BUST}"
+COPY weed-linux-\${TARGETARCH} /usr/local/bin/weed
+RUN chmod +x /usr/local/bin/weed
+
+# Create data directory
+RUN mkdir -p /data
+
+# Set timezone
+ENV TZ=UTC
+
+# Health check script
+RUN echo '#!/bin/sh' > /usr/local/bin/health-check && \\
+    echo 'exec "\$@"' >> /usr/local/bin/health-check && \\
+    chmod +x /usr/local/bin/health-check
+
+VOLUME ["/data"]
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/weed"]
+
+`, 'test/kafka/kafka-client-loadtest/Dockerfile.seaweedfs');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., image@sha256:
+  });
+
+  it('test/kafka/kafka-client-loadtest/Dockerfile.seektest: 8 rules (DL3008, DL3015, DL3057…)', () => {
+    const v = lintContent(`FROM openjdk:11-jdk-slim
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create source directory
+RUN mkdir -p src/main/java
+
+# Copy source and build files
+COPY SeekToBeginningTest.java src/main/java/
+COPY pom.xml .
+
+# Compile and package
+RUN mvn clean package -DskipTests
+
+# Run the test
+ENTRYPOINT ["java", "-cp", "target/seek-test.jar", "SeekToBeginningTest"]
+CMD ["kafka-gateway:9093"]
+`, 'test/kafka/kafka-client-loadtest/Dockerfile.seektest');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final image size
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "openjdk" with a digest (e.g., image@sha256
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/java21-debian12" instead o
+  });
+
+  it('test/postgres/Dockerfile.client: 7 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files first for better caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the client
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o client ./test/postgres/client.go
+
+# Final stage
+FROM alpine:latest
+
+# Install ca-certificates and netcat for health checks
+RUN apk --no-cache add ca-certificates netcat-openbsd
+
+WORKDIR /root/
+
+# Copy the binary from builder stage
+COPY --from=builder /app/client .
+
+# Make it executable
+RUN chmod +x ./client
+
+# Set environment variables with defaults
+ENV POSTGRES_HOST=localhost
+ENV POSTGRES_PORT=5432
+ENV POSTGRES_USER=seaweedfs
+ENV POSTGRES_DB=default
+
+# Run the client
+CMD ["./client"]
+`, 'test/postgres/Dockerfile.client');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+  });
+
+  it('test/postgres/Dockerfile.producer: 7 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files first for better caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the producer
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o producer ./test/postgres/producer.go
+
+# Final stage
+FROM alpine:latest
+
+# Install ca-certificates for HTTPS calls
+RUN apk --no-cache add ca-certificates curl
+
+WORKDIR /root/
+
+# Copy the binary from builder stage
+COPY --from=builder /app/producer .
+
+# Make it executable
+RUN chmod +x ./producer
+
+# Set environment variables with defaults
+ENV SEAWEEDFS_MASTER=localhost:9333
+ENV SEAWEEDFS_FILER=localhost:8888
+
+# Run the producer
+CMD ["./producer"]
+`, 'test/postgres/Dockerfile.producer');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+  });
+
+  it('test/postgres/Dockerfile.seaweedfs: 9 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS builder
+
+# Install git and other build dependencies
+RUN apk add --no-cache git make
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files first for better caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the weed binaries without CGO
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o weed ./weed/
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o weed-db ./cmd/weed-db
+
+# Final stage - minimal runtime image
+FROM alpine:latest
+
+# Install ca-certificates for HTTPS calls and netcat for health checks
+RUN apk --no-cache add ca-certificates netcat-openbsd curl
+
+WORKDIR /root/
+
+# Copy the binaries from builder stage
+COPY --from=builder /app/weed .
+COPY --from=builder /app/weed-db .
+
+# Make it executable
+RUN chmod +x ./weed ./weed-db
+
+# Expose ports
+EXPOSE 9333 8888 8333 8085 9533 5432
+
+# Create data directory
+RUN mkdir -p /data
+
+# Default command (can be overridden)
+CMD ["./weed", "server", "-dir=/data"]
+`, 'test/postgres/Dockerfile.seaweedfs');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV3021')).toBe(true);    // EXPOSE 5432 (PostgreSQL) may expose a sensitive service. Avo
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('test/s3/compatibility/Dockerfile: 13 rules (DL3000, DL3008, DL3009…)', () => {
+    const v = lintContent(`# the tests only support python 3.6, not newer
+#FROM ubuntu:latest
+FROM python:3.6.15-slim-buster
+
+# Installed required system deps
+RUN apt-get update \\
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y git-core sudo tzdata
+
+# Install python deps
+RUN pip install virtualenv
+
+# Clone Ceph S3 tests
+RUN git clone https://github.com/ceph/s3-tests.git
+
+WORKDIR s3-tests
+
+# Pin to a certain commit on ceph/s3-tests
+# https://github.com/ceph/s3-tests/commit/9a6a1e9f197fc9fb031b809d1e057635c2ff8d4e
+RUN git checkout 9a6a1e9f197fc9fb031b809d1e057635c2ff8d4e
+
+RUN ./bootstrap
+`, 'test/s3/compatibility/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3000')).toBe(true);    // Use absolute WORKDIR
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing something
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install virtualenv` use
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-install-recomme
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip install --no
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*`
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "python" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-get install 
+    expect(v.some(v => v.rule === 'DV3008')).toBe(true);    // git clone in RUN may embed credentials in the image layer. C
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/python3-debian12" instead 
+  });
+
+  it('test/s3/iam/Dockerfile.s3: 8 rules (DL3003, DL3007, DL3018…)', () => {
+    const v = lintContent(`# Multi-stage build for SeaweedFS S3 with IAM
+FROM golang:1.23-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git make curl wget
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Build SeaweedFS with IAM integration
+RUN cd weed && go build -o /usr/local/bin/weed
+
+# Final runtime image
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates wget curl
+
+# Copy weed binary
+COPY --from=builder /usr/local/bin/weed /usr/local/bin/weed
+
+# Create directories
+RUN mkdir -p /etc/seaweedfs /data
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+  CMD wget --quiet --tries=1 --spider http://localhost:8333/ || exit 1
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/weed"]
+`, 'test/s3/iam/Dockerfile.s3');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add git` use `apk a
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dockerignore f
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider copying onl
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+  });
+
+  it('test/s3/proxy_signature/Dockerfile: 3 rules (DL3018, DV1009, DV4010)', () => {
+    const v = lintContent(`FROM alpine:3.20
+RUN apk add --no-cache curl && \\
+    addgroup -S seaweed && \\
+    adduser -S seaweed -G seaweed
+COPY weed /usr/bin/weed
+RUN chmod +x /usr/bin/weed && \\
+    chown seaweed:seaweed /usr/bin/weed && \\
+    mkdir -p /etc/seaweedfs /data/filerldb2 && \\
+    chown -R seaweed:seaweed /etc/seaweedfs /data && \\
+    chmod 755 /data /etc/seaweedfs /data/filerldb2
+WORKDIR /data
+USER seaweed
+`, 'test/s3/proxy_signature/Dockerfile');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add curl` use `apk 
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider using COPY
+  });
+
+  it('test/s3tables/catalog/Dockerfile.pyiceberg: 5 rules (DL3013, DL3057, DV1006, DV1009, DV5003)', () => {
+    const v = lintContent(`# PyIceberg test container for Iceberg REST Catalog compatibility testing
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install PyIceberg with S3 support and dependencies
+RUN pip install --no-cache-dir "pyiceberg[s3fs]" pyarrow pandas
+
+# Copy the test script
+COPY test_rest_catalog.py /app/
+
+# Default command
+CMD ["python3", "/app/test_rest_catalog.py", "--help"]
+`, 'test/s3tables/catalog/Dockerfile.pyiceberg');
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install "pyiceberg[s3fs
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "python" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/python3-debian12" instead 
+  });
+
+});
+
+
+// ── minio/minio patterns ──────────────────────────────────────
+
+describe('OSS: minio/minio patterns', () => {
+  it('Dockerfile: 6 rules (DL3007, DL3057, DV1006…)', () => {
+    const v = lintContent(`FROM minio/minio:latest
+
+ARG TARGETARCH
+ARG RELEASE
+
+RUN chmod -R 777 /usr/bin
+
+COPY ./minio-\${TARGETARCH}.\${RELEASE} /usr/bin/minio
+COPY ./minio-\${TARGETARCH}.\${RELEASE}.minisig /usr/bin/minio.minisig
+COPY ./minio-\${TARGETARCH}.\${RELEASE}.sha256sum /usr/bin/minio.sha256sum
+
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+
+VOLUME ["/data"]
+
+CMD ["minio"]
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "minio/minio" with a digest (e.g., image@sh
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);    // chmod 777 grants excessive permissions. Use more restrictive
+  });
+
+  it('Dockerfile.cicd: 3 rules (DL3057, DV1006, DV1009)', () => {
+    const v = lintContent(`FROM minio/minio:edge
+
+CMD ["minio", "server", "/data"]
+`, 'Dockerfile.cicd');
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "minio/minio" with a digest (e.g., image@sh
+  });
+
+  it('Dockerfile.hotfix: 11 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine as build
+
+ARG TARGETARCH
+ARG RELEASE
+
+ENV GOPATH=/go
+ENV CGO_ENABLED=0
+
+# Install curl and minisign
+RUN apk add -U --no-cache ca-certificates && \\
+    apk add -U --no-cache curl && \\
+    go install aead.dev/minisign/cmd/minisign@v0.2.1
+
+# Download minio binary and signature files
+RUN curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
+    curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
+    chmod +x /go/bin/minio
+
+# Download mc binary and signature files
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc -o /go/bin/mc && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \\
+    chmod +x /go/bin/mc
+
+RUN if [ "\$TARGETARCH" = "amd64" ]; then \\
+       curl -L -s -q https://github.com/moparisthebest/static-curl/releases/latest/download/curl-\${TARGETARCH} -o /go/bin/curl; \\
+       chmod +x /go/bin/curl; \\
+    fi
+
+# Verify binary signature using public key "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGavRUN"
+RUN minisign -Vqm /go/bin/minio -x /go/bin/minio.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \\
+    minisign -Vqm /go/bin/mc -x /go/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav
+
+FROM registry.access.redhat.com/ubi9/ubi-micro:latest
+
+ARG RELEASE
+
+LABEL name="MinIO" \\
+      vendor="MinIO Inc <dev@min.io>" \\
+      maintainer="MinIO Inc <dev@min.io>" \\
+      version="\${RELEASE}" \\
+      release="\${RELEASE}" \\
+      summary="MinIO is a High Performance Object Storage, API compatible with Amazon S3 cloud storage service." \\
+      description="MinIO object storage is fundamentally different. Designed for performance and the S3 API, it is 100% open-source. MinIO is ideal for large, private cloud environments with stringent security requirements and delivers mission-critical availability across a diverse range of workloads."
+
+ENV MINIO_ACCESS_KEY_FILE=access_key \\
+    MINIO_SECRET_KEY_FILE=secret_key \\
+    MINIO_ROOT_USER_FILE=access_key \\
+    MINIO_ROOT_PASSWORD_FILE=secret_key \\
+    MINIO_KMS_SECRET_KEY_FILE=kms_master_key \\
+    MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \\
+    MINIO_CONFIG_ENV_FILE=config.env \\
+    MC_CONFIG_DIR=/tmp/.mc
+
+RUN chmod -R 777 /usr/bin
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /go/bin/minio* /usr/bin/
+COPY --from=build /go/bin/mc* /usr/bin/
+COPY --from=build /go/bin/cur* /usr/bin/
+
+COPY CREDITS /licenses/CREDITS
+COPY LICENSE /licenses/LICENSE
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+EXPOSE 9000
+VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+CMD ["minio"]
+`, 'Dockerfile.hotfix');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $TARGETARCH in download URL. URL injection poss
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);    // chmod 777 grants excessive permissions. Use more restrictive
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('Dockerfile.release: 10 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS build
+
+ARG TARGETARCH
+ARG RELEASE
+
+ENV GOPATH=/go
+ENV CGO_ENABLED=0
+
+WORKDIR /build
+
+# Install curl and minisign
+RUN apk add -U --no-cache ca-certificates && \\
+    apk add -U --no-cache curl && \\
+    apk add -U --no-cache bash && \\
+    go install aead.dev/minisign/cmd/minisign@v0.2.1
+
+# Download minio binary and signature files
+RUN curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
+    chmod +x /go/bin/minio
+
+# Download mc binary and signature files
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc -o /go/bin/mc && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \\
+    chmod +x /go/bin/mc
+
+# Verify binary signature using public key "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGavRUN"
+RUN minisign -Vqm /go/bin/minio -x /go/bin/minio.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \\
+    minisign -Vqm /go/bin/mc -x /go/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav
+
+COPY dockerscripts/download-static-curl.sh /build/download-static-curl
+RUN chmod +x /build/download-static-curl && \\
+    /build/download-static-curl
+
+FROM registry.access.redhat.com/ubi9/ubi-micro:latest
+
+ARG RELEASE
+
+LABEL name="MinIO" \\
+      vendor="MinIO Inc <dev@min.io>" \\
+      maintainer="MinIO Inc <dev@min.io>" \\
+      version="\${RELEASE}" \\
+      release="\${RELEASE}" \\
+      summary="MinIO is a High Performance Object Storage, API compatible with Amazon S3 cloud storage service." \\
+      description="MinIO object storage is fundamentally different. Designed for performance and the S3 API, it is 100% open-source. MinIO is ideal for large, private cloud environments with stringent security requirements and delivers mission-critical availability across a diverse range of workloads."
+
+ENV MINIO_ACCESS_KEY_FILE=access_key \\
+    MINIO_SECRET_KEY_FILE=secret_key \\
+    MINIO_ROOT_USER_FILE=access_key \\
+    MINIO_ROOT_PASSWORD_FILE=secret_key \\
+    MINIO_KMS_SECRET_KEY_FILE=kms_master_key \\
+    MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \\
+    MINIO_CONFIG_ENV_FILE=config.env \\
+    MC_CONFIG_DIR=/tmp/.mc
+
+RUN chmod -R 777 /usr/bin
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /go/bin/minio* /usr/bin/
+COPY --from=build /go/bin/mc* /usr/bin/
+COPY --from=build /go/bin/curl* /usr/bin/
+
+COPY CREDITS /licenses/CREDITS
+COPY LICENSE /licenses/LICENSE
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+EXPOSE 9000
+VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+CMD ["minio"]
+`, 'Dockerfile.release');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $TARGETARCH in download URL. URL injection poss
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);    // chmod 777 grants excessive permissions. Use more restrictive
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('Dockerfile.release.old_cpu: 11 rules (DL3007, DL3018, DL3057…)', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS build
+
+ARG TARGETARCH
+ARG RELEASE
+
+ENV GOPATH=/go
+ENV CGO_ENABLED=0
+
+# Install curl and minisign
+RUN apk add -U --no-cache ca-certificates && \\
+    apk add -U --no-cache curl && \\
+    go install aead.dev/minisign/cmd/minisign@v0.2.1
+
+# Download minio binary and signature files
+RUN curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
+    chmod +x /go/bin/minio
+
+# Download mc binary and signature files
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc -o /go/bin/mc && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \\
+    chmod +x /go/bin/mc
+
+RUN if [ "\$TARGETARCH" = "amd64" ]; then \\
+       curl -L -s -q https://github.com/moparisthebest/static-curl/releases/latest/download/curl-\${TARGETARCH} -o /go/bin/curl; \\
+       chmod +x /go/bin/curl; \\
+    fi
+
+# Verify binary signature using public key "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGavRUN"
+RUN minisign -Vqm /go/bin/minio -x /go/bin/minio.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \\
+    minisign -Vqm /go/bin/mc -x /go/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav
+
+FROM registry.access.redhat.com/ubi8/ubi-micro:latest
+
+ARG RELEASE
+
+LABEL name="MinIO" \\
+      vendor="MinIO Inc <dev@min.io>" \\
+      maintainer="MinIO Inc <dev@min.io>" \\
+      version="\${RELEASE}" \\
+      release="\${RELEASE}" \\
+      summary="MinIO is a High Performance Object Storage, API compatible with Amazon S3 cloud storage service." \\
+      description="MinIO object storage is fundamentally different. Designed for performance and the S3 API, it is 100% open-source. MinIO is ideal for large, private cloud environments with stringent security requirements and delivers mission-critical availability across a diverse range of workloads."
+
+ENV MINIO_ACCESS_KEY_FILE=access_key \\
+    MINIO_SECRET_KEY_FILE=secret_key \\
+    MINIO_ROOT_USER_FILE=access_key \\
+    MINIO_ROOT_PASSWORD_FILE=secret_key \\
+    MINIO_KMS_SECRET_KEY_FILE=kms_master_key \\
+    MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \\
+    MINIO_CONFIG_ENV_FILE=config.env \\
+    MC_CONFIG_DIR=/tmp/.mc
+
+RUN chmod -R 777 /usr/bin
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /go/bin/minio* /usr/bin/
+COPY --from=build /go/bin/mc* /usr/bin/
+COPY --from=build /go/bin/cur* /usr/bin/
+
+COPY CREDITS /licenses/CREDITS
+COPY LICENSE /licenses/LICENSE
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+EXPOSE 9000
+VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+CMD ["minio"]
+`, 'Dockerfile.release.old_cpu');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);    // Using latest is prone to errors. Pin the version explicitly.
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-certificates
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as root by def
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., image@sha256:
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verification. Co
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $TARGETARCH in download URL. URL injection poss
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider combining 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working directory 
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);    // chmod 777 grants excessive permissions. Use more restrictive
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);    // Multiple consecutive COPY instructions with same source coul
+  });
+
+  it('Dockerfile.scratch: clean (no violations)', () => {
+    const v = lintContent(`FROM scratch
+
+COPY minio /minio
+
+CMD ["/minio"]
+`, 'Dockerfile.scratch');
+    expect(v).toHaveLength(0);
+  });
+
+});
+
