@@ -1552,3 +1552,747 @@ CMD ["grafana-server"]
 // ── helm/helm note ─────────────────────────────────────────────────────
 // helm/helm has no Dockerfiles in the repository (binary distributed via GitHub releases).
 // Tests for Helm-like patterns (Go binary distribution without Docker) are not applicable.
+
+// ── vitessio/vitess patterns ───────────────────────────────────────────
+
+describe('OSS: vitessio/vitess patterns', () => {
+  it('main Dockerfile: complex multi-stage with digest-pinned images, USER vitess', () => {
+    const v = lintContent(`FROM golang:1.26.0-trixie@sha256:4e603da0ea8df4a8ab10cbf0b3061f7823d277e82ea210a47c32a5fafb43cc43 AS go-builder
+WORKDIR /vt/src/vitess.io/vitess
+RUN groupadd -r vitess && useradd -r -g vitess vitess
+RUN mkdir -p /vt/vtdataroot /home/vitess
+RUN chown -R vitess:vitess /vt /home/vitess
+USER vitess
+COPY --chown=vitess:vitess go.mod go.sum /vt/src/vitess.io/vitess/
+RUN go mod download
+COPY --chown=vitess:vitess . /vt/src/vitess.io/vitess
+RUN make install PREFIX=/vt/install
+
+FROM debian:trixie-slim@sha256:1d3c811171a08a5adaa4a163fbafd96b61b87aa871bbc7aa15431ac275d3d430
+RUN apt-get update && apt-get install -y locales tar
+RUN groupadd -r vitess && useradd -r -g vitess vitess
+RUN mkdir -p /vt/vtdataroot /home/vitess && chown -R vitess:vitess /vt /home/vitess
+ENV VTROOT=/vt
+ENV VTDATAROOT=/vt/vtdataroot
+ENV PATH=$VTROOT/bin:$PATH
+COPY --from=go-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=go-builder --chown=vitess:vitess /vt/install /vt
+VOLUME /vt/vtdataroot
+USER vitess
+`);
+    // Digest-pinned should not fire DL3006
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);
+    // USER is set
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+    // Unpinned apt
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);
+    // Consecutive RUN in builder
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);
+  });
+
+  it('binary images: debian with apt-get upgrade, COPY --from lite, no CMD', () => {
+    const v = lintContent(`ARG VT_BASE_VER=latest@sha256:06084c171907baf470d80729c6ef6dbefaad6356777689577e9f6aada1279128
+ARG DEBIAN_VER=stable-slim@sha256:ed542b2d269ff08139fc5ab8c762efe8c8986b564a423d5241a5ce9fb09b6c08
+FROM vitess/lite:\${VT_BASE_VER} AS lite
+FROM debian:\${DEBIAN_VER}
+RUN apt-get update && apt-get upgrade -qq && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV VTROOT /vt
+RUN mkdir -p /vt/bin && mkdir -p /vtdataroot
+COPY --from=lite /vt/bin/vtgate /vt/bin/
+COPY --from=lite /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+RUN groupadd -r --gid 2000 vitess && useradd -r -g vitess --uid 1000 vitess && chown -R vitess:vitess /vt && chown -R vitess:vitess /vtdataroot
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // no CMD/ENTRYPOINT
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);   // apt-get upgrade
+  });
+
+  it('vtctlclient: debian with curl jq, unpinned apt, CMD set', () => {
+    const v = lintContent(`ARG DEBIAN_VER=stable-slim@sha256:abc123
+FROM debian:\${DEBIAN_VER}
+RUN apt-get update && apt-get upgrade -qq && apt-get install jq curl -qq --no-install-recommends && apt-get autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
+COPY vtctlclient /usr/bin/
+RUN groupadd -r --gid 2000 vitess && useradd -r -g vitess --uid 1000 vitess
+CMD ["/usr/bin/vtctlclient"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('logrotate: debian with apt-get upgrade, ENTRYPOINT, no USER', () => {
+    const v = lintContent(`ARG DEBIAN_VER=stable-slim@sha256:abc123
+FROM debian:\${DEBIAN_VER}
+COPY logrotate.conf /vt/logrotate.conf
+COPY rotate.sh /vt/rotate.sh
+RUN mkdir -p /vt && apt-get update && apt-get upgrade -qq && apt-get install logrotate -qq --no-install-recommends && apt-get autoremove -qq && apt-get clean && rm -rf /var/lib/apt/lists/* && groupadd -r --gid 2000 vitess && useradd -r -g vitess --uid 1000 vitess && chown -R vitess:vitess /vt && chmod +x /vt/rotate.sh
+ENTRYPOINT [ "/vt/rotate.sh" ]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('bootstrap common: golang with DEBIAN_FRONTEND in RUN, apt install, USER vitess', () => {
+    const v = lintContent(`ARG image=golang:1.26.0-bookworm@sha256:abc123
+FROM $image
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && apt-get install -y --no-install-recommends ant ca-certificates curl default-jdk-headless g++ git gnupg make unzip zip && rm -rf /var/lib/apt/lists/*
+ENV VTROOT=/vt/src/vitess.io/vitess
+RUN groupadd -r -g 1000 vitess && useradd -r -u 1000 -g 1000 vitess && mkdir -p /vt/vtdataroot /home/vitess && chown -R vitess:vitess /vt /home/vitess
+VOLUME /vt/vtdataroot
+WORKDIR /vt/src/vitess.io/vitess
+USER vitess
+RUN BUILD_CONSUL=0 ./bootstrap.sh
+CMD ["/bin/bash"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+  });
+
+  it('colldump: debian with curl, cmake build, ADD remote URL, cd in RUN', () => {
+    const v = lintContent(`FROM debian:latest@sha256:abc123
+ARG MYSQL_VERSION=8.0.34
+RUN apt-get update && apt-get -y install curl cmake build-essential libssl-dev libncurses5-dev pkg-config rapidjson-dev
+RUN cd /tmp && curl -OL https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-\${MYSQL_VERSION}.tar.gz && tar zxvf mysql-\${MYSQL_VERSION}.tar.gz
+ADD https://gist.githubusercontent.com/example/raw/colldump.cc /tmp/mysql-\${MYSQL_VERSION}/strings/colldump.cc
+RUN cd /tmp/mysql-\${MYSQL_VERSION} && mkdir build && cd build && cmake -DDOWNLOAD_BOOST=1 -DWITH_BOOST=dist/boost .. && make colldump
+`);
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);   // cd in RUN
+    expect(v.some(v => v.rule === 'DV3020')).toBe(true);   // ADD remote URL
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // no CMD/ENTRYPOINT
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('vtadmin: multi-stage node+nginx, USER nginx set, no CMD (base image provides)', () => {
+    const v = lintContent(`ARG NODE_DIGEST=sha256:abc123
+ARG NGINX_DIGEST=sha256:def456
+ARG DEBIAN_VER=bookworm-slim
+FROM node:22-\${DEBIAN_VER}@\${NODE_DIGEST} AS node
+WORKDIR /vt/web/vtadmin
+COPY /vt/web/vtadmin /vt/web/vtadmin
+RUN npm ci && npm run build
+
+FROM nginxinc/nginx-unprivileged:1.29@\${NGINX_DIGEST} AS nginx
+USER root
+RUN apt-get update && apt-get upgrade -qq && apt-get clean && rm -rf /var/lib/apt/lists/*
+USER nginx
+ENV VTADMIN_WEB_PORT=14201
+COPY --from=node /vt/web/vtadmin/build /var/www/
+COPY default.conf /etc/nginx/templates/default.conf.template
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER nginx is set
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);   // apt-get upgrade
+  });
+
+  it('mysql bootstrap: FROM $image, USER root then USER vitess, apt install mysql', () => {
+    const v = lintContent(`ARG bootstrap_version
+ARG image="vitess/bootstrap:\${bootstrap_version}-common"
+FROM $image
+USER root
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server libmysqlclient-dev libdbd-mysql-perl rsync libev4 && rm -rf /var/lib/apt/lists/*
+USER vitess
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER vitess at end
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+  });
+});
+
+// ── apache/kafka patterns ──────────────────────────────────────────────
+
+describe('OSS: apache/kafka patterns', () => {
+  it('jvm Dockerfile: alpine multi-stage, wget downloads, USER appuser', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-alpine AS build-jsa
+USER root
+RUN apk update && apk upgrade && apk add --no-cache wget gcompat gpg gpg-agent procps bash
+RUN mkdir opt/kafka && wget -nv -O kafka.tgz "https://archive.apache.org/dist/kafka/3.7.0/kafka.tgz"
+
+FROM eclipse-temurin:21-jre-alpine
+EXPOSE 9092
+USER root
+RUN apk update && apk upgrade && apk add --no-cache wget gcompat gpg gpg-agent procps bash
+RUN mkdir opt/kafka && wget -nv -O kafka.tgz "https://archive.apache.org/dist/kafka/3.7.0/kafka.tgz"
+RUN adduser -h /home/appuser -D --shell /bin/bash appuser && chown appuser:appuser -R /usr/logs
+USER appuser
+VOLUME ["/etc/kafka/secrets", "/var/lib/kafka/data"]
+CMD ["/etc/kafka/docker/run"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget usage
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+  });
+
+  it('native Dockerfile: graalvm build + alpine final, :latest tag', () => {
+    const v = lintContent(`FROM ghcr.io/graalvm/graalvm-community:21 AS build-native-image
+ARG kafka_url
+WORKDIR /app
+COPY native-image-configs /app/native-image-configs
+COPY native_command.sh native_command.sh
+RUN mkdir /app/kafka && tar xfz kafka.tgz -C /app/kafka --strip-components 1
+
+FROM alpine:latest
+EXPOSE 9092
+RUN apk update && apk add --no-cache gcompat bash
+RUN mkdir -p /etc/kafka/docker /opt/kafka/config /etc/kafka/secrets
+RUN adduser -h /home/appuser -D --shell /bin/bash appuser
+RUN chown appuser:root -R /etc/kafka /opt/kafka
+USER appuser
+VOLUME ["/etc/kafka/secrets"]
+CMD ["/etc/kafka/docker/run"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER appuser set
+  });
+
+  it('tests/docker: massive apt install, pip install, ssh keygen, no USER', () => {
+    const v = lintContent(`ARG jdk_version
+FROM $jdk_version
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt install -y sudo git netcat iptables rsync unzip wget curl jq coreutils openssh-server net-tools vim python3-pip python3-dev libffi-dev libssl-dev cmake pkg-config
+RUN python3 -m pip install -U pip==21.1.1
+RUN pip3 install --upgrade -r requirements.txt
+RUN ssh-keygen -m PEM -q -t rsa -N '' -f /root/.ssh/id_rsa && cp -f /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+RUN mkdir -p "/opt/kafka-2.1.1" && curl -s "https://s3.amazonaws.com/kafka-packages/kafka_2.12-2.1.1.tgz" | tar xz --strip-components=1 -C "/opt/kafka-2.1.1"
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget in apt install
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);   // DEBIAN_FRONTEND as ENV
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+  });
+
+  it('official 3.7.0: ENV for kafka_url (hardcoded URL in ENV), apk with wget', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-alpine
+EXPOSE 9092
+USER root
+ENV kafka_url https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+ENV build_date 2024-06-11
+RUN apk update && apk upgrade && apk add --no-cache wget gcompat gpg gpg-agent procps bash
+RUN mkdir opt/kafka && wget -nv -O kafka.tgz "$kafka_url"
+USER appuser
+CMD ["/etc/kafka/docker/run"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget usage
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER appuser
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+  });
+});
+
+// ── vectordotdev/vector patterns ───────────────────────────────────────
+
+describe('OSS: vectordotdev/vector patterns', () => {
+  it('alpine Dockerfile: multi-stage, apk unpinned, smoke test RUN, no USER', () => {
+    const v = lintContent(`FROM docker.io/alpine:3.23 AS builder
+WORKDIR /vector
+COPY vector-*.tar.gz ./
+RUN tar -xvf vector-0*-unknown-linux-musl*.tar.gz --strip-components=2
+RUN mkdir -p /var/lib/vector
+
+FROM docker.io/alpine:3.23
+RUN apk --no-cache add ca-certificates tzdata
+COPY --from=builder /vector/bin/* /usr/local/bin/
+COPY --from=builder /vector/config/vector.yaml /etc/vector/vector.yaml
+RUN ["vector", "--version"]
+ENTRYPOINT ["/usr/local/bin/vector"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR in final
+  });
+
+  it('debian Dockerfile: multi-stage dpkg install, unpinned apt, no USER', () => {
+    const v = lintContent(`FROM docker.io/debian:trixie-slim AS builder
+WORKDIR /vector
+COPY vector_*.deb ./
+RUN dpkg -i vector_*_"$(dpkg --print-architecture)".deb
+RUN mkdir -p /var/lib/vector
+
+FROM docker.io/debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata systemd && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /usr/bin/vector /usr/bin/vector
+RUN ["vector", "--version"]
+ENTRYPOINT ["/usr/bin/vector"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR in final
+  });
+
+  it('distroless-static: :latest tag on distroless, no USER', () => {
+    const v = lintContent(`FROM docker.io/alpine:3.23 AS builder
+WORKDIR /vector
+COPY vector-*.tar.gz ./
+RUN tar -xvf vector-0*-unknown-linux-musl*.tar.gz --strip-components=2
+RUN mkdir -p /var/lib/vector
+
+FROM gcr.io/distroless/static:latest
+COPY --from=builder /vector/bin/* /usr/local/bin/
+COPY --from=builder /vector/config/vector.yaml /etc/vector/vector.yaml
+RUN ["vector", "--version"]
+ENTRYPOINT ["/usr/local/bin/vector"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('regression: :latest builder, dist-upgrade, broad COPY .', () => {
+    const v = lintContent(`FROM docker.io/timberio/vector-dev:latest AS builder
+WORKDIR /vector
+COPY . .
+RUN cargo build --bin vector --release && cp target/release/vector .
+
+FROM docker.io/debian:trixie-slim@sha256:abc123
+RUN apt-get update && apt-get dist-upgrade -y && apt-get -y --no-install-recommends install zlib1g ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /vector/vector /usr/bin/vector
+RUN ["/usr/bin/vector", "--version"]
+ENTRYPOINT ["/usr/bin/vector"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest in builder
+    expect(v.some(v => v.rule === 'DL3005')).toBe(true);   // dist-upgrade
+    expect(v.some(v => v.rule === 'DV2002')).toBe(true);   // dist-upgrade warning
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);   // COPY . broad context
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('environment: ubuntu with DEBIAN_FRONTEND as ENV, unpinned apt, VOLUME', () => {
+    const v = lintContent(`FROM docker.io/ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y git
+WORKDIR /git/vectordotdev/vector
+COPY scripts/environment/*.sh scripts/environment/
+RUN ./scripts/environment/bootstrap-ubuntu-24.04.sh
+VOLUME /vector
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
+`);
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);   // DEBIAN_FRONTEND as ENV
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+  });
+
+  it('e2e tests: rust slim, unpinned apt, COPY . broad, no CMD', () => {
+    const v = lintContent(`ARG RUST_VERSION=1
+FROM docker.io/rust:\${RUST_VERSION}-slim-trixie
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake curl git clang libclang-dev libsasl2-dev libssl-dev zlib1g-dev zlib1g unzip mold && rm -rf /var/lib/apt/lists/*
+WORKDIR /vector
+COPY . .
+ARG FEATURES
+ARG BUILD
+RUN if [ "$BUILD" = "true" ]; then cargo build --tests --lib --bin vector; fi
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);   // COPY . broad context
+  });
+
+  it('e2e dogstatsd: python alpine, pip install, no version pin', () => {
+    const v = lintContent(`FROM python:3.7-alpine
+COPY . /app
+WORKDIR /app
+RUN pip install -r requirements.txt
+CMD [ "python3", "./client.py"]
+`);
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);   // pip --no-cache-dir
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY
+  });
+
+  it('e2e otel collector: alpine with apk, USER root explicit', () => {
+    const v = lintContent(`ARG CONFIG_COLLECTOR_VERSION=latest
+FROM otel/opentelemetry-collector-contrib:\${CONFIG_COLLECTOR_VERSION} AS upstream
+
+FROM alpine:3.20 AS base
+COPY --from=upstream /otelcol-contrib /otelcol-contrib
+COPY --from=upstream /etc/otelcol-contrib/config.yaml /etc/otelcol-contrib/config.yaml
+USER root
+ENTRYPOINT ["/otelcol-contrib"]
+CMD ["--config", "/etc/otelcol-contrib/config.yaml"]
+`);
+    // DL3002: last USER should not be root (detected by some linters)
+    expect(v.some(v => v.rule === 'DL3002')).toBe(true);   // USER root
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+  });
+
+  it('tilt: complex multi-stage rust build, git clone, dist-upgrade in final', () => {
+    const v = lintContent(`ARG RUST_VERSION=1.85
+FROM docker.io/rust:\${RUST_VERSION}-trixie AS builder
+RUN apt-get update && apt-get -y --no-install-recommends install build-essential git clang cmake libclang-dev libsasl2-dev libssl-dev zlib1g-dev zlib1g
+RUN git clone https://github.com/rui314/mold.git && mkdir mold/build && cd mold/build && cmake .. && cmake --build . && cmake --install .
+WORKDIR /vector
+COPY . .
+RUN cargo build --bin vector
+
+FROM docker.io/debian:trixie-slim
+RUN apt-get update && apt-get -y --no-install-recommends install zlib1g && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /vector/vector /usr/bin/vector
+RUN ["vector", "--version"]
+ENTRYPOINT ["/usr/bin/vector"]
+`);
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);   // cd in RUN
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY . in builder
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR in final
+  });
+
+  it('cross build: ARG-based FROM, bootstrap script', () => {
+    const v = lintContent(`ARG CROSS_VERSION=0.2.5
+ARG TARGET=x86_64-unknown-linux-musl
+FROM ghcr.io/cross-rs/\${TARGET}:\${CROSS_VERSION}
+COPY scripts/cross/bootstrap-ubuntu.sh /
+COPY scripts/environment/install-protoc.sh /
+RUN /bootstrap-ubuntu.sh && bash /install-protoc.sh
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+    expect(v.some(v => v.rule === 'DV4012')).toBe(true);   // no CMD/ENTRYPOINT
+  });
+
+  it('dnstap integration test: debian with bind9, DEBIAN_FRONTEND as ENV', () => {
+    const v = lintContent(`FROM docker.io/library/debian:trixie
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get -y --no-install-recommends install bind9 bind9utils dnsutils && rm -rf /var/lib/apt/lists/*
+COPY named.conf.local /etc/bind/
+COPY configure_bind.sh run_bind.sh /etc/bind/
+RUN chmod +x /etc/bind/configure_bind.sh /etc/bind/run_bind.sh
+RUN /etc/bind/configure_bind.sh
+CMD ["/etc/bind/run_bind.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);   // DEBIAN_FRONTEND as ENV
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+});
+
+// ── temporalio/temporal patterns ───────────────────────────────────────
+
+describe('OSS: temporalio/temporal patterns', () => {
+  it('server.Dockerfile: alpine with unpinned apk, USER temporal, WORKDIR', () => {
+    const v = lintContent(`ARG ALPINE_TAG=3.23.3
+FROM alpine:\${ALPINE_TAG}
+ARG TARGETARCH
+RUN apk add --no-cache ca-certificates tzdata && addgroup -g 1000 temporal && adduser -u 1000 -G temporal -D temporal
+COPY --chmod=755 ./build/\${TARGETARCH}/temporal-server /usr/local/bin/
+COPY --chmod=755 ./scripts/sh/entrypoint.sh /etc/temporal/entrypoint.sh
+WORKDIR /etc/temporal
+USER temporal
+CMD [ "/etc/temporal/entrypoint.sh" ]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER temporal is set
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('admin-tools.Dockerfile: alpine with multiple COPY --chmod, USER, trap CMD', () => {
+    const v = lintContent(`ARG ALPINE_TAG=3.23.3
+FROM alpine:\${ALPINE_TAG}
+ARG TARGETARCH
+ARG USER_UID=10001
+RUN apk add --no-cache ca-certificates tzdata && addgroup -g 1000 temporal && adduser -u 1000 -G temporal -D temporal
+COPY --chmod=755 ./build/\${TARGETARCH}/temporal ./build/\${TARGETARCH}/temporal-cassandra-tool ./build/\${TARGETARCH}/temporal-sql-tool ./build/\${TARGETARCH}/tdbg /usr/local/bin/
+COPY ./build/temporal/schema /etc/temporal/schema
+USER temporal
+CMD ["sh", "-c", "trap exit INT HUP TERM; sleep infinity"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER temporal set
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('temporal: well-structured with USER should not trigger DV1006', () => {
+    const v = lintContent(`FROM alpine:3.23
+RUN apk add --no-cache ca-certificates
+RUN addgroup -g 1000 temporal && adduser -u 1000 -G temporal -D temporal
+COPY temporal-server /usr/local/bin/
+WORKDIR /etc/temporal
+USER temporal
+ENTRYPOINT ["/usr/local/bin/temporal-server"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+  });
+});
+
+// ── hashicorp/vault patterns ───────────────────────────────────────────
+
+describe('OSS: hashicorp/vault patterns', () => {
+  it('main Dockerfile (alpine): unpinned alpine:3, apk add, VOLUME, no USER in default stage', () => {
+    const v = lintContent(`FROM alpine:3 AS default
+ARG BIN_NAME
+ARG NAME=vault
+RUN addgroup \${NAME} && adduser -S -G \${NAME} \${NAME}
+RUN apk add --no-cache libcap su-exec dumb-init tzdata
+COPY dist/linux/amd64/vault /bin/
+RUN mkdir -p /vault/logs && mkdir -p /vault/file && mkdir -p /vault/config && chown -R vault:vault /vault
+VOLUME /vault/logs
+VOLUME /vault/file
+EXPOSE 8200
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["server", "-dev"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin (alpine:3)
+    expect(v.some(v => v.rule === 'DL3052')).toBe(true);   // imprecise tag
+  });
+
+  it('UBI Dockerfile: microdnf install, groupadd, USER vault', () => {
+    const v = lintContent(`FROM registry.access.redhat.com/ubi10/ubi-minimal AS ubi
+ARG NAME=vault
+ARG PRODUCT_VERSION
+ENV NAME=$NAME
+RUN microdnf install -y ca-certificates gnupg openssl libcap tzdata procps shadow-utils util-linux tar
+RUN groupadd --gid 1000 vault && adduser --uid 100 --system -g vault vault && usermod -a -G root vault
+COPY dist/linux/amd64/vault /bin/
+ENV HOME=/home/vault
+RUN mkdir -p /vault/logs && mkdir -p /vault/file && mkdir -p /vault/config && mkdir -p $HOME
+VOLUME /vault/logs
+VOLUME /vault/file
+EXPOSE 8200
+COPY ubi-docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
+USER vault
+CMD ["server", "-dev"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER vault set
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('cross build: debian buster, curl pipe to bash, multiple consecutive RUN', () => {
+    const v = lintContent(`FROM debian:buster
+RUN apt-get update -y && apt-get install --no-install-recommends -y -q curl zip build-essential gcc-multilib g++-multilib ca-certificates git gnupg libltdl-dev libltdl7
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
+RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN apt-get update -y && apt-get install -y -q nodejs yarn
+RUN rm -rf /var/lib/apt/lists/*
+ENV GOVERSION 1.13.8
+RUN mkdir /goroot && mkdir /gopath
+RUN curl https://storage.googleapis.com/golang/go\${GOVERSION}.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
+ENV GOPATH /gopath
+ENV GOROOT /goroot
+CMD make static-dist bin
+`);
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);   // curl pipe to bash
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+    expect(v.some(v => v.rule === 'DL3025')).toBe(true);   // CMD not in exec form
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('scripts/docker: multi-stage Go build, alpine final, no USER', () => {
+    const v = lintContent(`ARG VERSION
+FROM golang:\${VERSION} AS builder
+ARG CGO_ENABLED=0
+WORKDIR /go/src/github.com/hashicorp/vault
+COPY . .
+RUN make bootstrap && CGO_ENABLED=0 sh -c "./scripts/build.sh"
+
+FROM alpine:3.13
+RUN addgroup vault && adduser -S -G vault vault
+RUN apk add --no-cache ca-certificates libcap su-exec dumb-init tzdata
+COPY --from=builder /go/src/github.com/hashicorp/vault/bin/vault /bin/vault
+RUN mkdir -p /vault/logs && mkdir -p /vault/file && mkdir -p /vault/config && chown -R vault:vault /vault
+VOLUME /vault/logs
+VOLUME /vault/file
+EXPOSE 8200
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["server", "-dev"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY . in builder
+  });
+
+  it('Dockerfile.ui: debian buster builder, curl pipe bash, complex build', () => {
+    const v = lintContent(`FROM debian:buster AS builder
+ARG VERSION
+RUN apt-get update -y && apt-get install --no-install-recommends -y -q curl zip build-essential gcc-multilib g++-multilib ca-certificates git gnupg libltdl-dev libltdl7
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get update -y && apt-get install -y -q nodejs yarn
+ENV GOPATH /go
+ENV GOROOT /goroot
+RUN mkdir /goroot && mkdir /go
+RUN curl https://storage.googleapis.com/golang/go\${VERSION}.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
+WORKDIR /go/src/github.com/hashicorp/vault
+COPY . .
+RUN make bootstrap static-dist
+
+FROM alpine:3.13
+RUN addgroup vault && adduser -S -G vault vault
+RUN apk add --no-cache ca-certificates libcap su-exec dumb-init tzdata
+COPY --from=builder /go/src/github.com/hashicorp/vault/bin/vault /bin/vault
+EXPOSE 8200
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["server", "-dev"]
+`);
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);   // curl pipe to bash
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER in final
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+  });
+
+  it('testdata: ubuntu with groupadd, USER nonroot, proper structure', () => {
+    const v = lintContent(`FROM docker.mirror.hashicorp.services/ubuntu:22.04
+ARG plugin
+RUN groupadd nonroot && useradd -g nonroot nonroot
+USER nonroot
+COPY \${plugin} /bin/plugin
+ENTRYPOINT [ "/bin/plugin" ]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER nonroot set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('builder: ubuntu focal, consecutive RUN with chmod, ENTRYPOINT', () => {
+    const v = lintContent(`FROM ubuntu:focal AS builder
+ARG GO_VERSION
+ENV PATH="/root/go/bin:/opt/go/bin:/opt/tools/bin:$PATH"
+ENV GOPRIVATE='github.com/hashicorp/*'
+COPY system.sh .
+RUN chmod +x system.sh && ./system.sh && rm -rf system.sh
+COPY go.sh .
+RUN chmod +x go.sh && ./go.sh && rm -rf go.sh
+COPY tools.sh .
+RUN chmod +x tools.sh
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // no digest pin
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+});
+
+// ── Cross-repo patterns: vitess/kafka/vector/temporal/vault ────────────
+
+describe('OSS scan: infrastructure tool cross-repo patterns', () => {
+  it('Alpine with adduser/addgroup pattern (temporal, kafka, vault)', () => {
+    const v = lintContent(`FROM alpine:3.23
+RUN apk add --no-cache ca-certificates tzdata
+RUN addgroup -g 1000 appgroup && adduser -u 1000 -G appgroup -D appuser
+COPY app /usr/local/bin/
+USER appuser
+ENTRYPOINT ["/usr/local/bin/app"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('Debian binary image pattern (vitess): apt-get upgrade, COPY --from, no CMD', () => {
+    const v = lintContent(`FROM myapp/base:latest@sha256:abc123 AS base
+FROM debian:stable-slim@sha256:def456
+RUN apt-get update && apt-get upgrade -qq && apt-get clean && rm -rf /var/lib/apt/lists/*
+COPY --from=base /app/bin /usr/local/bin/
+RUN groupadd -r --gid 2000 app && useradd -r -g app --uid 1000 app && chown -R app:app /usr/local/bin
+`);
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);   // apt-get upgrade
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // no CMD/ENTRYPOINT
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('wget usage pattern (kafka): DL3047 detected', () => {
+    const v = lintContent(`FROM alpine:3.23
+RUN apk add --no-cache wget bash
+RUN wget -nv -O /tmp/app.tgz "https://example.com/app.tgz"
+RUN tar xfz /tmp/app.tgz -C /opt/
+CMD ["/opt/app/run"]
+`);
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget usage
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+  });
+
+  it('COPY --chmod pattern (temporal, vitess): accepted without DV3021', () => {
+    const v = lintContent(`FROM alpine:3.23
+COPY --chmod=755 app /usr/local/bin/app
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+USER 1000
+ENTRYPOINT ["/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV3021')).toBe(false);  // --chmod is proper
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+  });
+
+  it('curl pipe to bash in build images (vault cross build)', () => {
+    const v = lintContent(`FROM debian:bookworm
+RUN apt-get update && apt-get install -y curl gnupg
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
+`);
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);   // curl pipe to bash
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+  });
+
+  it('microdnf pattern (vault UBI): no apt/apk rules fire', () => {
+    const v = lintContent(`FROM registry.access.redhat.com/ubi10/ubi-minimal
+RUN microdnf install -y ca-certificates openssl tzdata
+COPY vault /bin/vault
+EXPOSE 8200
+ENTRYPOINT ["vault"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(false);  // not apt
+    expect(v.some(v => v.rule === 'DL3018')).toBe(false);  // not apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('smoke test RUN pattern (vector): RUN ["binary", "--version"]', () => {
+    const v = lintContent(`FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY vector /usr/bin/vector
+RUN ["vector", "--version"]
+ENTRYPOINT ["/usr/bin/vector"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('graalvm native image build (kafka): complex multi-stage', () => {
+    const v = lintContent(`FROM ghcr.io/graalvm/graalvm-community:21 AS build
+ARG kafka_url
+WORKDIR /app
+RUN if [ -n "$kafka_url" ]; then microdnf install wget; wget -nv -O kafka.tgz "$kafka_url"; fi
+RUN mkdir /app/kafka && tar xfz kafka.tgz -C /app/kafka --strip-components 1
+
+FROM alpine:3.23
+RUN apk update && apk add --no-cache gcompat bash
+RUN adduser -h /home/appuser -D --shell /bin/bash appuser
+USER appuser
+CMD ["/opt/kafka/run"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER appuser
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR in final
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget usage
+  });
+});
