@@ -2770,3 +2770,476 @@ COPY dashboards.yml /etc/grafana/provisioning/dashboards/dashboards.yml
     expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // .dockerignore hint
   });
 });
+
+// ── minio/minio patterns ──────────────────────────────────────────────
+
+describe('OSS: minio/minio patterns', () => {
+  it('Dockerfile: latest tag, chmod 777, no USER, no WORKDIR', () => {
+    const v = lintContent(`FROM minio/minio:latest
+ARG TARGETARCH
+ARG RELEASE
+RUN chmod -R 777 /usr/bin
+COPY ./minio-\${TARGETARCH}.\${RELEASE} /usr/bin/minio
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+VOLUME ["/data"]
+CMD ["minio"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);   // chmod 777
+  });
+
+  it('Dockerfile.release: multi-stage, ARG injection in URLs, unpinned apk', () => {
+    const v = lintContent(`FROM golang:1.24-alpine AS build
+ARG TARGETARCH
+ARG RELEASE
+ENV CGO_ENABLED=0
+WORKDIR /build
+RUN apk add -U --no-cache ca-certificates
+RUN apk add -U --no-cache curl
+RUN apk add -U --no-cache bash
+RUN curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    chmod +x /go/bin/minio
+FROM registry.access.redhat.com/ubi9/ubi-micro:latest
+ARG RELEASE
+RUN chmod -R 777 /usr/bin
+COPY --from=build /go/bin/minio /usr/bin/minio
+EXPOSE 9000
+VOLUME ["/data"]
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+CMD ["minio"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);   // unquoted ARG in URL
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest on ubi-micro
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);   // chmod 777
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+  });
+
+  it('Dockerfile.cicd: minimal override, no HEALTHCHECK', () => {
+    const v = lintContent(`FROM minio/minio
+COPY ./minio /usr/bin/minio
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+VOLUME ["/data"]
+CMD ["minio"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('Dockerfile.scratch: scratch-based, minimal', () => {
+    const v = lintContent(`FROM scratch
+COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+COPY minio /usr/bin/minio
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+VOLUME ["/data"]
+CMD ["minio"]
+`);
+    // scratch images are minimal — fewer rules apply
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DV1006'); // scratch can't run USER
+  });
+
+  it('object storage pattern: VOLUME + EXPOSE, env-heavy config', () => {
+    const v = lintContent(`FROM minio/minio:latest
+ENV MINIO_ACCESS_KEY_FILE=access_key \\
+    MINIO_SECRET_KEY_FILE=secret_key \\
+    MINIO_ROOT_USER_FILE=access_key \\
+    MINIO_ROOT_PASSWORD_FILE=secret_key \\
+    MC_CONFIG_DIR=/tmp/.mc
+RUN chmod -R 777 /usr/bin
+EXPOSE 9000
+VOLUME ["/data"]
+CMD ["minio"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest
+    expect(v.some(v => v.rule === 'DV4009')).toBe(true);   // chmod 777
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+});
+
+// ── influxdata/influxdb patterns ──────────────────────────────────────
+
+describe('OSS: influxdata/influxdb patterns', () => {
+  it('Dockerfile: Rust multi-stage, unpinned apt, proper USER', () => {
+    const v = lintContent(`FROM rust:1.92-slim-bookworm as build
+USER root
+RUN apt update \\
+    && apt install --yes binutils build-essential curl pkg-config libssl-dev clang lld git patchelf protobuf-compiler zstd libz-dev \\
+    && rm -rf /var/lib/{apt,dpkg,cache,log}
+RUN mkdir /influxdb3
+WORKDIR /influxdb3
+COPY . /influxdb3
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+RUN apt update \\
+    && apt install --yes ca-certificates gettext-base libssl3 wget curl --no-install-recommends \\
+    && rm -rf /var/lib/{apt,dpkg,cache,log} \\
+    && groupadd --gid 1500 influxdb3 \\
+    && useradd --uid 1500 --gid influxdb3 --shell /bin/bash --create-home influxdb3
+RUN mkdir /var/lib/influxdb3 && \\
+    chown influxdb3:influxdb3 /var/lib/influxdb3
+USER influxdb3
+COPY --from=build /root/influxdb3 /usr/bin/influxdb3
+EXPOSE 8181
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
+CMD ["serve"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);   // apt update without install in same RUN
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('Dockerfile.ci: CI image with sudo, massive apt install', () => {
+    const v = lintContent(`FROM rust:1.92-slim-bookworm
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \\
+  && apt-get install -y \\
+    git locales sudo openssh-client ca-certificates tar gzip parallel \\
+    unzip zip bzip2 gnupg curl make pkg-config libssl-dev \\
+    jq clang lld g++ shellcheck yamllint protobuf-compiler libprotobuf-dev \\
+    --no-install-recommends \\
+  && apt-get clean autoclean \\
+  && rm -rf /var/lib/{apt,dpkg,cache,log}
+RUN groupadd -g 1500 rust \\
+  && useradd -u 1500 -g rust -s /bin/bash -m rust \\
+  && echo 'rust ALL=NOPASSWD: ALL' >> /etc/sudoers.d/10-rust
+RUN cargo install cargo-hakari && \\
+    cargo install cargo-deny && \\
+    chown -R rust:rust /usr/local/cargo
+USER rust
+CMD ["/bin/bash"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('time-series DB pattern: Rust build with patchelf + custom user', () => {
+    const v = lintContent(`FROM rust:1.92-slim-bookworm AS build
+WORKDIR /app
+RUN apt update && apt install --yes build-essential pkg-config libssl-dev
+COPY . .
+RUN cargo build --release && patchelf --set-rpath '/lib' /app/target/release/influxdb3
+
+FROM debian:bookworm-slim
+RUN groupadd --gid 1500 influxdb3 && useradd --uid 1500 --gid influxdb3 --create-home influxdb3
+COPY --from=build /app/target/release/influxdb3 /usr/bin/influxdb3
+USER influxdb3
+EXPOSE 8181
+ENV LOG_FILTER=info
+CMD ["serve"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+});
+
+// ── apache/airflow patterns ──────────────────────────────────────────
+
+describe('OSS: apache/airflow patterns', () => {
+  it('main Dockerfile: complex multi-stage with ARG-heavy FROM', () => {
+    const v = lintContent(`FROM python:3.12-slim-bookworm AS build
+ARG AIRFLOW_VERSION="3.1.7"
+ARG AIRFLOW_HOME=/opt/airflow
+ENV AIRFLOW_HOME=\${AIRFLOW_HOME}
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    build-essential libpq-dev \\
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/airflow
+COPY . .
+RUN pip install --no-cache-dir apache-airflow==\${AIRFLOW_VERSION}
+
+FROM python:3.12-slim-bookworm
+ARG AIRFLOW_UID="50000"
+RUN groupadd --gid \${AIRFLOW_UID} airflow \\
+    && useradd --uid \${AIRFLOW_UID} --gid airflow --create-home airflow
+COPY --from=build /opt/airflow /opt/airflow
+USER airflow
+WORKDIR /opt/airflow
+HEALTHCHECK CMD curl -f http://localhost:8080/health || exit 1
+EXPOSE 8080
+CMD ["airflow", "webserver"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+  });
+
+  it('krb5-kdc-server: centos:7, yum + curl pipe pattern', () => {
+    const v = lintContent(`FROM centos:7
+WORKDIR /root/
+RUN yum -y install curl wget python36 && yum clean all && \\
+    curl "https://bootstrap.pypa.io/get-pip.py" -o /tmp/get-pip.py && \\
+    python3 /tmp/get-pip.py && \\
+    rm /tmp/get-pip.py && \\
+    pip install --no-cache-dir supervisor
+RUN yum -y install ntp krb5-server krb5-libs && yum clean all
+ENV KRB5_CONFIG=/etc/krb5.conf
+COPY kdc.conf /var/kerberos/krb5kdc/kdc.conf
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/usr/local/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('pgbouncer: alpine multi-stage, proper HEALTHCHECK + USER', () => {
+    const v = lintContent(`FROM alpine:3.19 AS builder
+SHELL ["/bin/ash", "-e", "-x", "-c", "-o", "pipefail"]
+ARG PGBOUNCER_VERSION
+ARG PGBOUNCER_SHA256
+RUN apk --no-cache add make pkgconfig build-base libtool wget gcc g++ libevent-dev openssl-dev c-ares-dev ca-certificates
+RUN wget "https://github.com/pgbouncer/pgbouncer/releases/download/pgbouncer_\${PGBOUNCER_VERSION}/pgbouncer-\${PGBOUNCER_VERSION}.tar.gz" \\
+    && echo "\${PGBOUNCER_SHA256}  pgbouncer-\${PGBOUNCER_VERSION}.tar.gz" | sha256sum -c -
+
+FROM alpine:3.19
+RUN apk --no-cache add libevent libressl c-ares
+COPY --from=builder /usr/bin/pgbouncer /usr/bin/pgbouncer
+HEALTHCHECK --interval=10s --timeout=3s CMD stat /tmp/.s.PGSQL.*
+EXPOSE 6432
+USER nobody
+ENTRYPOINT ["/usr/bin/pgbouncer", "-u", "nobody", "/etc/pgbouncer/pgbouncer.ini"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    // Has HEALTHCHECK and USER — good practices
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DL3057');
+    expect(rules).not.toContain('DV1006');
+  });
+
+  it('extending pattern: FROM apache/airflow, USER root then back to airflow', () => {
+    const v = lintContent(`FROM apache/airflow:3.2.0
+USER root
+RUN apt-get update \\
+  && apt-get install -y --no-install-recommends \\
+       vim \\
+  && apt-get autoremove -yqq --purge \\
+  && apt-get clean \\
+  && rm -rf /var/lib/apt/lists/*
+USER airflow
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('workflow orchestrator pattern: large ENV, pip install', () => {
+    const v = lintContent(`FROM python:3.12-slim-bookworm
+ARG AIRFLOW_HOME=/opt/airflow
+ENV AIRFLOW_HOME=\${AIRFLOW_HOME} \\
+    PYTHONPATH=/opt/airflow \\
+    FLASK_APP="superset.app:create_app()"
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    libpq-dev curl \\
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR \${AIRFLOW_HOME}
+RUN pip install --no-cache-dir apache-airflow[celery,postgres,redis]==3.1.7
+EXPOSE 8080
+CMD ["airflow", "webserver"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);   // pip best practice
+  });
+});
+
+// ── apache/superset patterns ──────────────────────────────────────────
+
+describe('OSS: apache/superset patterns', () => {
+  it('main Dockerfile: node + python multi-stage, HEALTHCHECK present', () => {
+    const v = lintContent(`FROM node:20-trixie-slim AS superset-node-ci
+RUN apt-get update && apt-get install -y build-essential python3 zstd \\
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app/superset-frontend
+COPY superset-frontend /app/superset-frontend
+RUN npm ci && npm run build
+
+FROM python:3.11-slim-trixie AS python-base
+RUN useradd --user-group -m --no-log-init --shell /bin/bash superset
+RUN pip install --no-cache-dir --upgrade uv
+WORKDIR /app
+COPY --from=superset-node-ci /app/superset/static/assets superset/static/assets
+COPY superset superset
+HEALTHCHECK CMD curl -f http://localhost:8088/health || exit 1
+CMD ["/app/docker/entrypoints/run-server.sh"]
+EXPOSE 8088
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER in final stage
+    // Has HEALTHCHECK
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DL3057');
+  });
+
+  it('superset-websocket: node multi-stage, proper USER', () => {
+    const v = lintContent(`FROM node:22-alpine AS build
+WORKDIR /home/superset-websocket
+COPY . ./
+RUN npm ci && npm run build
+
+FROM node:22-alpine
+ENV NODE_ENV=production
+WORKDIR /home/superset-websocket
+COPY --from=build /home/superset-websocket/dist ./dist
+COPY package*.json ./
+RUN npm ci --omit=dev
+USER node
+CMD [ "npm", "start" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    // Has USER
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DV1006');
+  });
+
+  it('.devcontainer: dev image, no USER, pipe to sh', () => {
+    const v = lintContent(`FROM python:3.11.13-trixie AS base
+RUN apt-get update && apt-get install -y \\
+    libsasl2-dev \\
+    libldap2-dev \\
+    libpq-dev \\
+    tmux \\
+    gh \\
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);   // curl pipe to sh
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);   // apt-get no -y flag variant
+  });
+
+  it('data visualization pattern: Python + Node + HEALTHCHECK', () => {
+    const v = lintContent(`FROM python:3.11-slim-trixie
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    curl libsasl2-dev libpq-dev libldap2-dev \\
+    && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir uv
+WORKDIR /app
+ENV SUPERSET_HOME="/app/superset_home" \\
+    FLASK_APP="superset.app:create_app()" \\
+    SUPERSET_PORT="8088"
+COPY . .
+RUN uv pip install -e .
+HEALTHCHECK CMD curl -f http://localhost:8088/health || exit 1
+EXPOSE 8088
+CMD ["/app/docker/entrypoints/run-server.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    // Has HEALTHCHECK
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DL3057');
+  });
+
+  it('lean image pattern: FROM python-common with USER superset', () => {
+    const v = lintContent(`FROM python:3.11-slim-trixie
+RUN useradd --user-group -m --shell /bin/bash superset
+WORKDIR /app
+RUN pip install --no-cache-dir uv
+COPY requirements/base.txt requirements/
+RUN pip install --no-cache-dir -r requirements/base.txt
+RUN python -m compileall /app/superset
+USER superset
+EXPOSE 8088
+CMD ["/app/docker/entrypoints/run-server.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    // Has USER — good
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DV1006');
+  });
+});
+
+// ── trufflesecurity/trufflehog patterns ──────────────────────────────
+
+describe('OSS: trufflesecurity/trufflehog patterns', () => {
+  it('Dockerfile: go multi-stage + alpine runtime, unpinned apk', () => {
+    const v = lintContent(`FROM golang:bullseye as builder
+WORKDIR /build
+COPY . .
+ENV CGO_ENABLED=0
+ARG TARGETOS TARGETARCH
+RUN GOOS=\${TARGETOS} GOARCH=\${TARGETARCH} go build -o trufflehog .
+
+FROM alpine:3.22
+RUN apk add --no-cache bash git openssh-client ca-certificates rpm2cpio binutils cpio \\
+    && rm -rf /var/cache/apk/* && update-ca-certificates
+COPY --from=builder /build/trufflehog /usr/bin/trufflehog
+COPY entrypoint.sh /etc/entrypoint.sh
+RUN chmod +x /etc/entrypoint.sh
+ENTRYPOINT ["/etc/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('Dockerfile.goreleaser: alpine-only, pre-built binary', () => {
+    const v = lintContent(`FROM alpine:3.22
+RUN apk add --no-cache bash git openssh-client ca-certificates \\
+    && rm -rf /var/cache/apk/* && update-ca-certificates
+WORKDIR /usr/bin/
+COPY trufflehog .
+COPY entrypoint.sh /etc/entrypoint.sh
+RUN chmod +x /etc/entrypoint.sh
+ENTRYPOINT ["/etc/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('secret scanner pattern: go build + security tools', () => {
+    const v = lintContent(`FROM golang:1.23-bookworm AS builder
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /trufflehog .
+
+FROM alpine:3.22
+RUN apk add --no-cache git openssh-client ca-certificates
+COPY --from=builder /trufflehog /usr/bin/trufflehog
+USER 65534
+ENTRYPOINT ["/usr/bin/trufflehog"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    // Has USER
+    const rules = ruleSet(v);
+    expect(rules).not.toContain('DV1006');
+  });
+
+  it('go builder pattern: BUILDPLATFORM + TARGETOS/TARGETARCH', () => {
+    const v = lintContent(`FROM --platform=\${BUILDPLATFORM} golang:bullseye as builder
+WORKDIR /build
+COPY . .
+ENV CGO_ENABLED=0
+ARG TARGETOS TARGETARCH
+RUN GOOS=\${TARGETOS} GOARCH=\${TARGETARCH} go build -o /app .
+
+FROM alpine:3.22
+COPY --from=builder /app /usr/bin/app
+RUN apk add --no-cache ca-certificates
+ENTRYPOINT ["/usr/bin/app"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+});
