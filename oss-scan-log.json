@@ -13326,5 +13326,120 @@
       "infos": 79
     },
     "notes": "Clean scan, no FP. DL3004 sudo (16x — workspace images run as gitpod user, sudo needed). DV1003 curl|sh (8x). DV3024 tarball without checksum. All legitimate for dev workspace context."
+  },
+  {
+    "repo": "langgenius/dify",
+    "files": 4,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 13,
+      "info": 18
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (6x), DV4010 recursive chown (3x), DV4003 no WORKDIR (3x)."
+  },
+  {
+    "repo": "vllm-project/vllm",
+    "files": 9,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 21,
+      "warnings": 321,
+      "info": 147,
+      "style": 40
+    },
+    "notes": "FP found: DL3052 flagged PIP_INDEX_URL/UV_INDEX_URL/http_proxy ARGs as unused — these are implicit env vars for pip/uv/proxy. Fixed by adding tool env vars to IMPLICIT_ARGS. 40→21 DL3052 findings."
+  },
+  {
+    "repo": "penpot/penpot",
+    "files": 8,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 1,
+      "warnings": 22,
+      "info": 78,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DV3019 downloaded scripts without checksum (16x) in devenv. DV4003 no WORKDIR (11x). DV4010 chown -R (9x)."
+  },
+  {
+    "repo": "zammad/zammad",
+    "files": 7,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 10,
+      "warnings": 14,
+      "info": 27,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags LDAP_ADMIN_PASSWORD/LDAP_PASSWORDS in doc LDAP Dockerfile. DL3020 ADD (8x)."
+  },
+  {
+    "repo": "casdoor/casdoor",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 13,
+      "info": 19
+    },
+    "notes": "Clean scan, no FP. Single Dockerfile with DL3018 apk pinning (4x), DL3019 apk cache (4x)."
+  },
+  {
+    "repo": "wekan/wekan",
+    "files": 5,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 12,
+      "info": 27
+    },
+    "notes": "Clean scan, no FP. DV4017 PATH pollution on ~/.meteor/ (legitimate). DV1009 digest pinning (7x)."
+  },
+  {
+    "repo": "kanboard/kanboard",
+    "files": 2,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 2,
+      "warnings": 61,
+      "info": 11
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning (36x), DL3008 apt pinning (21x). DL3020 ADD (2x)."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 4,
+      "warnings": 16,
+      "info": 18,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD (4x), DV4012 consecutive COPY (3x). Standard Go/Alpine builds."
+  },
+  {
+    "repo": "netbox-community/netbox-docker",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 26,
+      "info": 5
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (23x). Well-maintained single Dockerfile."
+  },
+  {
+    "repo": "element-hq/synapse",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 2,
+      "warnings": 26,
+      "info": 18,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh (2x), DL3008 apt pinning (18x). DV1006 root (3x)."
   }
 ]
