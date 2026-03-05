@@ -1989,7 +1989,7 @@ describe('OSS: temporalio/temporal patterns', () => {
 FROM alpine:\${ALPINE_TAG}
 ARG TARGETARCH
 RUN apk add --no-cache ca-certificates tzdata && addgroup -g 1000 temporal && adduser -u 1000 -G temporal -D temporal
-COPY --chmod=755 ./build/\${TARGETARCH}/temporal-server /usr/local/bin/
+COPY --chmod=755 ./build/\$TARGETARCH/temporal-server /usr/local/bin/
 COPY --chmod=755 ./scripts/sh/entrypoint.sh /etc/temporal/entrypoint.sh
 WORKDIR /etc/temporal
 USER temporal
@@ -2007,7 +2007,7 @@ FROM alpine:\${ALPINE_TAG}
 ARG TARGETARCH
 ARG USER_UID=10001
 RUN apk add --no-cache ca-certificates tzdata && addgroup -g 1000 temporal && adduser -u 1000 -G temporal -D temporal
-COPY --chmod=755 ./build/\${TARGETARCH}/temporal ./build/\${TARGETARCH}/temporal-cassandra-tool ./build/\${TARGETARCH}/temporal-sql-tool ./build/\${TARGETARCH}/tdbg /usr/local/bin/
+COPY --chmod=755 ./build/\$TARGETARCH/temporal ./build/\$TARGETARCH/temporal-cassandra-tool ./build/\$TARGETARCH/temporal-sql-tool ./build/\$TARGETARCH/tdbg /usr/local/bin/
 COPY ./build/temporal/schema /etc/temporal/schema
 USER temporal
 CMD ["sh", "-c", "trap exit INT HUP TERM; sleep infinity"]
@@ -2090,7 +2090,7 @@ RUN apt-get update -y && apt-get install -y -q nodejs yarn
 RUN rm -rf /var/lib/apt/lists/*
 ENV GOVERSION 1.13.8
 RUN mkdir /goroot && mkdir /gopath
-RUN curl https://storage.googleapis.com/golang/go\${GOVERSION}.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
+RUN curl https://storage.googleapis.com/golang/go\$GOVERSION.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
 ENV GOPATH /gopath
 ENV GOROOT /goroot
 CMD make static-dist bin
@@ -2779,7 +2779,7 @@ describe('OSS: minio/minio patterns', () => {
 ARG TARGETARCH
 ARG RELEASE
 RUN chmod -R 777 /usr/bin
-COPY ./minio-\${TARGETARCH}.\${RELEASE} /usr/bin/minio
+COPY ./minio-\$TARGETARCH.\${RELEASE} /usr/bin/minio
 COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
 VOLUME ["/data"]
@@ -2801,7 +2801,7 @@ WORKDIR /build
 RUN apk add -U --no-cache ca-certificates
 RUN apk add -U --no-cache curl
 RUN apk add -U --no-cache bash
-RUN curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+RUN curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE} -o /go/bin/minio && \\
     chmod +x /go/bin/minio
 FROM registry.access.redhat.com/ubi9/ubi-micro:latest
 ARG RELEASE
@@ -3171,7 +3171,7 @@ WORKDIR /build
 COPY . .
 ENV CGO_ENABLED=0
 ARG TARGETOS TARGETARCH
-RUN GOOS=\${TARGETOS} GOARCH=\${TARGETARCH} go build -o trufflehog .
+RUN GOOS=\${TARGETOS} GOARCH=\$TARGETARCH go build -o trufflehog .
 
 FROM alpine:3.22
 RUN apk add --no-cache bash git openssh-client ca-certificates rpm2cpio binutils cpio \\
@@ -3225,12 +3225,12 @@ ENTRYPOINT ["/usr/bin/trufflehog"]
   });
 
   it('go builder pattern: BUILDPLATFORM + TARGETOS/TARGETARCH', () => {
-    const v = lintContent(`FROM --platform=\${BUILDPLATFORM} golang:bullseye as builder
+    const v = lintContent(`FROM --platform=\$BUILDPLATFORM golang:bullseye as builder
 WORKDIR /build
 COPY . .
 ENV CGO_ENABLED=0
 ARG TARGETOS TARGETARCH
-RUN GOOS=\${TARGETOS} GOARCH=\${TARGETARCH} go build -o /app .
+RUN GOOS=\${TARGETOS} GOARCH=\$TARGETARCH go build -o /app .
 
 FROM alpine:3.22
 COPY --from=builder /app /usr/bin/app
@@ -3778,8 +3778,8 @@ ARG KUBEBENCH_VERSION
 RUN make build && cp kube-bench /go/bin/kube-bench
 
 ARG KUBECTL_VERSION TARGETARCH
-RUN wget -O /usr/local/bin/kubectl "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\${TARGETARCH}/kubectl"
-RUN wget -O kubectl.sha256 "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\${TARGETARCH}/kubectl.sha256"
+RUN wget -O /usr/local/bin/kubectl "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\$TARGETARCH/kubectl"
+RUN wget -O kubectl.sha256 "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\$TARGETARCH/kubectl.sha256"
 RUN /bin/bash -c 'echo "\$(<kubectl.sha256)  /usr/local/bin/kubectl" | sha256sum -c -'
 RUN chmod +x /usr/local/bin/kubectl
 
@@ -3821,7 +3821,7 @@ COPY main.go .
 RUN make build && cp kube-bench /go/bin/kube-bench
 
 ARG KUBECTL_VERSION TARGETARCH
-RUN wget -O /usr/local/bin/kubectl "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\${TARGETARCH}/kubectl"
+RUN wget -O /usr/local/bin/kubectl "https://dl.k8s.io/release/v\${KUBECTL_VERSION}/bin/linux/\$TARGETARCH/kubectl"
 RUN chmod +x /usr/local/bin/kubectl
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal as run
@@ -3951,7 +3951,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \\
     && rm -rf /var/lib/apt/lists/*
 
 RUN GOARCH=\$(echo "\$ARCH" | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/') \\
-    && curl -fsSL "https://go.dev/dl/go\${GOVERSION}.linux-\${GOARCH}.tar.gz" -o /tmp/go.tar.gz \\
+    && curl -fsSL "https://go.dev/dl/go\$GOVERSION.linux-\${GOARCH}.tar.gz" -o /tmp/go.tar.gz \\
     && tar -C /usr/local -xzf /tmp/go.tar.gz \\
     && rm /tmp/go.tar.gz
 
@@ -4947,7 +4947,7 @@ EXPOSE 8428
 ENTRYPOINT ["/victoria-metrics-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY victoria-metrics-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./victoria-metrics-prod
+COPY victoria-metrics-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./victoria-metrics-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -4986,7 +4986,7 @@ EXPOSE 8429
 ENTRYPOINT ["/vmagent-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmagent-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmagent-prod
+COPY vmagent-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmagent-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5025,7 +5025,7 @@ EXPOSE 8429
 ENTRYPOINT ["/vmalert-tool-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmalert-tool-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmalert-tool-prod
+COPY vmalert-tool-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmalert-tool-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5064,7 +5064,7 @@ EXPOSE 8880
 ENTRYPOINT ["/vmalert-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmalert-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmalert-prod
+COPY vmalert-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmalert-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5103,7 +5103,7 @@ EXPOSE 8427
 ENTRYPOINT ["/vmauth-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmauth-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmauth-prod
+COPY vmauth-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmauth-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5139,7 +5139,7 @@ COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 ENTRYPOINT ["/vmbackup-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmbackup-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmbackup-prod
+COPY vmbackup-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmbackup-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5175,7 +5175,7 @@ COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 ENTRYPOINT ["/vmctl-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmctl-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmctl-prod
+COPY vmctl-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmctl-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5211,7 +5211,7 @@ COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 ENTRYPOINT ["/vmrestore-prod"]
 ARG TARGETARCH
 ARG BINARY_SUFFIX=non-existing
-COPY vmrestore-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmrestore-prod
+COPY vmrestore-linux-\$TARGETARCH-prod\${BINARY_SUFFIX} ./vmrestore-prod
 `);
     expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
@@ -5473,7 +5473,7 @@ ENTRYPOINT ["/build.sh"]
 ARG revision
 LABEL org.opencontainers.image.title="build-image" \\
 	org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/build-image" \\
-	org.opencontainers.image.revision="\${revision}"
+	org.opencontainers.image.revision="\$revision"
 `);
     expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
     expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
@@ -5502,7 +5502,7 @@ ENTRYPOINT [ "/bin/cortex" ]
 ARG revision
 LABEL org.opencontainers.image.title="cortex" \\
       org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/cmd/cortex" \\
-      org.opencontainers.image.revision="\${revision}"
+      org.opencontainers.image.revision="\$revision"
 `);
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
@@ -5522,7 +5522,7 @@ ENTRYPOINT ["/query-tee"]
 ARG revision
 LABEL org.opencontainers.image.title="query-tee" \\
       org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/tools/query-tee" \\
-      org.opencontainers.image.revision="\${revision}"
+      org.opencontainers.image.revision="\$revision"
 `);
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
@@ -5541,7 +5541,7 @@ ENTRYPOINT ["/test-exporter"]
 ARG revision
 LABEL org.opencontainers.image.title="test-exporter" \\
       org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/cmd/test-exporter" \\
-      org.opencontainers.image.revision="\${revision}"
+      org.opencontainers.image.revision="\$revision"
 `);
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
@@ -5560,7 +5560,7 @@ ENTRYPOINT ["/thanosconvert"]
 ARG revision
 LABEL org.opencontainers.image.title="thanosconvert" \\
       org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/tools/thanosconvert" \\
-      org.opencontainers.image.revision="\${revision}"
+      org.opencontainers.image.revision="\$revision"
 `);
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
@@ -5687,7 +5687,7 @@ ARG revision
 LABEL org.opencontainers.image.title="fpm" \\
         # TODO: should this label point to the fpm source code?
         org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/packaging/fpm" \\
-        org.opencontainers.image.revision="\${revision}"
+        org.opencontainers.image.revision="\$revision"
 `);
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ruby`
     expect(v.some(v => v.rule === 'DL3028')).toBe(true);    // Pin versions in gem install. Instead of `gem insta
@@ -7412,7 +7412,7 @@ ARG TARGETVARIANT=""
 
 ENV GO111MODULE=on \\
   GOOS=\${TARGETOS} \\
-  GOARCH=\${TARGETARCH} \\
+  GOARCH=\$TARGETARCH \\
   GOARM=\${TARGETVARIANT} \\
   DEBIAN_FRONTEND=noninteractive \\
   PATH="/root/go/bin:\${PATH}" \\
@@ -7640,7 +7640,7 @@ ARG TARGETVARIANT=""
 
 ENV GO111MODULE=on \\
   GOOS=\${TARGETOS} \\
-  GOARCH=\${TARGETARCH} \\
+  GOARCH=\$TARGETARCH \\
   GOARM=\${TARGETVARIANT} \\
   DEBIAN_FRONTEND=noninteractive \\
   PATH="/root/go/bin:\${PATH}" \\
@@ -7886,10 +7886,10 @@ ARG TARGETARCH
 # Known SHA256 checksums for FoundationDB client packages (verified 2025-01-19)
 # To add checksums for new versions: run docker/get_fdb_checksum.sh <version> <arch>
 RUN cd /tmp && \\
-    case "\${TARGETARCH}" in \\
+    case "\$TARGETARCH" in \\
         "amd64") FDB_ARCH="amd64"; PACKAGE_ARCH="amd64" ;; \\
         "arm64") FDB_ARCH="arm64"; PACKAGE_ARCH="aarch64" ;; \\
-        *) echo "Unsupported architecture: \${TARGETARCH}" >&2; exit 1 ;; \\
+        *) echo "Unsupported architecture: \$TARGETARCH" >&2; exit 1 ;; \\
     esac && \\
     case "\${FDB_VERSION}_\${FDB_ARCH}" in \\
         "7.4.5_amd64") \\
@@ -9480,7 +9480,7 @@ RUN apk add --no-cache \\
 ARG TARGETARCH=arm64
 ARG CACHE_BUST=unknown
 RUN echo "Building with cache bust: \${CACHE_BUST}"
-COPY weed-linux-\${TARGETARCH} /usr/local/bin/weed
+COPY weed-linux-\$TARGETARCH /usr/local/bin/weed
 RUN chmod +x /usr/local/bin/weed
 
 # Create data directory
@@ -9825,9 +9825,9 @@ ARG RELEASE
 
 RUN chmod -R 777 /usr/bin
 
-COPY ./minio-\${TARGETARCH}.\${RELEASE} /usr/bin/minio
-COPY ./minio-\${TARGETARCH}.\${RELEASE}.minisig /usr/bin/minio.minisig
-COPY ./minio-\${TARGETARCH}.\${RELEASE}.sha256sum /usr/bin/minio.sha256sum
+COPY ./minio-\$TARGETARCH.\${RELEASE} /usr/bin/minio
+COPY ./minio-\$TARGETARCH.\${RELEASE}.minisig /usr/bin/minio.minisig
+COPY ./minio-\$TARGETARCH.\${RELEASE}.sha256sum /usr/bin/minio.sha256sum
 
 COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 
@@ -9870,19 +9870,19 @@ RUN apk add -U --no-cache ca-certificates && \\
     go install aead.dev/minisign/cmd/minisign@v0.2.1
 
 # Download minio binary and signature files
-RUN curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
-    curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
-    curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
+RUN curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\$TARGETARCH/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\$TARGETARCH/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
+    curl -s -q https://dl.min.io/server/minio/hotfixes/linux-\$TARGETARCH/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
     chmod +x /go/bin/minio
 
 # Download mc binary and signature files
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc -o /go/bin/mc && \\
-    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \\
-    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \\
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc -o /go/bin/mc && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc.minisig -o /go/bin/mc.minisig && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc.sha256sum -o /go/bin/mc.sha256sum && \\
     chmod +x /go/bin/mc
 
 RUN if [ "\$TARGETARCH" = "amd64" ]; then \\
-       curl -L -s -q https://github.com/moparisthebest/static-curl/releases/latest/download/curl-\${TARGETARCH} -o /go/bin/curl; \\
+       curl -L -s -q https://github.com/moparisthebest/static-curl/releases/latest/download/curl-\$TARGETARCH -o /go/bin/curl; \\
        chmod +x /go/bin/curl; \\
     fi
 
@@ -9959,15 +9959,15 @@ RUN apk add -U --no-cache ca-certificates && \\
     go install aead.dev/minisign/cmd/minisign@v0.2.1
 
 # Download minio binary and signature files
-RUN curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
-    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
-    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
+RUN curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
     chmod +x /go/bin/minio
 
 # Download mc binary and signature files
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc -o /go/bin/mc && \\
-    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \\
-    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \\
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc -o /go/bin/mc && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc.minisig -o /go/bin/mc.minisig && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc.sha256sum -o /go/bin/mc.sha256sum && \\
     chmod +x /go/bin/mc
 
 # Verify binary signature using public key "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGavRUN"
@@ -10043,19 +10043,19 @@ RUN apk add -U --no-cache ca-certificates && \\
     go install aead.dev/minisign/cmd/minisign@v0.2.1
 
 # Download minio binary and signature files
-RUN curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE} -o /go/bin/minio && \\
-    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
-    curl -s -q https://dl.min.io/server/minio/release/linux-\${TARGETARCH}/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
+RUN curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE} -o /go/bin/minio && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE}.minisig -o /go/bin/minio.minisig && \\
+    curl -s -q https://dl.min.io/server/minio/release/linux-\$TARGETARCH/archive/minio.\${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \\
     chmod +x /go/bin/minio
 
 # Download mc binary and signature files
-RUN curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc -o /go/bin/mc && \\
-    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \\
-    curl -s -q https://dl.min.io/client/mc/release/linux-\${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \\
+RUN curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc -o /go/bin/mc && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc.minisig -o /go/bin/mc.minisig && \\
+    curl -s -q https://dl.min.io/client/mc/release/linux-\$TARGETARCH/mc.sha256sum -o /go/bin/mc.sha256sum && \\
     chmod +x /go/bin/mc
 
 RUN if [ "\$TARGETARCH" = "amd64" ]; then \\
-       curl -L -s -q https://github.com/moparisthebest/static-curl/releases/latest/download/curl-\${TARGETARCH} -o /go/bin/curl; \\
+       curl -L -s -q https://github.com/moparisthebest/static-curl/releases/latest/download/curl-\$TARGETARCH -o /go/bin/curl; \\
        chmod +x /go/bin/curl; \\
     fi
 
@@ -10353,7 +10353,7 @@ ARG EE_PORTS
 
 ARG TARGETARCH
 
-ARG KONG_ARTIFACT=kong.\${TARGETARCH}.deb
+ARG KONG_ARTIFACT=kong.\$TARGETARCH.deb
 ARG KONG_ARTIFACT_PATH
 
 RUN --mount=type=bind,source=\${KONG_ARTIFACT_PATH},target=/tmp/pkg \\
@@ -10422,7 +10422,7 @@ ARG EE_PORTS
 
 ARG TARGETARCH
 
-ARG KONG_ARTIFACT=kong.\${RPM_PLATFORM}.\${TARGETARCH}.rpm
+ARG KONG_ARTIFACT=kong.\${RPM_PLATFORM}.\$TARGETARCH.rpm
 ARG KONG_ARTIFACT_PATH
 
 # hadolint ignore=DL3015
@@ -10902,5 +10902,650 @@ STOPSIGNAL SIGQUIT
     expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
     expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
     expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+  });
+});
+
+
+// ── spiffe/spire patterns ──────────────────────────────────────────────
+
+describe('OSS: spiffe/spire patterns', () => {
+  it('Dockerfile: multi-stage cross-compilation with BuildKit features', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:1.22-alpine3.22 AS base
+WORKDIR /spire
+RUN apk --no-cache --update add file bash clang lld pkgconfig git make
+COPY go.* ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . .
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER instruction
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('Dockerfile: xx cross-compilation helper with digest pinning', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM tonistiigi/xx:1.7.0@sha256:010d4b66aed389848b0694f91c7aaee9df59a6f20be7f5d12e53663a37bd14e2 AS xx
+`);
+    // Digest-pinned image should NOT trigger DL3006
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);
+  });
+
+  it('Dockerfile: builder stage with cross-compilation and cache mounts', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:1.22-alpine3.22 AS builder
+ARG TAG
+ARG TARGETPLATFORM
+ARG TARGETARCH
+RUN apk --no-cache --update add build-base musl-dev libseccomp-dev
+ENV CGO_ENABLED=1
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    make build
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER instruction
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+  });
+
+  it('Dockerfile.dev: Ubuntu with apt-get -y install (flag before subcommand)', () => {
+    const v = lintContent(`FROM ubuntu:24.04
+WORKDIR /spire
+RUN apt-get update && apt-get -y install \
+    curl unzip git build-essential ca-certificates libssl-dev
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+    // apt-get -y install (flag before subcommand) — DV2001 detects the pattern
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);
+  });
+
+  it('Dockerfile.windows: nanoserver multi-stage build', () => {
+    const v = lintContent(`FROM mcr.microsoft.com/windows/nanoserver:ltsc2022 AS spire-base-windows
+RUN mkdir c:\\spire\\bin
+RUN mkdir c:\\spire\\data
+WORKDIR C:/spire
+CMD []
+
+FROM spire-base-windows AS spire-server-windows
+ENTRYPOINT ["c:/spire/bin/spire-server.exe", "run"]
+COPY bin/spire-server.exe C:/spire/bin/spire-server.exe
+
+FROM spire-base-windows AS spire-agent-windows
+ENTRYPOINT ["c:/spire/bin/spire-agent.exe", "run"]
+COPY ./bin/spire-agent.exe C:/spire/bin/spire-agent.exe
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK (last stage has ENTRYPOINT)
+  });
+
+  it('test integration Dockerfile: envoy mashup with apk', () => {
+    const v = lintContent(`FROM spire-agent:latest-local AS spire-agent
+
+FROM envoyproxy/envoy-alpine:v1.19.0 AS envoy-agent-mashup
+COPY --from=spire-agent /opt/spire/bin/spire-agent /opt/spire/bin/spire-agent
+RUN apk --no-cache add dumb-init
+RUN apk --no-cache add supervisor
+COPY conf/supervisord.conf /etc/
+ENTRYPOINT ["/usr/bin/dumb-init", "supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
+CMD []
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('Dockerfile: final distroless stage is secure', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static:nonroot AS spire-server
+COPY --from=builder /spire/bin/spire-server /opt/spire/bin/spire-server
+ENTRYPOINT ["/opt/spire/bin/spire-server", "run"]
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);  // Tagged image
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // Nonroot distroless
+  });
+
+  it('multiple RUN apk layers not merged', () => {
+    const v = lintContent(`FROM envoyproxy/envoy-alpine:v1.19.0
+RUN apk --no-cache add dumb-init
+RUN apk --no-cache add supervisor
+RUN apk --no-cache add curl
+ENTRYPOINT ["/usr/bin/dumb-init"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+});
+
+// ── dapr/dapr patterns ─────────────────────────────────────────────────
+
+describe('OSS: dapr/dapr patterns', () => {
+  it('docker/Dockerfile: minimal distroless with nonroot user', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static:nonroot
+ARG PKG_FILES
+WORKDIR /
+COPY /$PKG_FILES /
+USER 65532:65532
+`);
+    // Minimal, secure Dockerfile — no critical issues expected
+    const errors = v.filter(v => v.severity === 'error');
+    expect(errors.length).toBe(0);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // Nonroot distroless
+  });
+
+  it('docker/Dockerfile-dev: Go dev container with variable FROM', () => {
+    const v = lintContent(`ARG GOVERSION=1.26.0
+FROM golang:$GOVERSION-bullseye
+ARG INSTALL_ZSH="true"
+ARG KUBECTL_VERSION="latest"
+ARG HELM_VERSION="latest"
+ARG MINIKUBE_VERSION="latest"
+ARG DAPR_CLI_VERSION="latest"
+ARG PROTOC_VERSION="25.4"
+ARG GOLANGCI_LINT_VERSION="1.64.6"
+ARG USERNAME=dapr
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+ENV GO111MODULE=auto
+ENV CGO_ENABLED=0
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('docker/Dockerfile-mariner: CBL-Mariner distroless with nonroot', () => {
+    const v = lintContent(`ARG MARINER_VERSION=2.0
+FROM mcr.microsoft.com/cbl-mariner/distroless/minimal:$MARINER_VERSION-nonroot
+ARG PKG_FILES
+USER 65532
+WORKDIR /
+COPY /$PKG_FILES /
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set + distroless
+  });
+
+  it('docker/Dockerfile-debug: debug variant with unpinned apt packages', () => {
+    const v = lintContent(`FROM golang:1.22-bullseye AS builder
+RUN apt-get update && apt-get install -y git make gcc
+WORKDIR /app
+COPY . .
+RUN make build
+
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y curl netcat-openbsd dnsutils
+COPY --from=builder /app/bin/ /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/daprd"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);   // Delete apt lists
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('docker/Dockerfile-windows: Windows nanoserver no CMD', () => {
+    const v = lintContent(`FROM mcr.microsoft.com/windows/nanoserver:ltsc2022
+ARG PKG_FILES
+WORKDIR /
+COPY /$PKG_FILES /
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    // DL3057 does NOT fire because there is no CMD/ENTRYPOINT
+  });
+
+  it('tests/apps/Dockerfile: Go test app with distroless final stage', () => {
+    const v = lintContent(`FROM golang:1.22 AS build
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 go build -o /testapp .
+
+FROM gcr.io/distroless/static:nonroot
+COPY --from=build /testapp /testapp
+ENTRYPOINT ["/testapp"]
+`);
+    // Distroless nonroot — secure base, DL3057 skipped for distroless
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // Nonroot distroless
+    expect(v.some(v => v.rule === 'DL3057')).toBe(false);  // Skipped for distroless
+  });
+
+  it('tests/apps/actorphp/Dockerfile: PHP test app with composer', () => {
+    const v = lintContent(`FROM composer:2 AS deps
+WORKDIR /app
+COPY composer.* ./
+RUN composer install --no-dev --optimize-autoloader
+
+FROM php:8.2-fpm-alpine
+WORKDIR /app
+COPY --from=deps /app/vendor ./vendor
+COPY . .
+EXPOSE 3000
+CMD ["php", "-S", "0.0.0.0:3000", "-t", "public"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('tests/apps/actorjava/Dockerfile: Java test app pattern', () => {
+    const v = lintContent(`FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn package -DskipTests
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 3000
+ENTRYPOINT ["java", "-jar", "app.jar"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('tests/apps/actorpython/Dockerfile: Python test app', () => {
+    const v = lintContent(`FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 3000
+CMD ["python", "app.py"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('tests/apps/perf/k6-custom/Dockerfile: k6 load testing image', () => {
+    const v = lintContent(`FROM golang:1.22-alpine AS builder
+RUN apk add --no-cache git
+RUN go install go.k6.io/xk6/cmd/xk6@latest
+RUN xk6 build --with github.com/grafana/xk6-dashboard
+
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /go/bin/k6 /usr/bin/k6
+ENTRYPOINT ["k6"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+  });
+});
+
+// ── linkerd/linkerd2 patterns ──────────────────────────────────────────
+
+describe('OSS: linkerd/linkerd2 patterns', () => {
+  it('Dockerfile-debug: Debian debug image with unpinned apt', () => {
+    const v = lintContent(`FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    dnsutils \
+    iptables \
+    jq \
+    nghttp2 \
+    tcpdump \
+    iproute2 \
+    lsof \
+    conntrack \
+    tshark && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --set iptables /usr/sbin/iptables-legacy \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+ENTRYPOINT [ "tshark", "-i", "any" ]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    // apt lists are cleaned up, so DL3009 should not fire
+    expect(v.some(v => v.rule === 'DL3009')).toBe(false);
+  });
+
+  it('Dockerfile.controller: multi-stage Go build ending without CMD', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS go-deps
+WORKDIR /linkerd-build
+COPY go.mod go.sum ./
+COPY bin/install-deps bin/
+RUN go mod download
+ARG TARGETARCH
+RUN ./bin/install-deps $TARGETARCH
+
+FROM go-deps AS golang
+WORKDIR /linkerd-build
+COPY controller/gen controller/gen
+COPY pkg pkg
+COPY charts charts
+COPY controller controller
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o /out/controller -tags prod -mod=readonly -ldflags "-s -w" ./controller/cmd
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('Dockerfile.proxy: multi-stage with apt and fetch stage', () => {
+    const v = lintContent(`ARG RUNTIME_IMAGE="cr.l5d.io/linkerd/proxy-runtime:latest"
+ARG TARGETARCH
+
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS go-deps
+WORKDIR /linkerd-build
+COPY go.mod go.sum ./
+RUN go mod download
+
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS fetch
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y curl jq && \
+    rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+COPY bin/fetch-proxy bin/fetch-proxy
+ARG TARGETARCH
+RUN --mount=type=secret,id=github \
+    export GITHUB_TOKEN_FILE=/run/secrets/github; \
+    proxy=$(bin/fetch-proxy "$LINKERD2_PROXY_VERSION" "$TARGETARCH"); \
+    mv "$proxy" linkerd2-proxy
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('web/Dockerfile: Node.js asset build with pipe-to-bash', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS go-deps
+WORKDIR /linkerd-build
+COPY go.mod go.sum ./
+RUN go mod download
+
+FROM --platform=$BUILDPLATFORM node:20-bookworm AS webpack-bundle
+RUN curl --retry=2 https://yarnpkg.com/install.sh | bash -s -- --version 1.22.10
+ENV PATH /root/.yarn/bin:$PATH
+WORKDIR /linkerd-build
+COPY web/app/package.json web/app/yarn.lock ./web/app/
+RUN yarn install --frozen-lockfile
+ENV NODE_ENV production
+COPY web/app ./web/app
+RUN yarn --cwd web/app build
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);   // Pipe to shell detected
+  });
+
+  it('cli/Dockerfile: CLI build with no final CMD/ENTRYPOINT', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS go-deps
+WORKDIR /linkerd-build
+COPY go.mod go.sum ./
+RUN go mod download
+
+FROM go-deps AS go-gen
+WORKDIR /linkerd-build
+COPY cli cli
+COPY charts charts
+COPY controller/k8s controller/k8s
+COPY controller/api controller/api
+COPY pkg pkg
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o /out/linkerd -mod=readonly -ldflags "-s -w" ./cli
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('viz Dockerfile: metrics API service with scratch final stage', () => {
+    const v = lintContent(`FROM golang:1.25-alpine AS builder
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /metrics-api ./viz/metrics-api/cmd
+
+FROM scratch
+COPY --from=builder /metrics-api /metrics-api
+ENTRYPOINT ["/metrics-api"]
+`);
+    // Scratch final stage — DL3057 and DV1006 are skipped
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // Has ENTRYPOINT
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // Scratch — skipped
+  });
+
+  it('pipe-to-bash pattern detected in node image', () => {
+    const v = lintContent(`FROM node:20-bookworm
+RUN curl --retry=2 https://yarnpkg.com/install.sh | bash -s -- --version 1.22.10
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install
+`);
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);   // Pipe to shell
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+  });
+});
+
+// ── weaveworks/weave patterns ──────────────────────────────────────────
+
+describe('OSS: weaveworks/weave patterns', () => {
+  it('build/Dockerfile: Go cross-compilation build image with unpinned apt', () => {
+    const v = lintContent(`FROM golang:1.15.6-buster
+ENV GOARM 7
+ENV DEB_CROSSPLATFORMS armhf arm64 ppc64el s390x
+RUN for platform in $DEB_CROSSPLATFORMS; do dpkg --add-architecture $platform; done \
+  && apt-get update \
+  && apt-get install -y build-essential \
+  && rm -rf /var/lib/apt/lists/*
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('prog/weavedb/Dockerfile: scratch data-only container', () => {
+    const v = lintContent(`FROM scratch
+LABEL works.weave.role="system" \
+      maintainer="Weaveworks <help@weave.works>" \
+      org.opencontainers.image.title="weavedb" \
+      org.opencontainers.image.source="https://github.com/weaveworks/weave" \
+      org.opencontainers.image.vendor="Weaveworks"
+ENTRYPOINT ["data-only"]
+COPY Dockerfile /
+ARG revision
+LABEL org.opencontainers.image.revision="$revision"
+`);
+    // Scratch image — DV1006 skipped, DL3057 skipped
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(false);
+  });
+
+  it('test/images/network-tester/Dockerfile: bash image with unpinned apk', () => {
+    const v = lintContent(`FROM bash
+RUN apk add --no-cache curl bind-tools
+ADD webserver webserver
+EXPOSE 8080
+ENTRYPOINT ["/webserver"]
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);   // Untagged FROM image
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);   // Use COPY instead of ADD
+  });
+
+  it('test/images/no-cmd/Dockerfile: intentionally empty scratch image', () => {
+    const v = lintContent(`FROM scratch
+COPY Dockerfile /
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+    // scratch — DL3057 and DV1006 skipped
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+  });
+
+  it('build Dockerfile: old Go version (1.15) pattern with apt', () => {
+    const v = lintContent(`FROM golang:1.15.6-buster
+ENV GOARM 7
+ENV GCC_CROSSCOMPILERS \
+	arm-linux-gnueabihf \
+	aarch64-linux-gnu \
+	powerpc64le-linux-gnu \
+	s390x-linux-gnu
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc-arm-linux-gnueabihf \
+    gcc-aarch64-linux-gnu \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /go/src/github.com/weaveworks/weave
+COPY . .
+RUN make build
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('ADD usage instead of COPY triggers warning', () => {
+    const v = lintContent(`FROM bash:5.2
+RUN apk add --no-cache curl
+ADD webserver webserver
+EXPOSE 8080
+ENTRYPOINT ["/webserver"]
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);   // Use COPY instead of ADD
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+  });
+
+  it('vendor Dockerfile: Go net/http2 vendored image', () => {
+    const v = lintContent(`FROM golang:1.21-alpine
+WORKDIR /go/src/golang.org/x/net/http2
+COPY . .
+RUN go test -v ./...
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+});
+
+// ── Cross-repo patterns: spire/dapr/linkerd/weave ──────────────────────
+
+describe('OSS scan: service mesh & zero-trust cross-repo patterns', () => {
+  it('distroless + nonroot USER is a common secure pattern', () => {
+    const v = lintContent(`FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY bin/myapp /myapp
+USER 65532:65532
+ENTRYPOINT ["/myapp"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    const errors = v.filter(v => v.severity === 'error');
+    expect(errors.length).toBe(0);
+  });
+
+  it('scratch images with ENTRYPOINT for minimal footprint', () => {
+    const v = lintContent(`FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/server
+
+FROM scratch
+COPY --from=builder /app/server /server
+ENTRYPOINT ["/server"]
+`);
+    // Scratch last stage — DV1006 and DL3057 skipped
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // Has ENTRYPOINT
+  });
+
+  it('Windows nanoserver pattern across SPIRE and Dapr', () => {
+    const v = lintContent(`FROM mcr.microsoft.com/windows/nanoserver:ltsc2022
+WORKDIR /app
+COPY bin/server.exe /app/server.exe
+ENTRYPOINT ["/app/server.exe"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('multi-platform build with distroless nonroot final stage', () => {
+    const v = lintContent(`ARG BUILDPLATFORM=linux/amd64
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o /out/app
+
+FROM gcr.io/distroless/static:nonroot
+COPY --from=builder /out/app /app
+USER 65532:65532
+ENTRYPOINT ["/app"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set + distroless
+    // DL3057 skipped for distroless
+    expect(v.some(v => v.rule === 'DL3057')).toBe(false);
+  });
+
+  it('alpine build stages with unpinned apk across repos', () => {
+    const v = lintContent(`FROM golang:1.22-alpine AS builder
+RUN apk --no-cache add git make gcc musl-dev
+WORKDIR /src
+COPY . .
+RUN make build
+
+FROM alpine:3.19
+RUN apk --no-cache add ca-certificates
+COPY --from=builder /src/bin/app /usr/local/bin/app
+ENTRYPOINT ["/usr/local/bin/app"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin versions in apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('dev containers with sudo and unpinned apt', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+ARG USERNAME=developer
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo curl git \
+    && echo $USERNAME ALL=\\(root\\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME
+USER $USERNAME
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);   // Delete apt lists
+  });
+
+  it('cache mount patterns in BuildKit builds', () => {
+    const v = lintContent(`FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 go build -o /app/server
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('secret mount in fetch stage with unpinned apt', () => {
+    const v = lintContent(`FROM debian:bookworm-slim AS fetch
+RUN apt-get update && apt-get install -y curl jq
+WORKDIR /build
+RUN --mount=type=secret,id=github \
+    export GITHUB_TOKEN_FILE=/run/secrets/github; \
+    curl -H "Authorization: token x" \
+    https://api.github.com/repos/owner/repo/releases/latest
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);   // Delete apt lists
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+  });
+
+  it('Mariner distroless nonroot pattern from Dapr', () => {
+    const v = lintContent(`ARG MARINER_VERSION=2.0
+FROM mcr.microsoft.com/cbl-mariner/distroless/minimal:2.0-nonroot
+ARG PKG_FILES
+USER 65532
+WORKDIR /
+COPY /$PKG_FILES /
+ENTRYPOINT ["/daprd"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set + distroless nonroot
   });
 });
