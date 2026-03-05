@@ -419,3 +419,73 @@ export const DV1011: Rule = {
     return violations;
   },
 };
+
+// DV1012: COPY --from copies sensitive files from privileged stage
+const SENSITIVE_PATHS = /(\/etc\/shadow|\/etc\/passwd|\/etc\/ssl\/private|\/root\/\.ssh|\.env$|\.pem$|\.key$|id_rsa|\.p12$|\.pfx$|\.jks$|credentials|\/var\/run\/secrets)/i;
+export const DV1012: Rule = {
+  id: 'DV1012', severity: 'warning',
+  description: 'Avoid copying sensitive files (keys, credentials, shadow) from other build stages via COPY --from.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY') continue;
+        const copy = inst as CopyInstruction;
+        if (!copy.from) continue;
+        for (const src of copy.sources) {
+          if (SENSITIVE_PATHS.test(src)) {
+            violations.push({
+              rule: 'DV1012', severity: 'warning',
+              message: `COPY --from=${copy.from} copies potentially sensitive path "${src}". Avoid copying credentials, keys, or shadow files between stages.`,
+              line: inst.line,
+            });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV1013: ARG-defined secret leaks into ENV
+export const DV1013: Rule = {
+  id: 'DV1013', severity: 'error',
+  description: 'ARG values that look like secrets should not be passed to ENV. ARG values are visible in image history, and promoting them to ENV persists them in the final image layer.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      const secretArgs = new Set<string>();
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG') {
+          const arg = inst as ArgInstruction;
+          if (SECRET_PATTERNS.test(arg.name)) {
+            secretArgs.add(arg.name);
+          }
+        }
+      }
+      for (const arg of ctx.ast.globalArgs) {
+        if (SECRET_PATTERNS.test(arg.name)) {
+          secretArgs.add(arg.name);
+        }
+      }
+      if (secretArgs.size === 0) continue;
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'ENV') continue;
+        const env = inst as EnvInstruction;
+        for (const pair of env.pairs) {
+          for (const secretArg of secretArgs) {
+            const refPattern = new RegExp(`\\$\\{?${secretArg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\}?`);
+            if (refPattern.test(pair.value)) {
+              violations.push({
+                rule: 'DV1013', severity: 'error',
+                message: `Secret ARG "${secretArg}" is exposed via ENV "${pair.key}". ARG values persist in image history. Use runtime secrets or --mount=type=secret instead.`,
+                line: inst.line,
+              });
+            }
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};

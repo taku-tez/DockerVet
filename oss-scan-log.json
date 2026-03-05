@@ -14698,5 +14698,21 @@
     },
     "notableFindings": "DV1009 (66x), DV1006 (50x), DV5003 distroless suggestion (36x), DL3013 pip pinning (27x), DL3042 pip cache (23x). Large monorepo with many microservice Dockerfiles. All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "google/gvisor",
+    "scannedAt": "2026-03-05T09:15:00+09:00",
+    "dockerfiles": 75,
+    "totalIssues": 837,
+    "severities": {
+      "error": 1,
+      "warning": 434,
+      "info": 402,
+      "style": 0
+    },
+    "notableFindings": "40 unique rules: DL3001 DL3002 DL3003 DL3006 DL3007 DL3008 DL3009 DL3013 DL3014 DL3015...",
+    "improvements": [
+      "Added DV1012 (COPY --from sensitive paths) and DV1013 (ARG secret to ENV leak)"
+    ]
   }
 ]
