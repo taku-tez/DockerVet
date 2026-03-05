@@ -4511,3 +4511,2265 @@ COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
     expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // no USER
   });
 });
+
+// ── netdata/netdata patterns ──
+
+describe('OSS: netdata/netdata patterns', () => {
+  it('.github/dockerfiles/Dockerfile.build_test: 6 rules (DL3006, DV1005, DV1006, DV1008, DV4003, DV4005)', () => {
+    const v = lintContent(`# The default value is overridden in every Dockerfile usage, but adding it here helps avoid issues with
+# CI checks that require a non-empty or valid base image name. See more details here:
+# https://docs.docker.com/go/dockerfile/rule/invalid-default-arg-in-from/
+ARG BASE="netdata"
+
+FROM \${BASE}
+
+ARG PRE
+ENV PRE=\${PRE}
+ARG RMJSONC
+ENV RMJSONC=\${RMJSONC}
+ENV DISABLE_TELEMETRY=1
+ENV GITHUB_ACTIONS=true
+
+RUN echo "\${PRE}" > /prep-cmd.sh && \\
+    echo "\${RMJSONC}" > /rmjsonc.sh && chmod +x /rmjsonc.sh && \\
+    /bin/sh /prep-cmd.sh
+
+COPY . /netdata
+
+RUN /netdata/packaging/installer/install-required-packages.sh --dont-wait --non-interactive netdata
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('.github/dockerfiles/Dockerfile.clang: 13 rules (DL3008, DL3009, DL3015, DV1004, DV1005, DV1006, ...)', () => {
+    const v = lintContent(`FROM debian:12 AS build
+
+# Disable apt/dpkg interactive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install all build dependencies
+COPY packaging/installer/install-required-packages.sh /tmp/install-required-packages.sh
+RUN /tmp/install-required-packages.sh --dont-wait --non-interactive netdata-all
+
+# Install Clang and set as default CC
+RUN apt-get install -y clang && \\
+    update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \\
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
+
+WORKDIR /netdata
+COPY . .
+
+# Build Netdata
+RUN ./netdata-installer.sh --dont-wait --dont-start-it --disable-go
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing somethin
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final 
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/ap
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "debian" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);    // DEBIAN_FRONTEND=noninteractive is set as ENV. Use 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" i
+  });
+
+  it('Dockerfile: 8 rules (DV1005, DV1006, DV1008, DV1009, DV3013, DV4003, ...)', () => {
+    const v = lintContent(`# SPDX-License-Identifier: GPL-3.0-or-later
+
+# This image contains preinstalled dependencies
+# hadolint ignore=DL3007
+FROM netdata/builder:v3 AS builder
+
+# One of 'nightly' or 'stable'
+ARG RELEASE_CHANNEL=nightly
+
+ARG CFLAGS
+
+ENV CFLAGS=$CFLAGS
+
+ARG EXTRA_INSTALL_OPTS
+
+ENV EXTRA_INSTALL_OPTS=$EXTRA_INSTALL_OPTS
+
+ARG DEBUG_BUILD
+
+ENV DEBUG_BUILD=$DEBUG_BUILD
+
+ARG BUILD_ARCH
+
+ENV BUILD_ARCH=$BUILD_ARCH
+
+# Copy source
+COPY . /opt/netdata.git
+WORKDIR /opt/netdata.git
+
+# Install from source
+RUN chmod +x netdata-installer.sh && \\
+   cp -rp /deps/* /usr/local/ && \\
+   BUILD_ARCH="\${BUILD_ARCH:-"$(uname -m)"}" && \\
+   /bin/echo -e "INSTALL_TYPE='oci'\\nPREBUILT_ARCH='\${BUILD_ARCH}'" > ./system/.install-type && \\
+   CFLAGS="$(packaging/docker/gen-cflags.sh)" LDFLAGS="-Wl,--gc-sections" ./netdata-installer.sh --dont-wait --dont-start-it \\
+   --use-system-protobuf \\
+   --disable-ebpf \\
+   --enable-plugin-otel \\
+   --enable-plugin-otel-signal-viewer \\
+   --internal-systemd-journal \\
+   \${EXTRA_INSTALL_OPTS} \\
+   --install-no-prefix / \\
+   "$([ "$RELEASE_CHANNEL" = stable ] && echo --stable-channel)"
+
+# files to one directory
+RUN mkdir -p /app/usr/sbin/ \\
+             /app/usr/share \\
+             /app/usr/libexec \\
+             /app/usr/local \\
+             /app/usr/lib \\
+             /app/var/cache \\
+             /app/var/lib \\
+             /app/etc && \\
+    mv /usr/share/netdata   /app/usr/share/ && \\
+    mv /usr/libexec/netdata /app/usr/libexec/ && \\
+    mv /usr/lib/netdata     /app/usr/lib/ && \\
+    mv /var/cache/netdata   /app/var/cache/ && \\
+    mv /var/lib/netdata     /app/var/lib/ && \\
+    mv /etc/netdata         /app/etc/ && \\
+    mv /usr/sbin/netdata    /app/usr/sbin/ && \\
+    mv /usr/sbin/netdatacli    /app/usr/sbin/ && \\
+    mv /usr/sbin/nd-run    /app/usr/sbin/ && \\
+    mv /usr/sbin/systemd-cat-native /app/usr/sbin/ && \\
+    mv packaging/docker/run.sh        /app/usr/sbin/ && \\
+    mv packaging/docker/health.sh     /app/usr/sbin/ && \\
+    mkdir -p /deps/etc && \\
+    cp -rp /deps/etc /app/usr/local/etc && \\
+    chmod -R o+rX /app && \\
+    chmod +x /app/usr/sbin/run.sh
+
+#####################################################################
+# This image contains preinstalled dependencies
+# hadolint ignore=DL3007
+FROM netdata/base:v3 AS base
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+LABEL org.opencontainers.image.authors="Netdatabot <bot@netdata.cloud>"
+LABEL org.opencontainers.image.url="https://netdata.cloud"
+LABEL org.opencontainers.image.documentation="https://learn.netdata.cloud"
+LABEL org.opencontainers.image.source="https://github.com/netdata/netdata"
+LABEL org.opencontainers.image.title="Netdata Agent"
+LABEL org.opencontainers.image.description="Official Netdata Agent Docker Image"
+LABEL org.opencontainers.image.vendor="Netdata Inc."
+LABEL org.opencontainers.image.created=\${BUILD_DATE}
+LABEL org.opencontainers.image.version=\${BUILD_VERSION}
+
+ARG OFFICIAL_IMAGE=false
+ENV NETDATA_OFFICIAL_IMAGE=$OFFICIAL_IMAGE
+
+ONBUILD ENV NETDATA_OFFICIAL_IMAGE=false
+
+ARG NETDATA_UID=201
+ARG NETDATA_GID=201
+ENV DOCKER_GRP=netdata
+ENV DOCKER_USR=netdata
+# If DISABLE_TELEMETRY is set, it will disable anonymous stats collection and reporting
+#ENV DISABLE_TELEMETRY=1
+ENV NETDATA_LISTENER_PORT=19999
+EXPOSE $NETDATA_LISTENER_PORT
+
+ENV NETDATA_EXTRA_DEB_PACKAGES=""
+
+RUN mkdir -p /opt/src /var/log/netdata && \\
+    ln -sf /dev/stdout /var/log/netdata/access.log && \\
+    ln -sf /dev/stdout /var/log/netdata/aclk.log && \\
+    ln -sf /dev/stdout /var/log/netdata/debug.log && \\
+    ln -sf /dev/stderr /var/log/netdata/error.log && \\
+    ln -sf /dev/stderr /var/log/netdata/daemon.log && \\
+    ln -sf /dev/stdout /var/log/netdata/collector.log && \\
+    ln -sf /dev/stdout /var/log/netdata/health.log
+
+COPY --from=builder /app /
+
+# Create netdata user and apply the permissions as described in
+# https://docs.netdata.cloud/docs/netdata-security/#netdata-directories, but own everything by root group due to https://github.com/netdata/netdata/pull/6543
+# hadolint ignore=DL3013
+RUN addgroup --gid \${NETDATA_GID} --system "\${DOCKER_GRP}" && \\
+    adduser --system --no-create-home --shell /usr/sbin/nologin --uid \${NETDATA_UID} --home /etc/netdata --group "\${DOCKER_USR}" && \\
+    chown -R root:root \\
+        /etc/netdata \\
+        /usr/share/netdata \\
+        /usr/libexec/netdata && \\
+    chown -R netdata:root \\
+        /usr/lib/netdata \\
+        /var/cache/netdata \\
+        /var/lib/netdata \\
+        /var/log/netdata && \\
+    chown -R netdata:netdata /var/lib/netdata/cloud.d && \\
+    chmod 0700 /var/lib/netdata/cloud.d && \\
+    chmod 0755 /usr/libexec/netdata/plugins.d/*.plugin && \\
+    for name in cgroup-network \\
+                local-listeners \\
+                apps.plugin \\
+                debugfs.plugin \\
+                freeipmi.plugin \\
+                go.d.plugin \\
+                perf.plugin \\
+                ndsudo \\
+                slabinfo.plugin \\
+                network-viewer.plugin \\
+                otel-plugin \\
+                otel-signal-viewer-plugin \\
+                systemd-journal.plugin; do \\
+        [ -f "/usr/libexec/netdata/plugins.d/$name" ] && chmod 4755 "/usr/libexec/netdata/plugins.d/$name"; \\
+    done && \\
+    # Group write permissions due to: https://github.com/netdata/netdata/pull/6543
+    find /var/lib/netdata /var/cache/netdata -type d -exec chmod 0770 {} \\; && \\
+    find /var/lib/netdata /var/cache/netdata -type f -exec chmod 0660 {} \\; && \\
+    cp -va /etc/netdata /etc/netdata.stock
+
+ENTRYPOINT ["/usr/sbin/run.sh"]
+
+HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD /usr/sbin/health.sh
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "netdata/builder" with a digest (
+    expect(v.some(v => v.rule === 'DV3013')).toBe(true);    // Setting setuid/setgid bit detected. This can enabl
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);    // ARG defined after ENV. Define ARG before ENV for b
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
+  });
+
+  it('packaging/docker/Dockerfile: 8 rules (DV1005, DV1006, DV1008, DV1009, DV3013, DV4003, ...)', () => {
+    const v = lintContent(`# SPDX-License-Identifier: GPL-3.0-or-later
+
+# This image contains preinstalled dependencies
+# hadolint ignore=DL3007
+FROM netdata/builder:v3 AS builder
+
+# One of 'nightly' or 'stable'
+ARG RELEASE_CHANNEL=nightly
+
+ARG CFLAGS
+
+ENV CFLAGS=$CFLAGS
+
+ARG EXTRA_INSTALL_OPTS
+
+ENV EXTRA_INSTALL_OPTS=$EXTRA_INSTALL_OPTS
+
+ARG DEBUG_BUILD
+
+ENV DEBUG_BUILD=$DEBUG_BUILD
+
+ARG BUILD_ARCH
+
+ENV BUILD_ARCH=$BUILD_ARCH
+
+# Copy source
+COPY . /opt/netdata.git
+WORKDIR /opt/netdata.git
+
+# Install from source
+RUN chmod +x netdata-installer.sh && \\
+   cp -rp /deps/* /usr/local/ && \\
+   BUILD_ARCH="\${BUILD_ARCH:-"$(uname -m)"}" && \\
+   /bin/echo -e "INSTALL_TYPE='oci'\\nPREBUILT_ARCH='\${BUILD_ARCH}'" > ./system/.install-type && \\
+   CFLAGS="$(packaging/docker/gen-cflags.sh)" LDFLAGS="-Wl,--gc-sections" ./netdata-installer.sh --dont-wait --dont-start-it \\
+   --use-system-protobuf \\
+   --disable-ebpf \\
+   --enable-plugin-otel \\
+   --enable-plugin-otel-signal-viewer \\
+   --internal-systemd-journal \\
+   \${EXTRA_INSTALL_OPTS} \\
+   --install-no-prefix / \\
+   "$([ "$RELEASE_CHANNEL" = stable ] && echo --stable-channel)"
+
+# files to one directory
+RUN mkdir -p /app/usr/sbin/ \\
+             /app/usr/share \\
+             /app/usr/libexec \\
+             /app/usr/local \\
+             /app/usr/lib \\
+             /app/var/cache \\
+             /app/var/lib \\
+             /app/etc && \\
+    mv /usr/share/netdata   /app/usr/share/ && \\
+    mv /usr/libexec/netdata /app/usr/libexec/ && \\
+    mv /usr/lib/netdata     /app/usr/lib/ && \\
+    mv /var/cache/netdata   /app/var/cache/ && \\
+    mv /var/lib/netdata     /app/var/lib/ && \\
+    mv /etc/netdata         /app/etc/ && \\
+    mv /usr/sbin/netdata    /app/usr/sbin/ && \\
+    mv /usr/sbin/netdatacli    /app/usr/sbin/ && \\
+    mv /usr/sbin/nd-run    /app/usr/sbin/ && \\
+    mv /usr/sbin/systemd-cat-native /app/usr/sbin/ && \\
+    mv packaging/docker/run.sh        /app/usr/sbin/ && \\
+    mv packaging/docker/health.sh     /app/usr/sbin/ && \\
+    mkdir -p /deps/etc && \\
+    cp -rp /deps/etc /app/usr/local/etc && \\
+    chmod -R o+rX /app && \\
+    chmod +x /app/usr/sbin/run.sh
+
+#####################################################################
+# This image contains preinstalled dependencies
+# hadolint ignore=DL3007
+FROM netdata/base:v3 AS base
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+LABEL org.opencontainers.image.authors="Netdatabot <bot@netdata.cloud>"
+LABEL org.opencontainers.image.url="https://netdata.cloud"
+LABEL org.opencontainers.image.documentation="https://learn.netdata.cloud"
+LABEL org.opencontainers.image.source="https://github.com/netdata/netdata"
+LABEL org.opencontainers.image.title="Netdata Agent"
+LABEL org.opencontainers.image.description="Official Netdata Agent Docker Image"
+LABEL org.opencontainers.image.vendor="Netdata Inc."
+LABEL org.opencontainers.image.created=\${BUILD_DATE}
+LABEL org.opencontainers.image.version=\${BUILD_VERSION}
+
+ARG OFFICIAL_IMAGE=false
+ENV NETDATA_OFFICIAL_IMAGE=$OFFICIAL_IMAGE
+
+ONBUILD ENV NETDATA_OFFICIAL_IMAGE=false
+
+ARG NETDATA_UID=201
+ARG NETDATA_GID=201
+ENV DOCKER_GRP=netdata
+ENV DOCKER_USR=netdata
+# If DISABLE_TELEMETRY is set, it will disable anonymous stats collection and reporting
+#ENV DISABLE_TELEMETRY=1
+ENV NETDATA_LISTENER_PORT=19999
+EXPOSE $NETDATA_LISTENER_PORT
+
+ENV NETDATA_EXTRA_DEB_PACKAGES=""
+
+RUN mkdir -p /opt/src /var/log/netdata && \\
+    ln -sf /dev/stdout /var/log/netdata/access.log && \\
+    ln -sf /dev/stdout /var/log/netdata/aclk.log && \\
+    ln -sf /dev/stdout /var/log/netdata/debug.log && \\
+    ln -sf /dev/stderr /var/log/netdata/error.log && \\
+    ln -sf /dev/stderr /var/log/netdata/daemon.log && \\
+    ln -sf /dev/stdout /var/log/netdata/collector.log && \\
+    ln -sf /dev/stdout /var/log/netdata/health.log
+
+COPY --from=builder /app /
+
+# Create netdata user and apply the permissions as described in
+# https://docs.netdata.cloud/docs/netdata-security/#netdata-directories, but own everything by root group due to https://github.com/netdata/netdata/pull/6543
+# hadolint ignore=DL3013
+RUN addgroup --gid \${NETDATA_GID} --system "\${DOCKER_GRP}" && \\
+    adduser --system --no-create-home --shell /usr/sbin/nologin --uid \${NETDATA_UID} --home /etc/netdata --group "\${DOCKER_USR}" && \\
+    chown -R root:root \\
+        /etc/netdata \\
+        /usr/share/netdata \\
+        /usr/libexec/netdata && \\
+    chown -R netdata:root \\
+        /usr/lib/netdata \\
+        /var/cache/netdata \\
+        /var/lib/netdata \\
+        /var/log/netdata && \\
+    chown -R netdata:netdata /var/lib/netdata/cloud.d && \\
+    chmod 0700 /var/lib/netdata/cloud.d && \\
+    chmod 0755 /usr/libexec/netdata/plugins.d/*.plugin && \\
+    for name in cgroup-network \\
+                local-listeners \\
+                apps.plugin \\
+                debugfs.plugin \\
+                freeipmi.plugin \\
+                go.d.plugin \\
+                perf.plugin \\
+                ndsudo \\
+                slabinfo.plugin \\
+                network-viewer.plugin \\
+                otel-plugin \\
+                otel-signal-viewer-plugin \\
+                systemd-journal.plugin; do \\
+        [ -f "/usr/libexec/netdata/plugins.d/$name" ] && chmod 4755 "/usr/libexec/netdata/plugins.d/$name"; \\
+    done && \\
+    # Group write permissions due to: https://github.com/netdata/netdata/pull/6543
+    find /var/lib/netdata /var/cache/netdata -type d -exec chmod 0770 {} \\; && \\
+    find /var/lib/netdata /var/cache/netdata -type f -exec chmod 0660 {} \\; && \\
+    cp -va /etc/netdata /etc/netdata.stock
+
+ENTRYPOINT ["/usr/sbin/run.sh"]
+
+HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD /usr/sbin/health.sh
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "netdata/builder" with a digest (
+    expect(v.some(v => v.rule === 'DV3013')).toBe(true);    // Setting setuid/setgid bit detected. This can enabl
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);    // ARG defined after ENV. Define ARG before ENV for b
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
+  });
+
+});
+
+// ── VictoriaMetrics/VictoriaMetrics patterns ──
+
+describe('OSS: VictoriaMetrics/VictoriaMetrics patterns', () => {
+  it('app/victoria-metrics/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+EXPOSE 8428
+
+ENTRYPOINT ["/victoria-metrics-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./victoria-metrics-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/victoria-metrics/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+EXPOSE 8428
+ENTRYPOINT ["/victoria-metrics-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY victoria-metrics-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./victoria-metrics-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmagent/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+EXPOSE 8429
+
+ENTRYPOINT ["/vmagent-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmagent-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmagent/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+EXPOSE 8429
+ENTRYPOINT ["/vmagent-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmagent-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmagent-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmalert-tool/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+EXPOSE 8880
+
+ENTRYPOINT ["/vmalert-tool-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmalert-tool-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmalert-tool/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+EXPOSE 8429
+ENTRYPOINT ["/vmalert-tool-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmalert-tool-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmalert-tool-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmalert/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+EXPOSE 8880
+
+ENTRYPOINT ["/vmalert-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmalert-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmalert/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+EXPOSE 8880
+ENTRYPOINT ["/vmalert-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmalert-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmalert-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmauth/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+EXPOSE 8427
+
+ENTRYPOINT ["/vmauth-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmauth-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmauth/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+EXPOSE 8427
+ENTRYPOINT ["/vmauth-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmauth-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmauth-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmbackup/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+ENTRYPOINT ["/vmbackup-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmbackup-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmbackup/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENTRYPOINT ["/vmbackup-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmbackup-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmbackup-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmctl/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+ENTRYPOINT ["/vmctl-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmctl-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmctl/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENTRYPOINT ["/vmctl-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmctl-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmctl-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('app/vmrestore/deployment/Dockerfile: 3 rules (DL3045, DL3057, DV1006)', () => {
+    const v = lintContent(`ARG base_image=non-existing
+FROM $base_image
+
+ENTRYPOINT ["/vmrestore-prod"]
+ARG src_binary=non-existing
+COPY $src_binary ./vmrestore-prod
+`);
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+  });
+
+  it('app/vmrestore/multiarch/Dockerfile: 7 rules (DL3017, DL3018, DL3045, DL3057, DV1006, DV2010, ...)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENTRYPOINT ["/vmrestore-prod"]
+ARG TARGETARCH
+ARG BINARY_SUFFIX=non-existing
+COPY vmrestore-linux-\${TARGETARCH}-prod\${BINARY_SUFFIX} ./vmrestore-prod
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('codespell/Dockerfile: 6 rules (DL3013, DL3042, DL3057, DV1006, DV1009, DV5003)', () => {
+    const v = lintContent(`FROM python:3
+
+WORKDIR /opt/node
+RUN pip install codespell
+WORKDIR /vm
+ENTRYPOINT ["codespell"]
+`);
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install codes
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip in
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "python" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/python3-debian12
+  });
+
+  it('deployment/docker/base/Dockerfile: 5 rules (DL3017, DL3018, DV1006, DV2010, DV4003)', () => {
+    const v = lintContent(`# See https://medium.com/on-docker/use-multi-stage-builds-to-inject-ca-certs-ad1e8f01de1b
+ARG certs_image=non-existing
+ARG root_image=non-existing
+FROM $certs_image AS certs
+
+RUN apk update && apk upgrade && apk --update --no-cache add ca-certificates
+
+FROM $root_image
+
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+`);
+    expect(v.some(v => v.rule === 'DL3017')).toBe(true);    // Do not use apk upgrade. Pin package versions inste
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV2010')).toBe(true);    // Avoid apk upgrade in Dockerfiles. It makes builds 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('deployment/docker/builder/Dockerfile: 9 rules (DL3008, DL3009, DL3015, DL3027, DV1004, DV1006, ...)', () => {
+    const v = lintContent(`ARG go_builder_image=non-existing
+FROM $go_builder_image
+STOPSIGNAL SIGINT
+RUN apt update && apt install -y \\
+    gcc-x86-64-linux-gnu \\
+    gcc-aarch64-linux-gnu
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing somethin
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3027')).toBe(true);    // Do not use apt as it is meant to be an end-user to
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final 
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);    // apt-get cache not cleaned. Add `rm -rf /var/lib/ap
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+});
+
+// ── thanos-io/thanos patterns ──
+
+describe('OSS: thanos-io/thanos patterns', () => {
+  it('.devcontainer/Dockerfile: 5 rules (DV1006, DV1009, DV3019, DV3024, DV4003)', () => {
+    const v = lintContent(`# For details, see https://github.com/devcontainers/images/tree/main/src/go
+FROM mcr.microsoft.com/devcontainers/go:1.23
+
+RUN echo "Downloading prometheus..." \\
+    && curl -sSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/prometheus/prometheus/releases" -o /tmp/releases.json \\
+    && VERSION_LIST="$(jq -r '.[] | select(.tag_name | contains("rc") | not) | .tag_name | split("v") | .[1]' /tmp/releases.json | tr -d '"' | sort -rV)" \\
+    && PROMETHEUS_LATEST_VERSION="$(echo "\${VERSION_LIST}" | head -n 1)" \\
+    && PROMETHEUS_FILE_NAME="prometheus-\${PROMETHEUS_LATEST_VERSION}.linux-amd64" \\
+    && curl -fsSLO "https://github.com/prometheus/prometheus/releases/download/v\${PROMETHEUS_LATEST_VERSION}/\${PROMETHEUS_FILE_NAME}.tar.gz" \\
+    && tar -xzf "\${PROMETHEUS_FILE_NAME}.tar.gz" \\
+    && rm "\${PROMETHEUS_FILE_NAME}.tar.gz" \\
+    && mv \${PROMETHEUS_FILE_NAME}/prometheus /go/bin/
+
+ENV GOPROXY "https://proxy.golang.org"
+
+COPY .devcontainer/welcome-message.txt /usr/local/etc/vscode-dev-containers/first-run-notice.txt
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "mcr.microsoft.com/devcontainers/
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verifi
+    expect(v.some(v => v.rule === 'DV3024')).toBe(true);    // Tarball downloaded and extracted without checksum 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('Dockerfile: 2 rules (DL3057, DV4003)', () => {
+    const v = lintContent(`# By default we pin to amd64 sha. Use make docker to automatically adjust for arm64 versions.
+ARG BASE_DOCKER_SHA="14d68ca3d69fceaa6224250c83d81d935c053fb13594c811038c461194599973"
+FROM quay.io/prometheus/busybox@sha256:\${BASE_DOCKER_SHA}
+LABEL maintainer="The Thanos Authors"
+
+RUN adduser \\
+    -D \`#Dont assign a password\` \\
+    -H \`#Dont create home directory\` \\
+    -u 1001 \`#User id\`\\
+    thanos
+
+COPY --chown=thanos /thanos_tmp_for_docker /bin/thanos
+
+USER 1001
+ENTRYPOINT [ "/bin/thanos" ]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('Dockerfile.e2e-tests: 6 rules (DL3057, DV1005, DV1006, DV1008, DV1009, DV5003)', () => {
+    const v = lintContent(`# Taking a non-alpine image for e2e tests so that cgo can be enabled for the race detector.
+FROM golang:1.25.0 as builder
+
+WORKDIR $GOPATH/src/github.com/thanos-io/thanos
+
+COPY . $GOPATH/src/github.com/thanos-io/thanos
+
+RUN CGO_ENABLED=1 go build -tags slicelabels -o $GOBIN/thanos -race ./cmd/thanos
+# -----------------------------------------------------------------------------
+
+FROM golang:1.25.0
+LABEL maintainer="The Thanos Authors"
+
+COPY --from=builder $GOBIN/thanos /bin/thanos
+
+ENV GORACE="halt_on_error=1"
+
+ENTRYPOINT [ "/bin/thanos" ]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12"
+  });
+
+  it('Dockerfile.multi-arch: 2 rules (DL3057, DV4003)', () => {
+    const v = lintContent(`# By default we pin to amd64 sha. Use make docker to automatically adjust for arm64 versions.
+ARG BASE_DOCKER_SHA="97a9aacc097e5dbdec33b0d671adea0785e76d26ff2b979ee28570baf6a9155d"
+
+FROM quay.io/prometheus/busybox@sha256:\${BASE_DOCKER_SHA}
+LABEL maintainer="The Thanos Authors"
+
+ARG ARCH="amd64"
+ARG OS="linux"
+
+COPY .build/\${OS}-\${ARCH}/thanos /bin/thanos
+
+RUN adduser \\
+    -D \`#Dont assign a password\` \\
+    -H \`#Dont create home directory\` \\
+    -u 1001 \`#User id\`\\
+    thanos && \\
+    chown thanos /bin/thanos
+USER 1001
+ENTRYPOINT [ "/bin/thanos" ]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('Dockerfile.multi-stage: 7 rules (DL3018, DL3057, DV1005, DV1008, DV1009, DV2011, ...)', () => {
+    const v = lintContent(`# By default we pin to amd64 sha. Use make docker to automatically adjust for arm64 versions.
+ARG BASE_DOCKER_SHA="14d68ca3d69fceaa6224250c83d81d935c053fb13594c811038c461194599973"
+FROM golang:1.24.0-alpine3.20 as builder
+
+WORKDIR $GOPATH/src/github.com/thanos-io/thanos
+# Change in the docker context invalidates the cache so to leverage docker
+# layer caching, moving update and installing apk packages above COPY cmd
+# More info https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#leverage-build-cache
+RUN apk update && apk add --no-cache alpine-sdk
+# Replaced ADD with COPY as add is generally to download content form link or tar files
+# while COPY supports the basic copying of local files into the container.
+# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#add-or-copy
+COPY . $GOPATH/src/github.com/thanos-io/thanos
+
+RUN git update-index --refresh; make build
+
+# -----------------------------------------------------------------------------
+
+FROM quay.io/prometheus/busybox@sha256:\${BASE_DOCKER_SHA}
+LABEL maintainer="The Thanos Authors"
+
+COPY --from=builder /go/bin/thanos /bin/thanos
+
+RUN adduser \\
+    -D \`#Dont assign a password\` \\
+    -H \`#Dont create home directory\` \\
+    -u 1001 \`#User id\`\\
+    thanos && \\
+    chown thanos /bin/thanos
+USER 1001
+ENTRYPOINT [ "/bin/thanos" ]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add alpin
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2011')).toBe(true);    // apk update is redundant when using apk add --no-ca
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+});
+
+// ── cortexproject/cortex patterns ──
+
+describe('OSS: cortexproject/cortex patterns', () => {
+  it('build-image/Dockerfile: 12 rules (DL3008, DL3015, DL3057, DV1003, DV1006, DV1009, ...)', () => {
+    const v = lintContent(`FROM golang:1.25.5-trixie
+ARG goproxyValue
+ENV GOPROXY=\${goproxyValue}
+RUN apt-get update && apt-get install -y curl file gettext jq unzip protobuf-compiler libprotobuf-dev && \\
+	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y nodejs && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install website builder dependencies. Whenever you change these version, please also change website/package.json
+# and vice versa.
+RUN npm install -g postcss-cli@7.1.2 autoprefixer@9.8.5
+
+ENV SHFMT_VERSION=3.2.4
+RUN GOARCH=$(go env GOARCH) && \\
+	if [ "$GOARCH" = "amd64" ]; then \\
+	DIGEST=3f5a47f8fec27fae3e06d611559a2063f5d27e4b9501171dde9959b8c60a3538; \\
+	elif [ "$GOARCH" = "arm64" ]; then \\
+	DIGEST=6474d9cc08a1c9fe2ef4be7a004951998e3067d46cf55a011ddd5ff7bfab3de6; \\
+	fi && \\
+	URL=https://github.com/mvdan/sh/releases/download/v\${SHFMT_VERSION}/shfmt_v\${SHFMT_VERSION}_linux_\${GOARCH}; \\
+	curl -fsSLo shfmt "\${URL}" && \\
+	echo "$DIGEST  shfmt" | sha256sum -c && \\
+	chmod +x shfmt && \\
+	mv shfmt /usr/bin
+
+RUN curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b /usr/bin v2.10.1
+
+ENV HUGO_VERSION=v0.101.0
+RUN go install github.com/client9/misspell/cmd/misspell@v0.3.4 &&\\
+	go install github.com/golang/protobuf/protoc-gen-go@v1.3.1 &&\\
+	go install github.com/gogo/protobuf/protoc-gen-gogoslick@v1.3.0 &&\\
+	go install github.com/weaveworks/tools/cover@bdd647e92546027e12cdde3ae0714bb495e43013 &&\\
+	go install github.com/fatih/faillint@v1.15.0 &&\\
+	go install github.com/campoy/embedmd@v1.0.0 &&\\
+	go install --tags extended github.com/gohugoio/hugo@\${HUGO_VERSION} &&\\
+	rm -rf /go/pkg /go/src /root/.cache
+
+ENV NODE_PATH=/usr/lib/node_modules
+COPY build.sh /
+ENV GOCACHE=/go/cache
+ENTRYPOINT ["/build.sh"]
+
+ARG revision
+LABEL org.opencontainers.image.title="build-image" \\
+	org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/build-image" \\
+	org.opencontainers.image.revision="\${revision}"
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell.
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);    // ARG defined after ENV. Define ARG before ENV for b
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/static-debian12"
+  });
+
+  it('cmd/cortex/Dockerfile: 5 rules (DL3018, DL3057, DV1006, DV1009, DV4003)', () => {
+    const v = lintContent(`FROM       alpine:3.23
+ARG TARGETARCH
+
+RUN        apk add --no-cache ca-certificates
+COPY       migrations /migrations/
+COPY       cortex-$TARGETARCH /bin/cortex
+EXPOSE     80
+ENTRYPOINT [ "/bin/cortex" ]
+
+ARG revision
+LABEL org.opencontainers.image.title="cortex" \\
+      org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/cmd/cortex" \\
+      org.opencontainers.image.revision="\${revision}"
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/query-tee/Dockerfile: 5 rules (DL3018, DL3057, DV1006, DV1009, DV4003)', () => {
+    const v = lintContent(`FROM       alpine:3.23
+ARG TARGETARCH
+
+RUN        apk add --no-cache ca-certificates
+COPY       query-tee-$TARGETARCH /query-tee
+ENTRYPOINT ["/query-tee"]
+
+ARG revision
+LABEL org.opencontainers.image.title="query-tee" \\
+      org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/tools/query-tee" \\
+      org.opencontainers.image.revision="\${revision}"
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/test-exporter/Dockerfile: 5 rules (DL3018, DL3057, DV1006, DV1009, DV4003)', () => {
+    const v = lintContent(`FROM       alpine:3.23
+ARG TARGETARCH
+RUN        apk add --no-cache ca-certificates
+COPY       test-exporter-$TARGETARCH /test-exporter
+ENTRYPOINT ["/test-exporter"]
+
+ARG revision
+LABEL org.opencontainers.image.title="test-exporter" \\
+      org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/cmd/test-exporter" \\
+      org.opencontainers.image.revision="\${revision}"
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/thanosconvert/Dockerfile: 5 rules (DL3018, DL3057, DV1006, DV1009, DV4003)', () => {
+    const v = lintContent(`FROM       alpine:3.23
+ARG TARGETARCH
+RUN        apk add --no-cache ca-certificates
+COPY       thanosconvert-$TARGETARCH /thanosconvert
+ENTRYPOINT ["/thanosconvert"]
+
+ARG revision
+LABEL org.opencontainers.image.title="thanosconvert" \\
+      org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/tools/thanosconvert" \\
+      org.opencontainers.image.revision="\${revision}"
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('development/tsdb-blocks-storage-s3-gossip/dev.dockerfile: 5 rules (DL3020, DV1006, DV1009, DV4003, DV4005)', () => {
+    const v = lintContent(`FROM golang:1.19
+ENV CGO_ENABLED=0
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+
+FROM alpine:3.23
+
+RUN     mkdir /cortex
+WORKDIR /cortex
+ADD     ./cortex ./
+COPY --from=0 /go/bin/dlv ./
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('development/tsdb-blocks-storage-s3-single-binary/dev.dockerfile: 4 rules (DL3020, DV1006, DV1009, DV4005)', () => {
+    const v = lintContent(`FROM alpine:3.23
+
+RUN     mkdir /cortex
+WORKDIR /cortex
+ADD     ./cortex ./
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('development/tsdb-blocks-storage-s3/dev.dockerfile: 5 rules (DL3020, DV1006, DV1009, DV4003, DV4005)', () => {
+    const v = lintContent(`FROM golang:1.19
+ENV CGO_ENABLED=0
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+
+FROM alpine:3.23
+
+RUN     mkdir /cortex
+WORKDIR /cortex
+ADD     ./cortex ./
+COPY --from=0 /go/bin/dlv ./
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('development/tsdb-blocks-storage-swift-single-binary/dev.dockerfile: 4 rules (DL3020, DV1006, DV1009, DV4005)', () => {
+    const v = lintContent(`FROM alpine:3.23
+
+RUN     mkdir /cortex
+WORKDIR /cortex
+ADD     ./cortex ./
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('packaging/deb/debian-systemd/Dockerfile: 9 rules (DL3008, DL3015, DL3057, DV1006, DV1009, DV2004, ...)', () => {
+    const v = lintContent(`FROM debian:10
+ENV container docker
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update \\
+        && apt-get install -y systemd \\
+        && apt-get clean \\
+        && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN rm -f /lib/systemd/system/multi-user.target.wants/* \\
+        /etc/systemd/system/*.wants/* \\
+        /lib/systemd/system/local-fs.target.wants/* \\
+        /lib/systemd/system/sockets.target.wants/*udev* \\
+        /lib/systemd/system/sockets.target.wants/*initctl* \\
+        /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \\
+        /lib/systemd/system/systemd-update-utmp*
+
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/lib/systemd/systemd"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "debian" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);    // DEBIAN_FRONTEND=noninteractive is set as ENV. Use 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" i
+  });
+
+  it('packaging/fpm/Dockerfile: 7 rules (DL3018, DL3028, DL3057, DV1004, DV1006, DV1009, ...)', () => {
+    const v = lintContent(`FROM alpine:3.23
+
+RUN apk add --no-cache \\
+        ruby \\
+        ruby-dev \\
+        ruby-etc \\
+        gcc \\
+        git \\
+        libc-dev \\
+        libffi-dev \\
+        make \\
+        rpm \\
+        tar \\
+        && gem install --no-document fpm
+
+COPY package.sh /
+ENTRYPOINT ["/package.sh"]
+
+ARG revision
+LABEL org.opencontainers.image.title="fpm" \\
+        # TODO: should this label point to the fpm source code?
+        org.opencontainers.image.source="https://github.com/cortexproject/cortex/tree/master/packaging/fpm" \\
+        org.opencontainers.image.revision="\${revision}"
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ruby`
+    expect(v.some(v => v.rule === 'DL3028')).toBe(true);    // Pin versions in gem install. Instead of `gem insta
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);    // Consider using multi-stage builds to reduce final 
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "alpine" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('packaging/rpm/centos-systemd/Dockerfile: 4 rules (DL3057, DV1006, DV1009, DV4003)', () => {
+    const v = lintContent(`FROM centos:8
+ENV container docker
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \\
+        systemd-tmpfiles-setup.service ] || rm -f $i; done); \\
+        rm -f /lib/systemd/system/multi-user.target.wants/*; \\
+        rm -f /etc/systemd/system/*.wants/*; \\
+        rm -f /lib/systemd/system/local-fs.target.wants/*; \\
+        rm -f /lib/systemd/system/sockets.target.wants/*udev*; \\
+        rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \\
+        rm -f /lib/systemd/system/basic.target.wants/*; \\
+        rm -f /lib/systemd/system/anaconda.target.wants/*;
+
+VOLUME [ "/sys/fs/cgroup"]
+CMD ["/usr/sbin/init"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "centos" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+});
+
+// ── grafana/loki patterns ──
+
+describe('OSS: grafana/loki patterns', () => {
+  it('clients/cmd/docker-driver/Dockerfile: 6 rules (DL3018, DL3057, DV1005, DV1006, DV1008, DV4003)', () => {
+    const v = lintContent(`ARG BUILD_IMAGE=grafana/loki-build-image:0.34.6
+ARG GOARCH=amd64
+# Directories in this file are referenced from the root of the project not this folder
+# This file is intended to be called from the root like so:
+# docker build -t grafana/loki-docker-driver -f clients/cmd/docker-driver/Dockerfile .
+
+FROM $BUILD_IMAGE AS build
+COPY . /src/loki
+WORKDIR /src/loki
+
+ARG GOARCH
+RUN make clean && make BUILD_IN_CONTAINER=false GOARCH=\${GOARCH} clients/cmd/docker-driver/docker-driver
+
+FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS temp
+
+ARG GOARCH
+
+RUN apk add --update --no-cache --arch=\${GOARCH} ca-certificates tzdata
+
+FROM --platform=linux/\${GOARCH} alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+
+COPY --from=temp /etc/ca-certificates.conf /etc/ca-certificates.conf
+COPY --from=temp /usr/share/ca-certificates /usr/share/ca-certificates
+COPY --from=temp /usr/share/zoneinfo /usr/share/zoneinfo
+
+COPY --from=build /src/loki/clients/cmd/docker-driver/docker-driver /bin/docker-driver
+
+WORKDIR /bin/
+ENTRYPOINT [ "/bin/docker-driver" ]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('clients/cmd/fluent-bit/Dockerfile: 5 rules (DL3057, DV1005, DV1006, DV1008, DV1009)', () => {
+    const v = lintContent(`FROM golang:1.24-bullseye AS builder
+
+COPY . /src
+
+WORKDIR /src
+
+ARG LDFLAGS
+ENV CGO_ENABLED=1
+
+RUN go build \\
+    -trimpath -ldflags "\${LDFLAGS}" \\
+    -tags netgo \\
+    -buildmode=c-shared \\
+    -o clients/cmd/fluent-bit/out_grafana_loki.so \\
+    /src/clients/cmd/fluent-bit
+
+FROM fluent/fluent-bit:4.2.3@sha256:a5761fa961cb22dd0875883a4d446b1acd99d4935d77358aa9f50ee177e44fe2
+
+COPY --from=builder /src/clients/cmd/fluent-bit/out_grafana_loki.so /fluent-bit/bin
+COPY clients/cmd/fluent-bit/fluent-bit.conf /fluent-bit/etc/fluent-bit.conf
+
+EXPOSE 2020
+
+CMD ["/fluent-bit/bin/fluent-bit", "-e","/fluent-bit/bin/out_grafana_loki.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+  });
+
+  it('clients/cmd/fluentd/Dockerfile: 7 rules (DL3008, DL3009, DV1005, DV1008, DV1009, DV4003, ...)', () => {
+    const v = lintContent(`FROM ruby:4.0.1@sha256:3b8c977b1f13501e132a309c903f2f9931e41be4e52785a719490e937953c3de AS build
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    sudo make gcc g++ libc-dev ruby-dev golang
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make BUILD_IN_CONTAINER=false fluentd-plugin
+
+FROM fluent/fluentd:v1.19-debian-1
+ENV LOKI_URL="https://logs-prod-us-central1.grafana.net"
+
+COPY --from=build /src/loki/clients/cmd/fluentd/lib/fluent/plugin/out_loki.rb /fluentd/plugins/out_loki.rb
+
+COPY clients/cmd/fluentd/docker/Gemfile /fluentd/
+COPY clients/cmd/fluentd/docker/conf/loki.conf /fluentd/etc/loki.conf
+
+USER root
+RUN sed -i '$i''  @include loki.conf' /fluentd/etc/fluent.conf
+USER fluent
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing somethin
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "fluent/fluentd" with a digest (e
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);    // DEBIAN_FRONTEND=noninteractive is set as ENV. Use 
+  });
+
+  it('clients/cmd/logstash/Dockerfile: 3 rules (DL3028, DV1011, DV4002)', () => {
+    const v = lintContent(`FROM logstash:9.3.1@sha256:d804f4994cebd9002e33a6f0b561dd3a15108222045f5d182da3c2675f26d177
+
+USER logstash
+ENV PATH /usr/share/logstash/vendor/jruby/bin:/usr/share/logstash/vendor/bundle/jruby/3.1.0/bin:/usr/share/logstash/jdk/bin:$PATH
+ENV LOGSTASH_PATH /usr/share/logstash
+ENV GEM_PATH /usr/share/logstash/vendor/bundle/jruby/3.1.0
+ENV GEM_HOME /usr/share/logstash/vendor/bundle/jruby/3.1.0
+
+RUN gem install bundler -v 2.6.9
+
+COPY --chown=logstash:logstash ./clients/cmd/logstash/ /home/logstash/
+WORKDIR /home/logstash/
+
+# don't run 'bundle update'. It causes a transitive dependency error
+RUN bundle config set --local path /usr/share/logstash/vendor/bundle && \\
+    bundle install && \\
+    bundle exec rake vendor && \\
+    bundle exec rspec
+
+RUN cat logstash-output-loki.gemspec | grep s.version | awk '{print $3}' |  cut -d "'" -f 2 > VERSION
+
+RUN gem build logstash-output-loki.gemspec && \\
+    PLUGIN_VERSION=$(cat VERSION); /usr/share/logstash/bin/logstash-plugin install logstash-output-loki-\${PLUGIN_VERSION}.gem
+
+EXPOSE 5044
+`);
+    expect(v.some(v => v.rule === 'DL3028')).toBe(true);    // Pin versions in gem install. Instead of `gem insta
+    expect(v.some(v => v.rule === 'DV1011')).toBe(true);    // Possible AWS secret access key detected in ENV "PA
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider 
+  });
+
+  it('clients/cmd/promtail/Dockerfile: 12 rules (DL3008, DL3009, DL3014, DL3015, DL3057, DV1005, ...)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+
+FROM golang:\${GO_VERSION}-bookworm AS build
+ARG IMAGE_TAG
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN apt-get update && apt-get install -qy libsystemd-dev
+RUN make clean && make BUILD_IN_CONTAINER=false PROMTAIL_JOURNAL_ENABLED=true IMAGE_TAG=\${IMAGE_TAG} promtail
+
+# Promtail requires debian or ubuntu as the base image to support systemd journal reading
+FROM public.ecr.aws/ubuntu/ubuntu:noble
+# tzdata required for the timestamp stage to work
+# Install dependencies needed at runtime.
+RUN  apt-get update \\
+ &&  apt-get install -qy libsystemd-dev tzdata ca-certificates \\
+ &&  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY --from=build /src/loki/clients/cmd/promtail/promtail /usr/bin/promtail
+COPY clients/cmd/promtail/promtail-docker-config.yaml /etc/promtail/config.yml
+ENTRYPOINT ["/usr/bin/promtail"]
+CMD ["-config.file=/etc/promtail/config.yml"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing somethin
+    expect(v.some(v => v.rule === 'DL3014')).toBe(true);    // Use the -y switch to avoid manual input `apt-get -
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" i
+  });
+
+  it('clients/cmd/promtail/Dockerfile.arm32: 12 rules (DL3008, DL3009, DL3014, DL3015, DL3057, DV1005, ...)', () => {
+    const v = lintContent(`FROM golang:1.24-bookworm AS build
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN apt-get update && apt-get install -qy libsystemd-dev
+RUN make clean && make BUILD_IN_CONTAINER=false PROMTAIL_JOURNAL_ENABLED=true promtail
+
+# Promtail requires debian or ubuntu as the base image to support systemd journal reading
+FROM public.ecr.aws/ubuntu/ubuntu:noble
+# tzdata required for the timestamp stage to work
+RUN apt-get update && \\
+  apt-get install -qy tzdata ca-certificates wget libsystemd-dev && \\
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY --from=build /src/loki/clients/cmd/promtail/promtail /usr/bin/promtail
+COPY clients/cmd/promtail/promtail-local-config.yaml /etc/promtail/local-config.yaml
+COPY clients/cmd/promtail/promtail-docker-config.yaml /etc/promtail/config.yml
+
+# Drone CI builds arm32 images using armv8l rather than armv7l. Something in
+# our build process above causes ldconfig to be rerun and removes the armhf
+# library that debian:stretch-slim on ARM comes with. Symbolically linking to
+# ld-linux.so.3 fixes the problem and allows Promtail to start.
+#
+# This process isn't necessary when building on armv7l so we only do it if the
+# library was removed.
+RUN sh -c '[ ! -f /lib/ld-linux-armhf.so.3 ] && echo RE-LINKING LD-LINUX-ARMHF.SO.3 && ln -s /lib/ld-linux.so.3 /lib/ld-linux-armhf.so.3'
+
+ENTRYPOINT ["/usr/bin/promtail"]
+CMD ["-config.file=/etc/promtail/config.yml"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);    // Delete the apt-get lists after installing somethin
+    expect(v.some(v => v.rule === 'DL3014')).toBe(true);    // Use the -y switch to avoid manual input `apt-get -
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" i
+  });
+
+  it('clients/cmd/promtail/Dockerfile.cross: 12 rules (DL3008, DL3014, DL3015, DL3029, DL3057, DV1005, ...)', () => {
+    const v = lintContent(`ARG BUILD_IMAGE=grafana/loki-build-image:0.34.8
+ARG GO_VERSION=1.26
+# Directories in this file are referenced from the root of the project not this folder
+# This file is intended to be called from the root like so:
+# docker build -t grafana/promtail -f clients/cmd/promtail/Dockerfile .
+FROM golang:\${GO_VERSION}-alpine AS goenv
+RUN go env GOARCH > /goarch && \\
+  go env GOARM > /goarm
+
+FROM --platform=linux/amd64 $BUILD_IMAGE as build
+COPY --from=goenv /goarch /goarm /
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && GOARCH=$(cat /goarch) GOARM=$(cat /goarm) make BUILD_IN_CONTAINER=false PROMTAIL_JOURNAL_ENABLED=true promtail
+
+# Promtail requires debian or ubuntu as the base image to support systemd journal reading
+FROM public.ecr.aws/ubuntu/ubuntu:noble
+# tzdata required for the timestamp stage to work
+RUN apt-get update && \\
+  apt-get install -qy tzdata ca-certificates wget libsystemd-dev && \\
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY --from=build /src/loki/clients/cmd/promtail/promtail /usr/bin/promtail
+COPY clients/cmd/promtail/promtail-local-config.yaml /etc/promtail/local-config.yaml
+COPY clients/cmd/promtail/promtail-docker-config.yaml /etc/promtail/config.yml
+ENTRYPOINT ["/usr/bin/promtail"]
+CMD ["-config.file=/etc/promtail/config.yml"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3014')).toBe(true);    // Use the -y switch to avoid manual input `apt-get -
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // Do not use --platform flag with FROM
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);    // Consider using "gcr.io/distroless/base-debian12" i
+  });
+
+  it('clients/cmd/promtail/Dockerfile.debug: 9 rules (DL3018, DL3052, DL3057, DV1005, DV1006, DV1008, ...)', () => {
+    const v = lintContent(`# Directories in this file are referenced from the root of the project not this folder
+# This file is intended to be called from the root like so:
+# docker build -t grafana/promtail -f clients/cmd/promtail/Dockerfile.debug .
+
+FROM grafana/loki-build-image:0.34.6 AS build
+ARG GOARCH="amd64"
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make BUILD_IN_CONTAINER=false PROMTAIL_JOURNAL_ENABLED=true promtail-debug
+
+
+FROM       alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+RUN        apk add --update --no-cache ca-certificates tzdata
+COPY       --from=build /src/loki/clients/cmd/promtail/promtail-debug /usr/bin/promtail-debug
+COPY       --from=build /usr/bin/dlv /usr/bin/dlv
+COPY       clients/cmd/promtail/promtail-local-config.yaml /etc/promtail/local-config.yaml
+COPY       clients/cmd/promtail/promtail-docker-config.yaml /etc/promtail/config.yml
+
+# Expose 40000 for delve
+EXPOSE 40000
+
+# Allow delve to run on Alpine based containers.
+RUN apk add --no-cache libc6-compat
+
+# Run delve, ending with -- because we pass params via kubernetes, per the docs:
+#   Pass flags to the program you are debugging using --, for example:\`
+#   dlv exec ./hello -- server --config conf/config.toml\`
+ENTRYPOINT ["/usr/bin/dlv", "--listen=:40000", "--headless=true", "--continue", "--accept-multiclient", "--api-version=2", "exec", "/usr/bin/promtail-debug", "--"]
+CMD ["-config.file=/etc/promtail/config.yml"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
+    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG GOARCH is declared but never referenced in the
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "grafana/loki-build-image" with a
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/logcli/Dockerfile: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+ARG IMAGE_TAG
+FROM golang:\${GO_VERSION} AS build
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make BUILD_IN_CONTAINER=false IMAGE_TAG=\${IMAGE_TAG} logcli
+
+
+FROM gcr.io/distroless/static:debug
+
+COPY --from=build /src/loki/cmd/logcli/logcli /usr/bin/logcli
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+
+ENTRYPOINT [ "/usr/bin/logcli" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/logql-analyzer/Dockerfile: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+FROM golang:\${GO_VERSION} AS build
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && CGO_ENABLED=0 go build ./cmd/logql-analyzer/
+
+FROM gcr.io/distroless/static:debug
+
+COPY --from=build /src/loki/logql-analyzer /usr/bin/logql-analyzer
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+
+ENTRYPOINT [ "/usr/bin/logql-analyzer" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/loki-canary-boringcrypto/Dockerfile: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+FROM golang:\${GO_VERSION} as build
+ARG IMAGE_TAG
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN go env GOARCH > /goarch
+RUN make clean && make GOARCH=$(cat /goarch) BUILD_IN_CONTAINER=true GOEXPERIMENT=boringcrypto IMAGE_TAG=\${IMAGE_TAG} loki-canary-boringcrypto
+
+FROM gcr.io/distroless/base-nossl:debug
+COPY --from=build /src/loki/cmd/loki-canary-boringcrypto/loki-canary-boringcrypto /usr/bin/loki-canary
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+ENTRYPOINT [ "/usr/bin/loki-canary" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/loki-canary/Dockerfile: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+FROM golang:\${GO_VERSION} AS build
+ARG IMAGE_TAG
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make BUILD_IN_CONTAINER=false IMAGE_TAG=\${IMAGE_TAG} loki-canary
+
+FROM gcr.io/distroless/static:debug
+
+COPY --from=build /src/loki/cmd/loki-canary/loki-canary /usr/bin/loki-canary
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+ENTRYPOINT [ "/usr/bin/loki-canary" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/loki-canary/Dockerfile.cross: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG BUILD_IMAGE=grafana/loki-build-image:0.34.8
+ARG GO_VERSION=1.26
+# Directories in this file are referenced from the root of the project not this folder
+# This file is intended to be called from the root like so:
+# docker build -t grafana/promtail -f cmd/promtail/Dockerfile .
+FROM golang:\${GO_VERSION} AS goenv
+RUN go env GOARCH > /goarch && \\
+  go env GOARM > /goarm
+
+FROM $BUILD_IMAGE as build
+COPY --from=goenv /goarch /goarm /
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && GOARCH=$(cat /goarch) GOARM=$(cat /goarm) make BUILD_IN_CONTAINER=false loki-canary
+
+FROM gcr.io/distroless/static:debug
+COPY --from=build /src/loki/cmd/loki-canary/loki-canary /usr/bin/loki-canary
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+ENTRYPOINT [ "/usr/bin/loki-canary" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/loki/Dockerfile: 6 rules (DV1005, DV1008, DV1009, DV1012, DV4003, DV4010)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+
+# Go build stage
+FROM golang:\${GO_VERSION} AS build
+ARG IMAGE_TAG
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make BUILD_IN_CONTAINER=false IMAGE_TAG=\${IMAGE_TAG} loki
+
+# Prepare filesystem stage
+FROM golang:\${GO_VERSION} AS filesystem
+COPY cmd/loki/loki-docker-config.yaml /local-config.yaml
+RUN mkdir -p /etc/loki /loki/rules /loki/rules-temp && \\
+    cp /local-config.yaml /etc/loki/local-config.yaml && \\
+    addgroup --gid 10001 loki && \\
+    adduser --uid 10001 --gid 10001 --disabled-password --gecos "" loki && \\
+    chown -R loki:loki /etc/loki /loki
+
+# Final stage
+FROM gcr.io/distroless/static:nonroot
+
+COPY --from=build /src/loki/cmd/loki/loki /usr/bin/loki
+COPY --from=filesystem --chown=10001:10001 /etc/loki /etc/loki
+COPY --from=filesystem --chown=10001:10001 /loki /loki
+COPY --from=filesystem /etc/passwd /etc/passwd
+COPY --from=filesystem /etc/group /etc/group
+
+USER 10001
+WORKDIR /
+EXPOSE 3100
+ENTRYPOINT [ "/usr/bin/loki" ]
+CMD ["-config.file=/etc/loki/local-config.yaml"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV1012')).toBe(true);    // COPY --from=filesystem copies potentially sensitiv
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
+  });
+
+  it('cmd/loki/Dockerfile.cross: 6 rules (DV1005, DV1008, DV1009, DV1012, DV4003, DV4010)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+# Directories in this file are referenced from the root of the project not this folder
+# This file is intended to be called from the root like so:
+# docker build -t grafana/loki -f cmd/loki/Dockerfile .
+FROM golang:\${GO_VERSION} AS goenv
+RUN go env GOARCH > /goarch && \\
+    go env GOARM > /goarm
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && GOARCH=$(cat /goarch) GOARM=$(cat /goarm) make BUILD_IN_CONTAINER=false loki
+
+# Prepare filesystem stage
+FROM golang:\${GO_VERSION} AS filesystem
+COPY cmd/loki/loki-local-config.yaml /local-config.yaml
+RUN mkdir -p /etc/loki /loki && \\
+    cp /local-config.yaml /etc/loki/local-config.yaml && \\
+    addgroup --gid 10001 loki && \\
+    adduser --uid 10001 --gid 10001 --disabled-password --gecos "" loki && \\
+    chown -R loki:loki /etc/loki /loki
+
+FROM gcr.io/distroless/static:nonroot
+
+COPY --from=goenv /src/loki/cmd/loki/loki /usr/bin/loki
+COPY --from=filesystem --chown=10001:10001 /etc/loki /etc/loki
+COPY --from=filesystem --chown=10001:10001 /loki /loki
+COPY --from=filesystem /etc/passwd /etc/passwd
+COPY --from=filesystem /etc/group /etc/group
+
+USER 10001
+WORKDIR /
+EXPOSE 3100
+ENTRYPOINT [ "/usr/bin/loki" ]
+CMD ["-config.file=/etc/loki/local-config.yaml"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV1012')).toBe(true);    // COPY --from=filesystem copies potentially sensitiv
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
+  });
+
+  it('cmd/loki/Dockerfile.debug: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG BUILD_IMAGE=grafana/loki-build-image:0.34.8
+ARG GO_VERSION=1.26
+# Directories in this file are referenced from the root of the project not this folder
+# This file is intended to be called from the root like so:
+# docker build -t grafana/loki -f cmd/loki/Dockerfile.debug .
+
+FROM golang:\${GO_VERSION} as goenv
+RUN go env GOARCH > /goarch && \\
+    go env GOARM > /goarm && \\
+    go install github.com/go-delve/delve/cmd/dlv@latest
+
+FROM $BUILD_IMAGE as build
+COPY --from=goenv /goarch /goarm /
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && \\
+    GOARCH=$(cat /goarch) GOARM=$(cat /goarm) make BUILD_IN_CONTAINER=false loki-debug
+
+FROM       gcr.io/distroless/base-nossl:debug
+COPY       --from=build /src/loki/cmd/loki/loki-debug /usr/bin/loki-debug
+COPY       --from=goenv /go/bin/dlv /usr/bin/dlv
+COPY       cmd/loki/loki-docker-config.yaml /etc/loki/local-config.yaml
+EXPOSE     3100
+
+# Expose 40000 for delve
+EXPOSE 40000
+
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+
+
+# Run delve, ending with -- because we pass params via kubernetes, per the docs:
+#   Pass flags to the program you are debugging using --, for example:\`
+#   dlv exec ./hello -- server --config conf/config.toml\`
+ENTRYPOINT ["/usr/bin/dlv", "--listen=:40000", "--headless=true", "--log", "--continue", "--accept-multiclient" , "--api-version=2", "exec", "/usr/bin/loki-debug", "--"]
+CMD        ["-config.file=/etc/loki/local-config.yaml"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/migrate/Dockerfile: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+FROM golang:\${GO_VERSION} AS build
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make BUILD_IN_CONTAINER=false migrate
+
+FROM gcr.io/distroless/static:debug
+
+COPY --from=build /src/loki/cmd/migrate/migrate /usr/bin/migrate
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+ENTRYPOINT [ "/busybox/tail", "-f", "/dev/null" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('cmd/querytee/Dockerfile: 5 rules (DV1005, DV1006, DV1008, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+FROM golang:\${GO_VERSION} AS build
+ARG IMAGE_TAG
+
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make IMAGE_TAG=\${IMAGE_TAG} loki-querytee
+
+FROM gcr.io/distroless/static:debug
+COPY --from=build /src/loki/cmd/querytee/querytee /usr/bin/querytee
+
+SHELL [ "/busybox/sh", "-c" ]
+RUN ln -s /busybox/sh /bin/sh
+
+ENTRYPOINT [ "/usr/bin/querytee" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('examples/promtail-heroku/Dockerfile: 3 rules (DL3057, DV1006, DV1009)', () => {
+    const v = lintContent(`from grafana/promtail:main-c9ef062
+
+# Copy the config.yml file we created in the step above, inside the container itself. This simplifies the 
+# configuration of the Promtail instance.
+COPY config.yml /etc/promtail/config.yml
+
+# This three flags indicates promtail where the configurations is located, to interpolate the configuration
+# file with environment variables (this is to avoid hardcoding values such as API Keys), and lastly, to print
+# the whole configuration file to STDERR when starting the container (this is helpful for debugging).
+CMD ["-config.file=/etc/promtail/config.yml", "-config.expand-env=true", "-print-config-stderr"]`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "grafana/promtail" with a digest 
+  });
+
+  it('loki-build-image/Dockerfile: 18 rules (DL3003, DL3006, DL3008, DL3014, DL3015, DL3018, ...)', () => {
+    const v = lintContent(`# This is the Dockerfile for the Loki build image that is used by the CI
+# pipelines.
+# If you make changes to this Dockerfile you also need to update the
+# tag of the Docker image in \`../.drone/drone.jsonnet\` and run \`make drone\`.
+# See ../docs/sources/community/maintaining/release-loki-build-image.md for instructions
+# on how to publish a new build image.
+ARG GO_VERSION=1.26.0
+ARG GOLANG_BASE_IMAGE=golang:\${GO_VERSION}-trixie
+
+# Install helm (https://helm.sh/) and helm-docs (https://github.com/norwoodj/helm-docs) for generating Helm Chart reference.
+FROM \${GOLANG_BASE_IMAGE} AS helm
+ARG TARGETARCH
+ARG HELM_VER="v3.2.3"
+RUN curl -L "https://get.helm.sh/helm-\${HELM_VER}-linux-$TARGETARCH.tar.gz" | tar zx && \\
+    install -t /usr/local/bin "linux-$TARGETARCH/helm"
+RUN BIN=$([ "$TARGETARCH" = "arm64" ] && echo "helm-docs_Linux_arm64" || echo "helm-docs_Linux_x86_64") &&  \\
+    curl -L "https://github.com/norwoodj/helm-docs/releases/download/v1.11.2/$BIN.tar.gz" | tar zx && \\
+    install -t /usr/local/bin helm-docs
+
+FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS lychee
+ARG TARGETARCH
+ARG LYCHEE_VER="0.7.0"
+RUN apk add --no-cache curl && \\
+    curl -L -o /tmp/lychee-$LYCHEE_VER.tgz https://github.com/lycheeverse/lychee/releases/download/\${LYCHEE_VER}/lychee-\${LYCHEE_VER}-x86_64-unknown-linux-gnu.tar.gz && \\
+    tar -xz -C /tmp -f /tmp/lychee-$LYCHEE_VER.tgz && \\
+    mv /tmp/lychee /usr/bin/lychee && \\
+    rm -rf "/tmp/linux-$TARGETARCH" /tmp/lychee-$LYCHEE_VER.tgz
+
+FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS golangci
+RUN apk add --no-cache curl && \\
+    cd / && \\
+    curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.10.1
+
+FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS buf
+ARG TARGETOS
+RUN apk add --no-cache curl && \\
+    curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.4.0/buf-$TARGETOS-$(uname -m)" -o "/usr/bin/buf" && \\
+    chmod +x "/usr/bin/buf"
+
+FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS docker
+RUN apk add --no-cache docker-cli docker-cli-buildx
+
+FROM \${GOLANG_BASE_IMAGE} AS drone
+ARG TARGETARCH
+RUN curl -L "https://github.com/drone/drone-cli/releases/download/v1.7.0/drone_linux_$TARGETARCH".tar.gz | tar zx && \\
+    install -t /usr/local/bin drone
+
+# Install faillint used to lint go imports in CI.
+# This collisions with the version of go tools used in the base image, thus we install it in its own image and copy it over.
+# Error:
+# github.com/fatih/faillint@v1.5.0 requires golang.org/x/tools@v0.0.0-20200207224406-61798d64f025
+#   (not golang.org/x/tools@v0.0.0-20190918214920-58d531046acd from golang.org/x/tools/cmd/goyacc@58d531046acdc757f177387bc1725bfa79895d69)
+FROM \${GOLANG_BASE_IMAGE} AS faillint
+RUN GO111MODULE=on go install github.com/fatih/faillint@v1.15.0
+RUN GO111MODULE=on go install golang.org/x/tools/cmd/goimports@v0.38.0
+
+FROM \${GOLANG_BASE_IMAGE} AS delve
+RUN GO111MODULE=on go install github.com/go-delve/delve/cmd/dlv@latest
+
+# Install ghr used to push binaries and template the release
+# This collides with the version of go tools used in the base image, thus we install it in its own image and copy it over.
+FROM \${GOLANG_BASE_IMAGE} AS ghr
+RUN GO111MODULE=on go install github.com/tcnksm/ghr@9349474
+
+# Install nfpm (https://nfpm.goreleaser.com) for creating .deb and .rpm packages.
+FROM \${GOLANG_BASE_IMAGE} AS nfpm
+RUN GO111MODULE=on go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.11.3
+
+# Install gotestsum
+FROM \${GOLANG_BASE_IMAGE} AS gotestsum
+RUN GO111MODULE=on go install gotest.tools/gotestsum@v1.8.2
+
+# Install tools used to compile jsonnet.
+FROM \${GOLANG_BASE_IMAGE} AS jsonnet
+RUN GO111MODULE=on go install github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@v0.5.1
+RUN GO111MODULE=on go install github.com/monitoring-mixins/mixtool/cmd/mixtool@16dc166166d91e93475b86b9355a4faed2400c18
+RUN GO111MODULE=on go install github.com/google/go-jsonnet/cmd/jsonnet@v0.20.0
+
+FROM aquasec/trivy AS trivy
+
+FROM \${GOLANG_BASE_IMAGE}
+RUN apt-get update && \\
+    apt-get install -qy \\
+    musl gnupg ragel \\
+    file zip unzip jq gettext\\
+    protobuf-compiler libprotobuf-dev \\
+    libsystemd-dev jq && \\
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install dependencies to cross build Promtail to ARM and ARM64.
+RUN dpkg --add-architecture armhf && \\
+    dpkg --add-architecture arm64 && \\
+    apt-get update && \\
+    apt-get install -y --no-install-recommends \\
+    pkg-config \\
+    gcc-aarch64-linux-gnu libc6-dev-arm64-cross libsystemd-dev:arm64 \\
+    gcc-arm-linux-gnueabihf libc6-dev-armhf-cross libsystemd-dev:armhf && \\
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=docker /usr/bin/docker /usr/bin/docker
+COPY --from=docker /usr/libexec/docker/cli-plugins/docker-buildx /usr/libexec/docker/cli-plugins/docker-buildx
+COPY --from=helm /usr/local/bin/helm /usr/bin/helm
+COPY --from=helm /usr/local/bin/helm-docs /usr/bin/helm-docs
+COPY --from=lychee /usr/bin/lychee /usr/bin/lychee
+COPY --from=golangci /bin/golangci-lint /usr/local/bin
+COPY --from=buf /usr/bin/buf /usr/bin/buf
+COPY --from=drone /usr/local/bin/drone /usr/bin/drone
+COPY --from=faillint /go/bin/faillint /usr/bin/faillint
+COPY --from=faillint /go/bin/goimports /usr/bin/goimports
+COPY --from=delve /go/bin/dlv /usr/bin/dlv
+COPY --from=ghr /go/bin/ghr /usr/bin/ghr
+COPY --from=nfpm /go/bin/nfpm /usr/bin/nfpm
+COPY --from=gotestsum /go/bin/gotestsum /usr/bin/gotestsum
+COPY --from=jsonnet /go/bin/jb /usr/bin/jb
+COPY --from=jsonnet /go/bin/mixtool /usr/bin/mixtool
+COPY --from=jsonnet /go/bin/jsonnet /usr/bin/jsonnet
+COPY --from=trivy /usr/local/bin/trivy /usr/bin/trivy
+
+# Install some necessary dependencies.
+# Forcing GO111MODULE=on is required to specify dependencies at specific versions using the go mod notation.
+# If we don't force this, Go is going to default to GOPATH mode as we do not have an active project or go.mod
+# file for it to detect and switch to Go Modules automatically.
+# It's possible this can be revisited in newer versions of Go if the behavior around GOPATH vs GO111MODULES changes
+RUN GO111MODULE=on go install github.com/golang/protobuf/protoc-gen-go@v1.3.1
+RUN GO111MODULE=on go install github.com/gogo/protobuf/protoc-gen-gogoslick@v1.3.0
+# Due to the lack of a proper release tag, we use the commit hash of
+# https://github.com/golang/tools/releases v0.1.7
+RUN GO111MODULE=on go install golang.org/x/tools/cmd/goyacc@58d531046acdc757f177387bc1725bfa79895d69
+RUN GO111MODULE=on go install github.com/mitchellh/gox@9f71238 && rm -rf /go/pkg /go/src
+ENV GOCACHE=/go/cache
+ENV GOTEST="gotestsum --format testname --"
+
+COPY build.sh /
+RUN chmod +x /build.sh
+ENTRYPOINT ["/build.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);    // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);    // Always tag the version of an image explicitly. Tag
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);    // Pin versions in apt-get install. Instead of `apt-g
+    expect(v.some(v => v.rule === 'DL3014')).toBe(true);    // Use the -y switch to avoid manual input `apt-get -
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add curl`
+    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG GO_VERSION is declared but never referenced in
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell.
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "aquasec/trivy" with a digest (e.
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);    // Consider using --no-install-recommends with apt-ge
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);    // Downloaded script executed without checksum verifi
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);    // Unquoted ARG $LYCHEE_VER in download URL. URL inje
+    expect(v.some(v => v.rule === 'DV3024')).toBe(true);    // Tarball downloaded and extracted without checksum 
+    expect(v.some(v => v.rule === 'DV4001')).toBe(true);    // Multiple package install RUN instructions detected
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('operator/Dockerfile: 1 rules (DV1009)', () => {
+    const v = lintContent(`# Build the manager binary
+FROM golang:1.25.7 as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY api/ api/
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY cmd/loki-operator/main.go cmd/loki-operator/main.go
+COPY internal/ internal/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -mod=readonly -o manager cmd/loki-operator/main.go
+
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/manager .
+USER 65532:65532
+
+ENTRYPOINT ["/manager"]
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+  });
+
+  it('operator/Dockerfile.cross: 3 rules (DL3029, DV1009, DV4003)', () => {
+    const v = lintContent(`ARG BUILD_IMAGE=grafana/loki-build-image:0.33.6
+
+FROM golang:1.25.7-alpine as goenv
+RUN go env GOARCH > /goarch && \\
+  go env GOARM > /goarm
+
+FROM --platform=linux/amd64 $BUILD_IMAGE as builder
+COPY --from=goenv /goarch /goarm /
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY api/ api/
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY cmd/loki-operator/main.go cmd/loki-operator/main.go
+COPY internal/ internal/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on GOARCH=$(cat /goarch) GOARM=$(cat /goarm) go build -a -o manager cmd/loki-operator/main.go
+
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/manager .
+USER 65532:65532
+
+ENTRYPOINT ["/manager"]
+`);
+    expect(v.some(v => v.rule === 'DL3029')).toBe(true);    // Do not use --platform flag with FROM
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('operator/bundle/community-openshift/bundle.Dockerfile: 1 rules (DV4005)', () => {
+    const v = lintContent(`FROM scratch
+
+# Core bundle labels.
+LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
+LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
+LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
+LABEL operators.operatorframework.io.bundle.package.v1=loki-operator
+LABEL operators.operatorframework.io.bundle.channels.v1=alpha
+LABEL operators.operatorframework.io.bundle.channel.default.v1=alpha
+LABEL operators.operatorframework.io.metrics.builder=operator-sdk-unknown
+LABEL operators.operatorframework.io.metrics.mediatype.v1=metrics+v1
+LABEL operators.operatorframework.io.metrics.project_layout=go.kubebuilder.io/v4
+
+# Labels for testing.
+LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
+LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
+
+# Copy files to locations specified by labels.
+COPY ./manifests /manifests/
+COPY ./metadata /metadata/
+COPY ./tests/scorecard /tests/scorecard/
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('operator/bundle/community/bundle.Dockerfile: 1 rules (DV4005)', () => {
+    const v = lintContent(`FROM scratch
+
+# Core bundle labels.
+LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
+LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
+LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
+LABEL operators.operatorframework.io.bundle.package.v1=loki-operator
+LABEL operators.operatorframework.io.bundle.channels.v1=alpha
+LABEL operators.operatorframework.io.bundle.channel.default.v1=alpha
+LABEL operators.operatorframework.io.metrics.builder=operator-sdk-unknown
+LABEL operators.operatorframework.io.metrics.mediatype.v1=metrics+v1
+LABEL operators.operatorframework.io.metrics.project_layout=go.kubebuilder.io/v4
+
+# Labels for testing.
+LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
+LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
+
+# Copy files to locations specified by labels.
+COPY ./manifests /manifests/
+COPY ./metadata /metadata/
+COPY ./tests/scorecard /tests/scorecard/
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('operator/bundle/openshift/bundle.Dockerfile: 1 rules (DV4005)', () => {
+    const v = lintContent(`FROM scratch
+
+# Core bundle labels.
+LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
+LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
+LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
+LABEL operators.operatorframework.io.bundle.package.v1=loki-operator
+LABEL operators.operatorframework.io.bundle.channels.v1=stable
+LABEL operators.operatorframework.io.bundle.channel.default.v1=stable
+LABEL operators.operatorframework.io.metrics.builder=operator-sdk-unknown
+LABEL operators.operatorframework.io.metrics.mediatype.v1=metrics+v1
+LABEL operators.operatorframework.io.metrics.project_layout=go.kubebuilder.io/v4
+
+# Labels for testing.
+LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
+LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
+
+# Copy files to locations specified by labels.
+COPY ./manifests /manifests/
+COPY ./metadata /metadata/
+COPY ./tests/scorecard /tests/scorecard/
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('operator/calculator.Dockerfile: 1 rules (DV1009)', () => {
+    const v = lintContent(`# Build the calculator binary
+FROM golang:1.25.7 as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY api/ api/
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY cmd/size-calculator/main.go main.go
+COPY internal/ internal/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -a -o size-calculator main.go
+
+# Use distroless as minimal base image to package the size-calculator binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/size-calculator .
+USER 65532:65532
+
+ENTRYPOINT ["/size-calculator"]
+`);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+  });
+
+  it('production/helm/loki/src/helm-test/Dockerfile: 4 rules (DV1005, DV1006, DV1008, DV1009)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+FROM golang:\${GO_VERSION} as build
+
+# build via Makefile target helm-test-image in root
+# Makefile. Building from this directory will not be
+# able to access source needed in rest of repo.
+COPY . /src/loki
+WORKDIR /src/loki
+RUN make clean && make BUILD_IN_CONTAINER=false helm-test
+
+FROM gcr.io/distroless/static:debug
+COPY --from=build /src/loki/production/helm/loki/src/helm-test/helm-test /usr/bin/helm-test
+ENTRYPOINT [ "/usr/bin/helm-test" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+  });
+
+  it('tools/bigtable-backup/Dockerfile: 8 rules (DL3013, DL3018, DL3042, DL3045, DL3057, DV1006, ...)', () => {
+    const v = lintContent(`FROM       grafana/bigtable-backup:master-18e7589
+RUN        apk add --update --no-cache python3 python3-dev git \\
+            && pip3 install --no-cache-dir --upgrade pip
+COPY       bigtable-backup.py bigtable-backup.py
+COPY       requirements.txt requirements.txt
+RUN        pip3 install -r requirements.txt
+ENTRYPOINT ["usr/bin/python3", "bigtable-backup.py"]
+`);
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);    // Pin versions in pip. Instead of `pip install pip` 
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add pytho
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);    // Avoid use of cache directory with pip. Use `pip in
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);    // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "grafana/bigtable-backup" with a 
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+  });
+
+  it('tools/dev/loki-tsdb-storage-s3/dev.dockerfile: 5 rules (DL3020, DV1006, DV1009, DV4003, DV4005)', () => {
+    const v = lintContent(`FROM golang:1.24
+ENV CGO_ENABLED=0
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.24.2
+
+FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+
+RUN     mkdir /loki
+WORKDIR /loki
+ADD     ./loki ./
+ADD     ./.src ./src
+COPY --from=0 /go/bin/dlv ./
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);    // Use COPY instead of ADD for files and folders
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);    // No CMD or ENTRYPOINT instruction found in the fina
+  });
+
+  it('tools/stream-generator/Dockerfile: 5 rules (DV1005, DV1008, DV1009, DV4003, DV4010)', () => {
+    const v = lintContent(`ARG GO_VERSION=1.26
+
+# Go build stage
+FROM golang:\${GO_VERSION} AS build
+COPY . /src/loki
+WORKDIR /src/loki
+RUN CGO_ENABLED=0 go build -o stream-generator ./tools/stream-generator/main.go
+
+# Final stage
+FROM gcr.io/distroless/static:debug
+
+COPY --from=build /src/loki/stream-generator /usr/bin/stream-generator
+
+SHELL [ "/busybox/sh", "-c" ]
+
+RUN addgroup -g 10001 -S streamgenerator && \\
+    adduser -u 10001 -S streamgenerator -G streamgenerator && \\
+    chown -R streamgenerator:streamgenerator /usr/bin/stream-generator && \\
+    ln -s /busybox/sh /bin/sh
+
+USER 10001
+EXPOSE 9090
+ENTRYPOINT [ "/usr/bin/stream-generator" ]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
+  });
+
+});
