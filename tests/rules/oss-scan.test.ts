@@ -10126,3 +10126,781 @@ CMD ["/minio"]
 
 });
 
+
+// ── envoyproxy/envoy patterns ──────────────────────────────────────
+
+describe('OSS: envoyproxy/envoy patterns', () => {
+
+  it('ci/matrix/Dockerfile: hadolint + dockervet (7 violations)', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN --mount=type=tmpfs,target=/var/cache/apt \\
+    --mount=type=tmpfs,target=/var/lib/apt/lists \\
+    apt-get -qq update \\
+    && apt-get -qq upgrade -y \\
+    && apt-get -qq install --no-install-recommends -y \\
+        curl \\
+        git \\
+        gosu \\
+        libc6-dev \\
+        software-properties-common \\
+    && curl -fsSL -o /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 \\
+    && chmod +x /usr/local/bin/bazel \\
+    && groupadd -g 1001 envoybuild \\
+    && useradd -m -u 1001 -g 1001 -s /bin/bash envoybuild
+ARG MATRIX_SETUP=""
+RUN --mount=type=tmpfs,target=/var/cache/apt \\
+    --mount=type=tmpfs,target=/var/lib/apt/lists \\
+    TMPFILE="$(mktemp)" \\
+    && echo "$MATRIX_SETUP" > "$TMPFILE" \\
+    && chmod +x "\${TMPFILE}" \\
+    && "\${TMPFILE}"
+ARG MATRIX_SETUP_EXTRA=""
+RUN --mount=type=tmpfs,target=/var/cache/apt \\
+    --mount=type=tmpfs,target=/var/lib/apt/lists \\
+    TMPFILE="$(mktemp)" \\
+    && echo "$MATRIX_SETUP_EXTRA" > "$TMPFILE" \\
+    && chmod +x "\${TMPFILE}" \\
+    && "\${TMPFILE}"
+COPY --chmod=755 ci/matrix/entrypoint.sh /entrypoint.sh
+COPY --chmod=755 ci/matrix/test.sh /usr/local/bin/test.sh
+WORKDIR /workspace
+ENTRYPOINT ["/entrypoint.sh"]
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);  // Downloaded script executed without checksum
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);  // apt-get upgrade in Dockerfile
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);  // apt-get upgrade in Dockerfile
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);  // Missing .dockerignore
+  });
+});
+
+// ── traefik/traefik patterns ──────────────────────────────────────
+
+describe('OSS: traefik/traefik patterns', () => {
+
+  it('Dockerfile: hadolint + dockervet (7 violations)', () => {
+    const v = lintContent(`# syntax=docker/dockerfile:1.2
+FROM alpine:3.23
+
+RUN apk add --no-cache --no-progress ca-certificates tzdata
+
+ARG TARGETPLATFORM
+COPY ./dist/$TARGETPLATFORM/traefik /
+
+EXPOSE 80
+VOLUME ["/tmp"]
+
+ENTRYPOINT ["/traefik"]
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);  // Pin versions in apk add
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV3010')).toBe(true);  // Package verification disabled
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+  });
+
+  it('docs/check.Dockerfile: hadolint + dockervet (23 violations)', () => {
+    const v = lintContent(`FROM alpine:3.23
+
+RUN apk --no-cache --no-progress add \\
+    build-base \\
+    gcompat \\
+    libcurl \\
+    libxml2-dev \\
+    libxslt-dev \\
+    ruby \\
+    ruby-bigdecimal \\
+    ruby-dev \\
+    ruby-ffi \\
+    zlib-dev
+
+RUN gem install nokogiri --version 1.18.6 --no-document -- --use-system-libraries
+RUN gem install html-proofer --version 5.0.10 --no-document -- --use-system-libraries
+
+# After Ruby, some NodeJS YAY!
+RUN apk --no-cache --no-progress add \\
+    git \\
+    nodejs \\
+    npm
+
+RUN npm install --global \\
+    markdownlint@0.29.0 \\
+    markdownlint-cli@0.35.0
+
+# Finally the shell tools we need for later
+# tini helps to terminate properly all the parallelized tasks when sending CTRL-C
+RUN apk --no-cache --no-progress add \\
+    ca-certificates \\
+    curl \\
+    tini
+
+COPY ./scripts/verify.sh /verify.sh
+COPY ./scripts/lint.sh /lint.sh
+COPY ./scripts/lint-yaml.sh /lint-yaml.sh
+
+WORKDIR /app
+VOLUME ["/tmp","/app"]
+
+ENTRYPOINT ["/sbin/tini","-g","sh"]
+`, 'check.Dockerfile');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);  // Pin versions in apk add
+    expect(v.some(v => v.rule === 'DL3028')).toBe(true);  // Pin versions in gem install
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV3010')).toBe(true);  // Package verification disabled
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);  // Consecutive RUN instructions detected
+  });
+
+  it('docs/docs.Dockerfile: hadolint + dockervet (9 violations)', () => {
+    const v = lintContent(`FROM alpine:3.23
+
+ENV PATH="\${PATH}:/venv/bin"
+
+COPY requirements.txt /mkdocs/
+WORKDIR /mkdocs
+VOLUME /mkdocs
+
+RUN apk --no-cache --no-progress add py3-pip gcc musl-dev python3-dev \\
+  && python3 -m venv /venv \\
+  && source /venv/bin/activate \\
+  && pip3 install -r requirements.txt
+`, 'docs.Dockerfile');
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);  // Pin versions in apk add
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);  // Avoid cache directory with pip install --no-cache-dir
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);  // ENV before COPY can leak across stages
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);  // VOLUME before RUN can cause data loss
+  });
+
+  it('webui/buildx.Dockerfile: dockervet (5 violations)', () => {
+    const v = lintContent(`FROM node:24-alpine3.22
+
+ENV WEBUI_DIR=/src/webui
+RUN mkdir -p $WEBUI_DIR
+
+COPY package.json yarn.lock .yarnrc.yml $WEBUI_DIR/
+
+ENV VITE_APP_BASE_URL=""
+ENV VITE_APP_BASE_API_URL="/api"
+
+WORKDIR $WEBUI_DIR
+
+RUN corepack enable
+RUN yarn workspaces focus --all --production
+
+COPY . $WEBUI_DIR/
+
+EXPOSE 8080
+`, 'buildx.Dockerfile');
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);  // Large COPY before package install wastes cache
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);  // Multiple ENV instructions could be combined
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);  // Missing .dockerignore
+  });
+});
+
+// ── kong/kong patterns ──────────────────────────────────────
+
+describe('OSS: kong/kong patterns', () => {
+
+  it('.devcontainer/Dockerfile: hadolint + dockervet (15 violations)', () => {
+    const v = lintContent(`FROM kong/kong:3.0.0-ubuntu
+
+USER root
+
+RUN apt-get update
+
+RUN apt-get install -y \\
+        build-essential \\
+        unzip \\
+        git \\
+        m4 \\
+        libyaml-dev \\
+        curl
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3002')).toBe(true);  // Last USER should not be root
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);  // Pin versions in apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);  // Delete the apt-get lists after installing
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);  // Avoid additional packages by specifying --no-install-recommends
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);  // USER root in final stage
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV2001')).toBe(true);  // Missing HEALTHCHECK or health-related instruction
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);  // Build tools in final image
+    expect(v.some(v => v.rule === 'DV2008')).toBe(true);  // Missing --no-install-recommends
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+  });
+
+  it('build/dockerfiles/deb.Dockerfile: hadolint + dockervet (5 violations)', () => {
+    const v = lintContent(`ARG KONG_BASE_IMAGE=debian:bookworm-slim
+FROM --platform=$TARGETPLATFORM $KONG_BASE_IMAGE
+
+LABEL maintainer="Kong Docker Maintainers <docker@konghq.com> (@team-gateway-bot)"
+
+ARG KONG_VERSION
+ENV KONG_VERSION $KONG_VERSION
+
+ARG KONG_PREFIX=/usr/local/kong
+ENV KONG_PREFIX $KONG_PREFIX
+
+ARG EE_PORTS
+
+ARG TARGETARCH
+
+ARG KONG_ARTIFACT=kong.\${TARGETARCH}.deb
+ARG KONG_ARTIFACT_PATH
+
+RUN --mount=type=bind,source=\${KONG_ARTIFACT_PATH},target=/tmp/pkg \\
+    apt-get update \\
+    && apt-get -y upgrade \\
+    && apt-get -y autoremove \\
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata \\
+    && apt-get install -y --no-install-recommends /tmp/pkg/\${KONG_ARTIFACT} \\
+    && rm -rf /var/lib/apt/lists/* \\
+    && chown kong:0 /usr/local/bin/kong \\
+    && chown -R kong:0 \${KONG_PREFIX} \\
+    && ln -sf /usr/local/openresty/bin/resty /usr/local/bin/resty \\
+    && ln -sf /usr/local/openresty/luajit/bin/luajit /usr/local/bin/luajit \\
+    && ln -sf /usr/local/openresty/luajit/bin/luajit /usr/local/bin/lua \\
+    && ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/local/bin/nginx \\
+    && kong version
+
+COPY build/dockerfiles/entrypoint.sh /entrypoint.sh
+
+USER kong
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+EXPOSE 8000 8443 8001 8444 $EE_PORTS
+
+STOPSIGNAL SIGQUIT
+
+HEALTHCHECK --interval=60s --timeout=10s --retries=10 CMD kong-health
+
+CMD ["kong", "docker-start"]
+`, 'deb.Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);  // Pin versions in apt-get install
+    expect(v.some(v => v.rule === 'DV3021')).toBe(true);  // ARG-based package path may allow injection
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);  // apt-get upgrade in Dockerfile
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);  // COPY with --chmod in Dockerfile
+  });
+
+  it('build/dockerfiles/rpm.Dockerfile: hadolint + dockervet (8 violations)', () => {
+    const v = lintContent(`ARG KONG_BASE_IMAGE=redhat/ubi9
+FROM --platform=$TARGETPLATFORM $KONG_BASE_IMAGE
+
+LABEL maintainer="Kong Docker Maintainers <docker@konghq.com> (@team-gateway-bot)"
+
+ARG KONG_VERSION
+ENV KONG_VERSION $KONG_VERSION
+
+# RedHat required labels
+LABEL name="Kong" \\
+      vendor="Kong" \\
+      version="$KONG_VERSION" \\
+      release="1" \\
+      url="https://konghq.com" \\
+      summary="Next-Generation API Platform for Modern Architectures" \\
+      description="Next-Generation API Platform for Modern Architectures"
+
+# RedHat required LICENSE file approved path
+COPY LICENSE /licenses/
+
+ARG RPM_PLATFORM=el9
+
+ARG KONG_PREFIX=/usr/local/kong
+ENV KONG_PREFIX $KONG_PREFIX
+
+ARG EE_PORTS
+
+ARG TARGETARCH
+
+ARG KONG_ARTIFACT=kong.\${RPM_PLATFORM}.\${TARGETARCH}.rpm
+ARG KONG_ARTIFACT_PATH
+
+# hadolint ignore=DL3015
+RUN --mount=type=bind,source=\${KONG_ARTIFACT_PATH},target=/tmp/pkg \\
+    yum update -y \\
+    && yum install -y /tmp/pkg/\${KONG_ARTIFACT} \\
+    && chown kong:0 /usr/local/bin/kong \\
+    && chown -R kong:0 /usr/local/kong \\
+    && ln -sf /usr/local/openresty/bin/resty /usr/local/bin/resty \\
+    && ln -sf /usr/local/openresty/luajit/bin/luajit /usr/local/bin/luajit \\
+    && ln -sf /usr/local/openresty/luajit/bin/luajit /usr/local/bin/lua \\
+    && ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/local/bin/nginx \\
+    && kong version
+
+COPY build/dockerfiles/entrypoint.sh /entrypoint.sh
+
+USER kong
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+EXPOSE 8000 8443 8001 8444 $EE_PORTS
+
+STOPSIGNAL SIGQUIT
+
+HEALTHCHECK --interval=60s --timeout=10s --retries=10 CMD kong-health
+
+CMD ["kong", "docker-start"]
+`, 'rpm.Dockerfile');
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);  // Always tag the version of an image explicitly
+    expect(v.some(v => v.rule === 'DL3032')).toBe(true);  // yum clean all missing after yum command
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);  // Specify version with yum install
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);  // USER root in final stage
+    expect(v.some(v => v.rule === 'DV3021')).toBe(true);  // ARG-based package path may allow injection
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);  // apt-get upgrade in Dockerfile
+    expect(v.some(v => v.rule === 'DV4010')).toBe(true);  // COPY with --chmod in Dockerfile
+  });
+
+  it('scripts/Dockerfile: hadolint + dockervet (28 violations)', () => {
+    const v = lintContent(`FROM ubuntu:latest AS expat-build
+
+ARG expat_version=2.6.3
+
+SHELL ["/bin/bash", "-c"]
+
+WORKDIR /workspace
+
+RUN apt update \\
+    && apt install -y curl
+
+RUN curl -L https://github.com/libexpat/libexpat/releases/download/R_\${expat_version//./_}/expat-\${expat_version}.tar.gz | tar -xz \\
+    && cd expat-\${expat_version} \\
+    && apt install -y build-essential \\
+    && ./configure --prefix=/expat_lib \\
+    && make && make install
+
+FROM ubuntu:latest
+
+COPY --from=expat-build /expat_lib /expat_lib
+
+RUN apt update && apt install -y curl libssl-dev libyaml-dev lua5.4 luarocks
+
+WORKDIR /workspace
+CMD ["/bin/bash", "-c", "OPENSSL_DIR=/usr EXPAT_DIR=/expat_lib scripts/update-copyright"]
+
+VOLUME /workspace
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);  // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);  // Using latest is prone to errors
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);  // Pin versions in apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);  // Delete the apt-get lists after installing
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);  // Avoid additional packages by specifying --no-install-recommends
+    expect(v.some(v => v.rule === 'DL3027')).toBe(true);  // Do not use apt as it is meant for interactive use
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);  // USER root in final stage
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);  // Build tools in final image
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);  // Unquoted ARG in download URL
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);  // Missing .dockerignore
+  });
+});
+
+// ── coredns/coredns patterns ──────────────────────────────────────
+
+describe('OSS: coredns/coredns patterns', () => {
+
+  it('Dockerfile: hadolint + dockervet (2 violations)', () => {
+    const v = lintContent(`ARG DEBIAN_IMAGE=debian:stable-slim
+ARG BASE=gcr.io/distroless/static-debian12:nonroot
+
+FROM --platform=$BUILDPLATFORM \${DEBIAN_IMAGE} AS build
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -qq update \\
+    && apt-get -qq --no-install-recommends install libcap2-bin
+COPY coredns /coredns
+RUN setcap cap_net_bind_service=+ep /coredns
+
+FROM \${BASE}
+COPY --from=build /coredns /coredns
+USER nonroot:nonroot
+# Reset the working directory inherited from the base image back to the expected default:
+# https://github.com/coredns/coredns/issues/7009#issuecomment-3124851608
+WORKDIR /
+EXPOSE 53 53/udp
+ENTRYPOINT ["/coredns"]
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+  });
+});
+
+// ── apache/apisix patterns ──────────────────────────────────────
+
+describe('OSS: apache/apisix patterns', () => {
+
+  it('.devcontainer/Dockerfile: hadolint + dockervet (20 violations)', () => {
+    const v = lintContent(`#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+FROM ubuntu:24.04
+
+RUN apt update && export DEBIAN_FRONTEND=noninteractive \\
+    && apt install -y sudo git make gcc tini
+
+COPY Makefile .requirements apisix-master-0.rockspec ./
+COPY utils/install-dependencies.sh utils/linux-install-luarocks.sh utils/
+
+RUN make install-runtime
+
+RUN cpanm --notest Test::Nginx IPC::Run > build.log 2>&1 || (cat build.log && exit 1)
+
+ARG ETCD_VER=v3.5.17
+ARG BUILDARCH
+RUN curl -L https://github.com/etcd-io/etcd/releases/download/\${ETCD_VER}/etcd-\${ETCD_VER}-linux-\${BUILDARCH}.tar.gz -o /tmp/etcd-\${ETCD_VER}-linux-\${BUILDARCH}.tar.gz \\
+    && mkdir -p /tmp/etcd-download-test \\
+    && tar xzvf /tmp/etcd-\${ETCD_VER}-linux-\${BUILDARCH}.tar.gz -C /tmp/etcd-download-test --strip-components=1 \\
+    && mv /tmp/etcd-download-test/etcdctl /usr/bin \\
+    && rm -rf /tmp/*
+
+ENTRYPOINT [ "tini", "--" ]
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);  // Pin versions in apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);  // Delete the apt-get lists after installing
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);  // Avoid additional packages by specifying --no-install-recommends
+    expect(v.some(v => v.rule === 'DL3027')).toBe(true);  // Do not use apt as it is meant for interactive use
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);  // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);  // ENV before COPY can leak across stages
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);  // USER root in final stage
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);  // Build tools in final image
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);  // Downloaded script executed without checksum
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);  // Unquoted ARG in download URL
+    expect(v.some(v => v.rule === 'DV3024')).toBe(true);  // Unquoted variable expansion
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);  // Missing .dockerignore
+  });
+
+  it('ci/pod/nacos/healthcheck/Dockerfile: hadolint + dockervet (6 violations)', () => {
+    const v = lintContent(`#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+FROM alpine:latest
+
+# change workdir to /
+WORKDIR /
+
+# install curl
+RUN apk --no-cache add bash curl
+
+# add healthcheck script
+COPY *.sh /
+
+# add hosted process
+CMD ["cat"]
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);  // Using latest is prone to errors
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);  // Pin versions in apk add
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+  });
+
+  it('ci/pod/nacos/service/Dockerfile: hadolint + dockervet (4 violations)', () => {
+    const v = lintContent(`#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+FROM eclipse-temurin:8
+
+ENV SUFFIX_NUM=\${SUFFIX_NUM:-1}
+ENV NACOS_ADDR=\${NACOS_ADDR:-127.0.0.1:8848}
+ENV SERVICE_NAME=\${SERVICE_NAME:-gateway-service}
+ENV NAMESPACE=\${NAMESPACE}
+ENV GROUP=\${GROUP:-DEFAULT_GROUP}
+
+ADD https://raw.githubusercontent.com/api7/nacos-test-service/main/spring-nacos-1.0-SNAPSHOT.jar /app.jar
+
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar",\\
+            "--suffix.num=\${SUFFIX_NUM}","--spring.cloud.nacos.discovery.server-addr=\${NACOS_ADDR}",\\
+            "--spring.application.name=\${SERVICE_NAME}","--spring.cloud.nacos.discovery.group=\${GROUP}",\\
+            "--spring.cloud.nacos.discovery.namespace=\${NAMESPACE}"]
+EXPOSE 18001
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV3020')).toBe(true);  // ADD from URL without checksum
+  });
+
+  it('docker/debian-dev/Dockerfile: hadolint + dockervet (21 violations)', () => {
+    const v = lintContent(`#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+FROM debian:bullseye-slim AS build
+
+ARG ENABLE_PROXY=false
+ARG CODE_PATH
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ENV_INST_LUADIR=/usr/local/apisix
+
+COPY \${CODE_PATH} /apisix
+
+WORKDIR /apisix
+
+RUN set -x \\
+    && apt-get -y update --fix-missing \\
+    && apt-get install -y \\
+        make \\
+        git  \\
+        sudo \\
+        libyaml-dev \\
+    && ls -al \\
+    && make deps \\
+    && mkdir -p \${ENV_INST_LUADIR} \\
+    && cp -r deps \${ENV_INST_LUADIR} \\
+    && make install
+
+FROM debian:bullseye-slim
+
+ARG ENTRYPOINT_PATH=./docker-entrypoint.sh
+ARG INSTALL_BROTLI=./install-brotli.sh
+
+# Install the runtime libyaml package
+RUN apt-get -y update --fix-missing \\
+    && apt-get install -y libldap2-dev libyaml-0-2 \\
+    && apt-get remove --purge --auto-remove -y \\
+    && mkdir -p /usr/local/apisix/ui
+
+COPY --from=build /usr/local/apisix /usr/local/apisix
+COPY --from=build /usr/local/openresty /usr/local/openresty
+COPY --from=build /usr/bin/apisix /usr/bin/apisix
+COPY --chown=nobody:root ui/ /usr/local/apisix/ui/
+
+COPY \${INSTALL_BROTLI} /install-brotli.sh
+RUN chmod +x /install-brotli.sh \\
+    && cd / && ./install-brotli.sh && rm -rf /install-brotli.sh \\
+    && chgrp -R 0 /usr/local/apisix \\
+    && chmod -R g=u /usr/local/apisix
+
+ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
+
+WORKDIR /usr/local/apisix
+
+RUN ln -sf /dev/stdout /usr/local/apisix/logs/access.log \\
+    && ln -sf /dev/stderr /usr/local/apisix/logs/error.log
+
+EXPOSE 9080 9443
+
+COPY \${ENTRYPOINT_PATH} /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+CMD ["docker-start"]
+
+STOPSIGNAL SIGQUIT
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);  // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);  // Pin versions in apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);  // Delete the apt-get lists after installing
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);  // Avoid additional packages by specifying --no-install-recommends
+    expect(v.some(v => v.rule === 'DL3052')).toBe(true);  // ADD with URL source
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);  // USER root in final stage
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);  // Build tools in final image
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);  // apt-get upgrade in Dockerfile
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);  // Missing .dockerignore
+  });
+
+  it('example/build-dev-image.dockerfile: hadolint + dockervet (25 violations)', () => {
+    const v = lintContent(`#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+FROM ubuntu:20.04
+
+# Install Test::Nginx
+RUN apt update
+RUN apt install -y cpanminus make
+RUN cpanm --notest Test::Nginx
+
+# Install development utils
+RUN apt install -y sudo git gawk curl nano vim inetutils-ping
+
+WORKDIR /apisix
+
+ENV PERL5LIB=.:$PERL5LIB
+
+ENTRYPOINT ["tail", "-f", "/dev/null"]
+`, 'build-dev-image.dockerfile');
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);  // Pin versions in apt-get install
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);  // Delete the apt-get lists after installing
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);  // Avoid additional packages by specifying --no-install-recommends
+    expect(v.some(v => v.rule === 'DL3027')).toBe(true);  // Do not use apt as it is meant for interactive use
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);  // ENV before COPY can leak across stages
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);  // USER root in final stage
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV2004')).toBe(true);  // Build tools in final image
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);  // Consecutive RUN instructions detected
+    expect(v.some(v => v.rule === 'DV5003')).toBe(true);  // Missing .dockerignore
+  });
+
+  it('t/chaos/utils/Dockerfile: hadolint + dockervet (22 violations)', () => {
+    const v = lintContent(`#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+ARG ENABLE_PROXY=false
+
+FROM openresty/openresty:1.21.4.2-alpine-fat AS production-stage
+
+ARG ENABLE_PROXY
+ARG APISIX_PATH
+COPY $APISIX_PATH ./apisix
+RUN set -x \\
+    && (test "\${ENABLE_PROXY}" != "true" || /bin/sed -i 's,http://dl-cdn.alpinelinux.org,https://mirrors.aliyun.com,g' /etc/apk/repositories) \\
+    && apk add --no-cache --virtual .builddeps \\
+    automake \\
+    autoconf \\
+    libtool \\
+    pkgconfig \\
+    cmake \\
+    git \\
+    openldap-dev \\
+    pcre-dev \\
+    sudo \\
+    && cd apisix \\
+    && git config --global url.https://github.com/.insteadOf git://github.com/ \\
+    && make deps \\
+    && cp -v bin/apisix /usr/bin/ \\
+    && mv ../apisix /usr/local/apisix \\
+    && apk del .builddeps build-base make unzip
+
+FROM alpine:3.13 AS last-stage
+
+ARG ENABLE_PROXY
+# add runtime for Apache APISIX
+RUN set -x \\
+    && (test "\${ENABLE_PROXY}" != "true" || /bin/sed -i 's,http://dl-cdn.alpinelinux.org,https://mirrors.aliyun.com,g' /etc/apk/repositories) \\
+    && apk add --no-cache \\
+        bash \\
+        curl \\
+        libstdc++ \\
+        openldap \\
+        pcre \\
+        tzdata
+
+WORKDIR /usr/local/apisix
+
+COPY --from=production-stage /usr/local/openresty/ /usr/local/openresty/
+COPY --from=production-stage /usr/local/apisix/ /usr/local/apisix/
+COPY --from=production-stage /usr/bin/apisix /usr/bin/apisix
+
+# forward request and error logs to docker log collector
+RUN mkdir -p logs && touch logs/access.log && touch logs/error.log \\
+    && ln -sf /dev/stdout /usr/local/apisix/logs/access.log \\
+    && ln -sf /dev/stderr /usr/local/apisix/logs/error.log
+
+ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
+
+EXPOSE 9080 9180 9443
+
+CMD ["sh", "-c", "/usr/bin/apisix init && /usr/bin/apisix init_etcd && /usr/local/openresty/bin/openresty -p /usr/local/apisix -g 'daemon off;'"]
+
+STOPSIGNAL SIGQUIT
+
+`, 'Dockerfile');
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);  // Use WORKDIR to switch to a directory
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);  // Pin versions in apk add
+    expect(v.some(v => v.rule === 'DL3045')).toBe(true);  // COPY to a relative destination without WORKDIR set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);  // HEALTHCHECK instruction missing
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);  // No USER instruction found
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);  // Consider pinning with a digest
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);  // No WORKDIR set
+  });
+});
