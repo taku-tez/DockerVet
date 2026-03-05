@@ -11549,3 +11549,547 @@ ENTRYPOINT ["/daprd"]
     expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set + distroless nonroot
   });
 });
+
+// ── open-telemetry/opentelemetry-go patterns ───────────────────────────
+
+describe('OSS: open-telemetry/opentelemetry-go patterns', () => {
+  it('dependencies.Dockerfile: multi-FROM pinned with digest for CI tooling', () => {
+    const v = lintContent(`FROM python:3.13.6-slim-bullseye@sha256:e98b521460ee75bca92175c16247bdf7275637a8faaeb2bcfa19d879ae5c4b9a AS python
+FROM otel/weaver:v0.21.2@sha256:2401de985c38bdb98b43918e2f43aa36b2afed4aa5669ac1c1de0a17301cd36d AS weaver
+FROM avtodev/markdown-lint:v1@sha256:6aeedc2f49138ce7a1cd0adffc1b1c0321b841dc2102408967d9301c031949ee AS markdown
+`);
+    // All images pinned with digest — DL3006/DL3007 should not fire
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(false);
+    // Multi-FROM alias without RUN — DV1006 fires for missing USER
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);
+  });
+
+  it('dependencies.Dockerfile: digest-pinned images do not trigger tag warnings', () => {
+    const v = lintContent(`FROM python:3.13.6-slim-bullseye@sha256:abc123 AS python
+FROM otel/weaver:v0.21.2@sha256:def456 AS weaver
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(false);
+  });
+
+  it('hypothetical OTel Go builder: unpinned alpine with go build', () => {
+    const v = lintContent(`FROM golang:1.23-alpine AS builder
+RUN apk add --no-cache git make
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o /bin/otel-collector ./cmd/otelcol
+
+FROM alpine:3.21
+COPY --from=builder /bin/otel-collector /usr/local/bin/otel-collector
+ENTRYPOINT ["/usr/local/bin/otel-collector"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin apk versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('multi-FROM alias pattern without RUN: no USER warning', () => {
+    const v = lintContent(`FROM golang:1.23@sha256:abc123 AS go
+FROM python:3.13@sha256:def456 AS py
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);  // Digest-pinned
+  });
+});
+
+// ── open-telemetry/opentelemetry-python patterns ───────────────────────
+
+describe('OSS: open-telemetry/opentelemetry-python patterns', () => {
+  it('books_database/Dockerfile: MySQL with ENV passwords and HEALTHCHECK', () => {
+    const v = lintContent(`FROM mysql:8.0
+ENV MYSQL_ROOT_PASSWORD=root
+ENV MYSQL_DATABASE=books
+ADD books.sql /docker-entrypoint-initdb.d/
+RUN echo "CREATE USER IF NOT EXISTS 'books'@'%' IDENTIFIED WITH mysql_native_password BY 'books123';" > /docker-entrypoint-initdb.d/01-create-user.sql && \\
+    echo "GRANT ALL PRIVILEGES ON books.* TO 'books'@'%';" >> /docker-entrypoint-initdb.d/01-create-user.sql && \\
+    echo "FLUSH PRIVILEGES;" >> /docker-entrypoint-initdb.d/01-create-user.sql
+RUN mkdir -p /var/log && \\
+    touch /var/log/general.log && \\
+    chown mysql:mysql /var/log/general.log
+EXPOSE 3306
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \\
+    CMD mysqladmin ping -p\${MYSQL_ROOT_PASSWORD} || exit 1
+CMD ["mysqld", "--general-log=1", "--general-log-file=/var/log/general.log"]
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);   // Use COPY instead of ADD
+    expect(v.some(v => v.rule === 'DL3057')).toBe(false);  // HEALTHCHECK present
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // CMD present
+  });
+
+  it('books_database: ADD for local file should trigger DL3020', () => {
+    const v = lintContent(`FROM mysql:8.0
+ADD books.sql /docker-entrypoint-initdb.d/
+CMD ["mysqld"]
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);   // Use COPY instead of ADD
+  });
+
+  it('books_database: hardcoded password in ENV triggers no specific rule but is present', () => {
+    const v = lintContent(`FROM mysql:8.0
+ENV MYSQL_ROOT_PASSWORD=root
+CMD ["mysqld"]
+`);
+    // DL3006 should not fire — mysql:8.0 has a tag
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('hypothetical Python OTel dev Dockerfile: unpinned pip install', () => {
+    const v = lintContent(`FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]
+`);
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);   // Avoid cache dir for pip
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+  });
+
+  it('Python example with HEALTHCHECK is clean on that rule', () => {
+    const v = lintContent(`FROM python:3.12-slim
+WORKDIR /app
+COPY --chown=1000:1000 . .
+RUN pip install --no-cache-dir -r requirements.txt
+USER 1000
+HEALTHCHECK --interval=30s CMD curl -f http://localhost:8080/health || exit 1
+CMD ["python", "app.py"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(false);  // HEALTHCHECK present
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    expect(v.some(v => v.rule === 'DL3042')).toBe(false);  // --no-cache-dir used
+  });
+});
+
+// ── fluent/fluent-bit patterns ─────────────────────────────────────────
+
+describe('OSS: fluent/fluent-bit patterns', () => {
+  it('main Dockerfile: multi-stage builder with hadolint ignores and distroless production', () => {
+    const v = lintContent(`ARG RELEASE_VERSION=4.2.3
+FROM multiarch/qemu-user-static:x86_64-arm AS qemu-arm32
+FROM multiarch/qemu-user-static:x86_64-aarch64 AS qemu-arm64
+FROM debian:trixie-slim AS builder-base
+COPY --from=qemu-arm32 /usr/bin/qemu-arm-static /usr/bin/
+COPY --from=qemu-arm64 /usr/bin/qemu-aarch64-static /usr/bin/
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \\
+    apt-get install -y --no-install-recommends \\
+    build-essential curl ca-certificates git make tar \\
+    libssl-dev libcurl4-openssl-dev libsasl2-dev \\
+    pkg-config libsystemd-dev zlib1g-dev libpq-dev \\
+    flex bison libyaml-dev \\
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /src/fluent-bit/
+COPY . ./
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT (builder stage)
+  });
+
+  it('production stage: distroless cc-debian13 with labels, EXPOSE, ENTRYPOINT+CMD', () => {
+    const v = lintContent(`FROM gcr.io/distroless/cc-debian13 AS production
+ARG RELEASE_VERSION
+ENV FLUENT_BIT_VERSION=\${RELEASE_VERSION}
+LABEL description="Fluent Bit multi-architecture container image" \\
+    vendor="Fluent Organization" \\
+    version="\${RELEASE_VERSION}"
+COPY --from=deb-extractor /dpkg /
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
+COPY --from=builder /fluent-bit /fluent-bit
+EXPOSE 2020
+ENTRYPOINT [ "/fluent-bit/bin/fluent-bit" ]
+CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+`);
+    // cc-debian13 without :nonroot — DL3006 fires (untagged distroless)
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // Has ENTRYPOINT + CMD
+  });
+
+  it('debug stage: debian with massive apt install, no USER', () => {
+    const v = lintContent(`FROM debian:trixie-slim AS debug
+ARG RELEASE_VERSION
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \\
+    apt-get install -y --no-install-recommends \\
+    libssl3t64 libcurl4t64 ca-certificates \\
+    bash gdb valgrind build-essential \\
+    git bash-completion vim tmux jq \\
+    tcpdump curl nmap tcpflow iftop \\
+    net-tools mtr netcat-openbsd bridge-utils iperf ngrep \\
+    openssl htop atop strace iotop sysstat \\
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /fluent-bit /fluent-bit
+EXPOSE 2020
+CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('Dockerfile.centos7: CentOS with yum and no clean', () => {
+    const v = lintContent(`FROM centos:7
+RUN yum -y update && \\
+    yum install -y rpm-build curl ca-certificates gcc gcc-c++ make bash \\
+    wget unzip systemd-devel flex bison \\
+    cyrus-sasl-lib openssl openssl-libs openssl-devel libcurl-devel \\
+    tar gzip
+COPY . /src/
+WORKDIR /src/build
+RUN make -j "$(getconf _NPROCESSORS_ONLN)"
+`);
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);   // Pin yum versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('Dockerfile.windows: Windows Server Core with PowerShell builder', () => {
+    const v = lintContent(`ARG WINDOWS_VERSION=ltsc2025
+FROM mcr.microsoft.com/windows/servercore:\$WINDOWS_VERSION AS builder-base
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
+WORKDIR /local
+RUN Write-Host "Installing Visual Studio Build Tools..."
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // Security-related
+  });
+
+  it('Dockerfile.windows runtime stage: servercore with ENTRYPOINT', () => {
+    const v = lintContent(`ARG WINDOWS_VERSION=ltsc2025
+FROM mcr.microsoft.com/windows/servercore:\$WINDOWS_VERSION AS runtime
+LABEL org.opencontainers.image.title="Fluent Bit" \\
+    org.opencontainers.image.vendor="Fluent Organization"
+COPY --from=builder /fluent-bit /fluent-bit
+RUN setx /M PATH "%PATH%;C:\\fluent-bit\\bin"
+ENTRYPOINT [ "fluent-bit.exe" ]
+CMD [ "fluent-bit.exe", "-c", "/fluent-bit/etc/fluent-bit.conf" ]
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // Has ENTRYPOINT + CMD
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('kafka_filter example: debian builder with unpinned apt and ADD', () => {
+    const v = lintContent(`FROM debian:bullseye-slim as builder
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && \\
+    apt-get upgrade -y && \\
+    apt-get install -y --no-install-recommends \\
+    build-essential curl ca-certificates cmake \\
+    pkg-config libsasl2-dev libssl-dev flex \\
+    openjdk-11-jre-headless bison netcat-openbsd \\
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /build/
+COPY . /source
+RUN cmake -DFLB_DEV=On /source && cmake --build . --parallel
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD (builder only)
+  });
+
+  it('kafka_filter runner: COPY from builder with CMD', () => {
+    const v = lintContent(`FROM debian:bullseye-slim as runner
+COPY --from=builder /build/bin/fluent-bit /usr/local/bin/fluent-bit
+COPY examples/kafka_filter/kafka.conf /etc/kafka.conf
+COPY examples/kafka_filter/kafka.lua /etc/kafka.lua
+CMD ["/usr/local/bin/fluent-bit", "-c", "/etc/kafka.conf"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // CMD present
+  });
+
+  it('SHELL instruction changing default shell', () => {
+    const v = lintContent(`FROM debian:trixie-slim
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN apt-get update && apt-get download libssl3t64 | tee /tmp/log
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+});
+
+// ── graylog2/graylog2-server patterns ──────────────────────────────────
+
+describe('OSS: graylog2/graylog2-server patterns', () => {
+  it('test Dockerfile: eclipse-temurin base with apt, adduser, USER, ENTRYPOINT', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-jammy
+ARG GRAYLOG_VERSION
+ARG GRAYLOG_HOME=/usr/share/graylog
+ARG GRAYLOG_USER=graylog
+ARG GRAYLOG_UID=1100
+ARG GRAYLOG_GID=1100
+WORKDIR \${GRAYLOG_HOME}
+RUN apt-get update > /dev/null && \\
+    apt-get install --no-install-recommends --assume-yes \\
+    curl tini libcap2-bin libglib2.0-0 libx11-6 libnss3 fontconfig > /dev/null && \\
+    addgroup --gid "\${GRAYLOG_GID}" --quiet "\${GRAYLOG_USER}" && \\
+    adduser --disabled-password --disabled-login --gecos '' \\
+    --home \${GRAYLOG_HOME} --uid "\${GRAYLOG_UID}" --gid "\${GRAYLOG_GID}" \\
+    --quiet "\${GRAYLOG_USER}" && \\
+    apt-get remove --assume-yes --purge apt-utils > /dev/null && \\
+    apt-get clean > /dev/null && \\
+    rm -rf /var/lib/apt/lists/*
+EXPOSE 9000
+USER \${GRAYLOG_USER}
+COPY docker-entrypoint.sh /
+ENTRYPOINT ["tini", "--", "/docker-entrypoint.sh"]
+CMD ["graylog"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions in apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // Has ENTRYPOINT + CMD
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('graylog: proper USER with adduser pattern', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-jammy
+RUN groupadd --gid 1100 graylog && \\
+    useradd --uid 1100 --gid 1100 -m graylog
+USER graylog
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["graylog"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // ENTRYPOINT + CMD
+  });
+
+  it('graylog: missing HEALTHCHECK on Java service', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-jammy
+RUN apt-get update && apt-get install -y curl tini && rm -rf /var/lib/apt/lists/*
+EXPOSE 9000
+USER 1100
+ENTRYPOINT ["tini", "--", "/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+  });
+
+  it('graylog: setcap pattern in RUN layer', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-jammy
+RUN apt-get update && apt-get install -y libcap2-bin && \\
+    setcap 'cap_net_bind_service=+ep' /opt/java/bin/java && \\
+    rm -rf /var/lib/apt/lists/*
+USER graylog
+CMD ["graylog"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+  });
+
+  it('graylog: multiple echo commands in single RUN', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-jammy
+RUN echo "export GRAYLOG_VERSION=5.0" >> /etc/profile.d/graylog.sh && \\
+    echo "export GRAYLOG_HOME=/usr/share/graylog" >> /etc/profile.d/graylog.sh && \\
+    echo "export PATH=/usr/share/graylog/bin:\$PATH" >> /etc/profile.d/graylog.sh
+USER graylog
+ENTRYPOINT ["/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // ENTRYPOINT present
+  });
+});
+
+// ── elastic/logstash patterns ──────────────────────────────────────────
+
+describe('OSS: elastic/logstash patterns', () => {
+  it('observabilitySRE/Dockerfile: wolfi base with apk, USER, gradle CMD', () => {
+    const v = lintContent(`FROM docker.elastic.co/wolfi/chainguard-base-fips:latest
+RUN addgroup -g 1002 logstash && \\
+    adduser -S -h /home/logstash -s /bin/bash -u 1002 -G logstash logstash
+RUN apk add --no-cache \\
+    openjdk-21 bash git curl make gcc java-cacerts glibc-dev openssl
+RUN mkdir -p /etc/java/security && \\
+    chown -R logstash:logstash /etc/java/security
+WORKDIR /logstash
+RUN chown -R logstash:logstash /logstash
+USER logstash
+COPY --chown=logstash:logstash . .
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+RUN ./gradlew clean bootstrap assemble installDefaultGems -PfedrampHighMode=true
+CMD ["./gradlew", "--info", "--stacktrace", "-PfedrampHighMode=true", "runIntegrationTests"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin apk versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // CMD present
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // Single-stage build concern
+  });
+
+  it('logstash: :latest tag on base image triggers DL3007', () => {
+    const v = lintContent(`FROM docker.elastic.co/wolfi/chainguard-base-fips:latest
+RUN apk add --no-cache bash
+USER logstash
+CMD ["logstash"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+  });
+
+  it('logstash: COPY --chown pattern for proper ownership', () => {
+    const v = lintContent(`FROM docker.elastic.co/wolfi/chainguard-base-fips:v1.0
+WORKDIR /logstash
+USER logstash
+COPY --chown=logstash:logstash x-pack/config/security/java.security /etc/java/security/
+COPY --chown=logstash:logstash . .
+CMD ["./gradlew", "runIntegrationTests"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // CMD present
+  });
+
+  it('logstash: RUN keytool in build step with complex ENV', () => {
+    const v = lintContent(`FROM docker.elastic.co/wolfi/chainguard-base-fips:v2.0
+RUN apk add --no-cache openjdk-21
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+ENV LS_JAVA_OPTS="-Dio.netty.ssl.provider=JDK -Djava.security.properties=/etc/java/security/java.security"
+RUN keytool -importkeystore \\
+    -srckeystore \$JAVA_HOME/lib/security/cacerts \\
+    -destkeystore /etc/java/security/cacerts.bcfks \\
+    -srcstoretype jks \\
+    -deststoretype bcfks \\
+    -deststorepass changeit \\
+    -srcstorepass changeit \\
+    -noprompt
+USER logstash
+CMD ["logstash"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin apk versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+  });
+
+  it('logstash: wolfi-based FIPS image without USER triggers DV1006', () => {
+    const v = lintContent(`FROM docker.elastic.co/wolfi/chainguard-base-fips:latest
+RUN apk add --no-cache openjdk-21 bash git curl
+WORKDIR /logstash
+COPY . .
+CMD ["./gradlew", "test"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin apk versions
+  });
+
+  it('logstash: CentOS-based pattern with yum install', () => {
+    const v = lintContent(`FROM centos:7
+RUN yum install -y java-11-openjdk
+CMD ["logstash"]
+`);
+    expect(v.some(v => v.rule === 'DL3032')).toBe(true);   // yum clean all missing
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+  });
+});
+
+// ── Cross-repo patterns: logging & telemetry ───────────────────────────
+
+describe('OSS scan: logging & telemetry cross-repo patterns', () => {
+  it('digest-pinned multi-FROM CI images (OTel Go pattern)', () => {
+    const v = lintContent(`FROM python:3.13@sha256:abc123 AS linter
+FROM golang:1.23@sha256:def456 AS builder
+FROM node:22@sha256:789abc AS formatter
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);  // All digest-pinned
+    expect(v.some(v => v.rule === 'DL3007')).toBe(false);  // No :latest
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER in any stage
+  });
+
+  it('Java service containers without HEALTHCHECK (Graylog/Logstash pattern)', () => {
+    const v = lintContent(`FROM eclipse-temurin:21-jre-jammy
+RUN apt-get update && apt-get install -y curl tini && rm -rf /var/lib/apt/lists/*
+USER app
+EXPOSE 9000
+ENTRYPOINT ["tini", "--", "/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Pin apt versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+  });
+
+  it('distroless production + debug debian companion (Fluent Bit pattern)', () => {
+    const v = lintContent(`FROM gcr.io/distroless/cc-debian13 AS production
+COPY --from=builder /app /app
+ENTRYPOINT ["/app"]
+
+FROM debian:trixie-slim AS debug
+RUN apt-get update && apt-get install -y gdb strace curl && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app /app
+CMD ["/app"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // Unpinned apt in debug
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER in debug stage
+  });
+
+  it('wolfi/chainguard base with apk (Logstash FIPS pattern)', () => {
+    const v = lintContent(`FROM cgr.dev/chainguard/wolfi-base:latest
+RUN apk add --no-cache bash curl openssl
+USER 1000
+CMD ["/app/start.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // Pin apk versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set
+  });
+
+  it('MySQL/database sidecar containers with ADD (OTel Python pattern)', () => {
+    const v = lintContent(`FROM mysql:8.0
+ENV MYSQL_ROOT_PASSWORD=secret
+ADD init.sql /docker-entrypoint-initdb.d/
+EXPOSE 3306
+CMD ["mysqld"]
+`);
+    expect(v.some(v => v.rule === 'DL3020')).toBe(true);   // Use COPY not ADD
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+  });
+
+  it('CentOS/RHEL build containers with yum (Fluent Bit legacy pattern)', () => {
+    const v = lintContent(`FROM centos:7
+RUN yum -y update && yum install -y gcc make cmake openssl-devel
+WORKDIR /build
+COPY . .
+RUN make -j4
+`);
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);   // Pin yum versions
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // No CMD/ENTRYPOINT
+  });
+
+  it('multi-stage log collector with proper security practices', () => {
+    const v = lintContent(`FROM golang:1.23-alpine AS builder
+RUN apk add --no-cache git=2.43.0-r0 make=4.4.1-r2
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o /collector
+
+FROM gcr.io/distroless/static:nonroot
+COPY --from=builder /collector /collector
+USER 65532:65532
+ENTRYPOINT ["/collector"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(false);  // apk versions pinned
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER set + distroless nonroot
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // ENTRYPOINT present
+  });
+
+  it('Windows build pattern across Fluent Bit and enterprise tools', () => {
+    const v = lintContent(`ARG WINDOWS_VERSION=ltsc2022
+FROM mcr.microsoft.com/windows/servercore:\$WINDOWS_VERSION
+SHELL ["powershell", "-Command"]
+RUN Invoke-WebRequest -Uri "https://example.com/tool.zip" -OutFile tool.zip
+COPY app/ /app/
+ENTRYPOINT ["C:\\\\app\\\\start.exe"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // No USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // No HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4005')).toBe(false);  // ENTRYPOINT present
+  });
+});
