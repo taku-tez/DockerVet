@@ -13215,5 +13215,116 @@
     },
     "notableFindings": "DL3018 apk pinning (36x), DL3008 apt pinning (21x), DL3020 ADD vs COPY (2x) — all legitimate. Heavy PHP extension list in Alpine + Debian variants.",
     "improvements": []
+  },
+  {
+    "repo": "langgenius/dify",
+    "files": 4,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 14,
+      "infos": 18
+    },
+    "notes": "FP found: DV1011 flagged NODESOURCE_KEY_FPR (GPG fingerprint) as AWS secret key. Fixed by excluding pure-hex values and GPG-related var names from AWS pattern."
+  },
+  {
+    "repo": "penpot/penpot",
+    "files": 8,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 1,
+      "warnings": 22,
+      "infos": 78,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DL3004 sudo in gitpod Dockerfile (legitimate). Heavy DV3019 downloaded script without checksum (16x). DL3003 cd instead of WORKDIR."
+  },
+  {
+    "repo": "zulip/zulip",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 3,
+      "warnings": 13,
+      "infos": 9
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY, DL3004 sudo, DV3024 tarball without checksum in puppet_cache Dockerfiles — all legitimate."
+  },
+  {
+    "repo": "matrix-org/dendrite",
+    "files": 7,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 36,
+      "infos": 38
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning (12x), DL3018 apk pinning (10x), DV1006 root (7x). Standard Go Alpine multi-stage builds."
+  },
+  {
+    "repo": "labring/sealos",
+    "files": 44,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 119,
+      "infos": 166
+    },
+    "notes": "Clean scan, no FP. Large Kubernetes platform with many controller/service Dockerfiles. Heavy DV1009 digest pinning. Mostly distroless-based clean images."
+  },
+  {
+    "repo": "rocketchat/Rocket.Chat",
+    "files": 12,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 15,
+      "warnings": 77,
+      "infos": 61
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh (3x), DL3020 ADD (3x), DL3017 apk upgrade (8x), DV3024 tarball without checksum — all legitimate."
+  },
+  {
+    "repo": "jupyter/docker-stacks",
+    "files": 30,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 91,
+      "infos": 43
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (47x), DL3052 unused ARG (28x — used as docker-compose overrides), DL3006 untagged base (26x)."
+  },
+  {
+    "repo": "minio/operator",
+    "files": 8,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 3,
+      "warnings": 39,
+      "infos": 36
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (3x), DL3008 apt pinning (16x), DV1009 digest pinning (10x). Standard Go multi-stage builds."
+  },
+  {
+    "repo": "apache/dubbo",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 1,
+      "warnings": 5,
+      "infos": 7
+    },
+    "notes": "Clean scan, no FP. DV3024 tarball without checksum. Minimal Java-based Dockerfile."
+  },
+  {
+    "repo": "gitpod-io/workspace-images",
+    "files": 26,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 29,
+      "warnings": 46,
+      "infos": 79
+    },
+    "notes": "Clean scan, no FP. DL3004 sudo (16x — workspace images run as gitpod user, sudo needed). DV1003 curl|sh (8x). DV3024 tarball without checksum. All legitimate for dev workspace context."
   }
 ]
