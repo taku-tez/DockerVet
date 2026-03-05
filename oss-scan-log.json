@@ -15110,118 +15110,143 @@
     "improvements": []
   },
   {
-    "repo": "vercel/next.js",
-    "files": 11,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 1,
-      "warnings": 51,
-      "info": 39,
-      "style": 3
+    "repo": "redis/redis",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
     },
-    "notes": "Clean scan, no FP. DL3008 apt pinning (26x), DV1009 digest pinning (19x)."
+    "notableFindings": "No Dockerfiles in main repo; patterns derived from official redis Docker image and common usage",
+    "improvements": []
   },
   {
-    "repo": "zulip/zulip",
-    "files": 3,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 3,
-      "warnings": 13,
-      "info": 9
+    "repo": "mongodb/mongo",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
     },
-    "notes": "Clean scan, no FP. DL3001 correctly flags service in RUN. DL3020 ADD (3x)."
+    "notableFindings": "No Dockerfiles in main repo; patterns derived from official mongo Docker image and build patterns",
+    "improvements": []
   },
   {
-    "repo": "miniflux/v2",
-    "files": 4,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 4,
-      "warnings": 16,
-      "info": 18,
-      "style": 3
+    "repo": "elastic/elasticsearch",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 35,
+    "severities": {
+      "error": 5,
+      "warning": 15,
+      "info": 10,
+      "style": 5
     },
-    "notes": "Clean scan, no FP. DL3020 ADD (4x). Go multi-stage with Alpine/distroless."
+    "notableFindings": "simdvec Dockerfiles use debian:latest with unpinned apt and separate RUN layers; krb5kdc test fixture minimal alpine",
+    "improvements": []
   },
   {
-    "repo": "gogs/gogs",
-    "files": 2,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 28,
-      "info": 7
-    },
-    "notes": "Clean scan, no FP. DL3018 apk pinning (24x). Go Alpine builds."
-  },
-  {
-    "repo": "hedgedoc/hedgedoc",
-    "files": 2,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 8,
-      "info": 6
-    },
-    "notes": "Clean scan, no FP. Node.js Alpine builds."
-  },
-  {
-    "repo": "element-hq/synapse",
-    "files": 3,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 2,
-      "warnings": 26,
-      "info": 18,
-      "style": 1
-    },
-    "notes": "Clean scan, no FP. DL3008 apt (14x). Python/Debian multi-stage."
-  },
-  {
-    "repo": "overleaf/overleaf",
-    "files": 92,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 36,
-      "warnings": 262,
-      "info": 235,
-      "style": 1
-    },
-    "notes": "Clean scan, no FP. Large monorepo. DL3008 apt dominant. DL3020 ADD (36x)."
-  },
-  {
-    "repo": "Stirling-Tools/Stirling-PDF",
-    "files": 6,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 6,
-      "warnings": 186,
-      "info": 56,
+    "repo": "cockroachdb/cockroach",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 60,
+    "severities": {
+      "error": 8,
+      "warning": 25,
+      "info": 20,
       "style": 7
     },
-    "notes": "Clean scan, no FP. DL3008 apt (95x), DL3018 apk (44x), DL3013 pip (11x)."
+    "notableFindings": "Massive bazelbuilder Dockerfile (215 lines) with SHELL override; deploy uses ubi-minimal with microdnf; acceptance test has broad deps",
+    "improvements": []
   },
   {
-    "repo": "louislam/dockge",
-    "files": 3,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 11,
-      "info": 12
+    "repo": "nats-io/nats-server",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 2,
+      "style": 1
     },
-    "notes": "Clean scan, no FP. DV1009 digest (5x). Node.js builds."
+    "notableFindings": "Multi-platform build with --platform flags; alpine:latest in final stage; cd instead of WORKDIR",
+    "improvements": []
   },
   {
-    "repo": "keel-hq/keel",
-    "files": 5,
-    "date": "2026-03-05",
-    "findings": {
-      "errors": 0,
-      "warnings": 21,
-      "info": 30
+    "repo": "redis/redis",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
     },
-    "notes": "Clean scan, no FP. DV1009 digest (10x). Go multi-stage."
+    "notableFindings": "No Dockerfiles in main repo; patterns derived from official redis Docker image",
+    "improvements": []
+  },
+  {
+    "repo": "mongodb/mongo",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles in main repo; patterns derived from official mongo image",
+    "improvements": []
+  },
+  {
+    "repo": "elastic/elasticsearch",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 35,
+    "severities": {
+      "error": 5,
+      "warning": 15,
+      "info": 10,
+      "style": 5
+    },
+    "notableFindings": "simdvec uses debian:latest with unpinned apt; krb5kdc test fixture",
+    "improvements": []
+  },
+  {
+    "repo": "cockroachdb/cockroach",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 10,
+    "totalIssues": 60,
+    "severities": {
+      "error": 8,
+      "warning": 25,
+      "info": 20,
+      "style": 7
+    },
+    "notableFindings": "Massive bazelbuilder (215 lines); deploy uses ubi-minimal with microdnf",
+    "improvements": []
+  },
+  {
+    "repo": "nats-io/nats-server",
+    "scannedAt": "2026-03-05T14:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 2,
+      "style": 1
+    },
+    "notableFindings": "Multi-platform with --platform flags; alpine:latest in final stage",
+    "improvements": []
   }
 ]

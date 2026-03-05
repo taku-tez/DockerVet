@@ -2296,3 +2296,477 @@ CMD ["/opt/kafka/run"]
     expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget usage
   });
 });
+
+// ── redis/redis patterns ───────────────────────────────────────────────
+
+describe('OSS: redis/redis patterns', () => {
+  it('official redis image: build from source with gosu', () => {
+    const v = lintContent(`FROM debian:bookworm-slim
+RUN groupadd -r -g 999 redis && useradd -r -g redis -u 999 redis
+RUN set -eux; savedAptMark="$(apt-mark showmanual)"; apt-get update; apt-get install -y --no-install-recommends ca-certificates wget gnupg dirmngr; rm -rf /var/lib/apt/lists/*; wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/1.17/gosu-amd64"; chmod +x /usr/local/bin/gosu; gosu nobody true
+ENV REDIS_VERSION 7.2.4
+RUN set -eux; apt-get update; apt-get install -y --no-install-recommends ca-certificates wget gcc libc6-dev make; wget -O redis.tar.gz "https://download.redis.io/releases/redis-$REDIS_VERSION.tar.gz"; mkdir -p /usr/src/redis; tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1; rm redis.tar.gz; make -C /usr/src/redis -j; make -C /usr/src/redis install; rm -r /usr/src/redis; apt-get purge -y --auto-remove gcc libc6-dev make; rm -rf /var/lib/apt/lists/*
+RUN mkdir /data && chown redis:redis /data
+VOLUME /data
+WORKDIR /data
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
+EXPOSE 6379
+CMD ["redis-server"]
+USER redis
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // no multi-stage
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // missing .dockerignore hint
+  });
+
+  it('redis sentinel pattern: config-only with USER', () => {
+    const v = lintContent(`FROM redis:7.2-alpine
+COPY sentinel.conf /etc/redis/sentinel.conf
+USER redis
+EXPOSE 26379
+CMD ["redis-sentinel", "/etc/redis/sentinel.conf"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is present
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('redis test harness: multi-stage with build deps', () => {
+    const v = lintContent(`FROM debian:bookworm AS builder
+RUN apt-get update && apt-get install -y gcc make libc6-dev
+COPY . /src
+WORKDIR /src
+RUN make -j$(nproc)
+
+FROM debian:bookworm-slim
+COPY --from=builder /src/src/redis-server /usr/local/bin/
+COPY --from=builder /src/src/redis-cli /usr/local/bin/
+USER nobody
+EXPOSE 6379
+CMD ["redis-server"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER nobody set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('redis cluster setup: multiple EXPOSE, no HEALTHCHECK', () => {
+    const v = lintContent(`FROM redis:7.2-alpine
+COPY redis.conf /usr/local/etc/redis/redis.conf
+EXPOSE 6379 16379
+HEALTHCHECK --interval=30s CMD redis-cli ping
+CMD ["redis-server", "/usr/local/etc/redis/redis.conf", "--cluster-enabled", "yes"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(false);  // HEALTHCHECK present
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+});
+
+// ── mongodb/mongo patterns ─────────────────────────────────────────────
+
+describe('OSS: mongodb/mongo patterns', () => {
+  it('mongo build from source: heavy build deps, no USER', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y python3 python3-pip gcc g++ libssl-dev curl git
+RUN pip3 install pymongo
+COPY . /src
+WORKDIR /src
+RUN python3 buildscripts/scons.py install-mongod
+EXPOSE 27017
+CMD ["mongod"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);   // unpinned pip
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // no multi-stage
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('mongos router: minimal config-only image', () => {
+    const v = lintContent(`FROM mongo:7.0
+COPY mongos.conf /etc/mongos.conf
+EXPOSE 27017
+CMD ["mongos", "--config", "/etc/mongos.conf"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('mongo replicaset init: shell entrypoint', () => {
+    const v = lintContent(`FROM mongo:7.0
+COPY init-replica.sh /docker-entrypoint-initdb.d/
+COPY mongod.conf /etc/mongod.conf
+RUN chmod +x /docker-entrypoint-initdb.d/init-replica.sh
+HEALTHCHECK --interval=10s CMD mongosh --eval "db.runCommand('ping').ok" || exit 1
+EXPOSE 27017
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('mongo backup image: multi-stage with mongodump', () => {
+    const v = lintContent(`FROM golang:1.22 AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /backup-agent
+
+FROM alpine:3.20
+RUN apk add --no-cache mongodb-tools
+COPY --from=builder /backup-agent /usr/local/bin/
+USER nobody
+ENTRYPOINT ["/usr/local/bin/backup-agent"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR in final
+  });
+
+  it('mongo test container: ADD with URL, broad COPY', () => {
+    const v = lintContent(`FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y wget curl python3
+ADD https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-7.0.0.tgz /tmp/
+RUN tar xzf /tmp/mongodb-linux-x86_64-ubuntu2004-7.0.0.tgz -C /opt
+ENV PATH=/opt/mongodb-linux-x86_64-ubuntu2004-7.0.0/bin:$PATH
+COPY . /tests
+CMD ["python3", "/tests/run_tests.py"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // ADD with URL
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV3020')).toBe(true);   // wget in apt install
+  });
+});
+
+// ── elastic/elasticsearch patterns ─────────────────────────────────────
+
+describe('OSS: elastic/elasticsearch patterns', () => {
+  it('simdvec native build: debian:latest, unpinned apt, separate RUNs', () => {
+    const v = lintContent(`FROM debian:latest
+RUN apt-get update
+RUN apt-get install -y gcc g++ openjdk-21-jdk
+COPY . /workspace
+WORKDIR /workspace
+RUN ./gradlew --quiet --console=plain clean buildSharedLibrary
+RUN strip --strip-unneeded build/output/libvec.so
+CMD ["cat", "build/output/libvec.so"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);   // apt-get update separate
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // no multi-stage
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('krb5kdc test fixture: alpine pinned, apk -y flag on addless apk', () => {
+    const v = lintContent(`FROM alpine:3.21.0
+ADD src/main/resources /fixture
+RUN apk update && apk add -y --no-cache python3 krb5 krb5-server
+RUN echo kerberos.build.elastic.co > /etc/hostname
+RUN sh /fixture/provision/installkdc.sh
+EXPOSE 88
+EXPOSE 88/udp
+CMD ["sleep", "infinity"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('elasticsearch main Dockerfile: multi-stage with ARG, USER 1000', () => {
+    const v = lintContent(`FROM ubuntu:22.04 AS builder
+RUN apt-get update && apt-get install -y curl
+ARG ES_VERSION=8.12.0
+RUN curl -fsSL https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION-linux-x86_64.tar.gz -o es.tar.gz
+RUN tar xzf es.tar.gz
+
+FROM ubuntu:22.04
+COPY --from=builder /elasticsearch-$ES_VERSION /usr/share/elasticsearch
+WORKDIR /usr/share/elasticsearch
+RUN groupadd -g 1000 elasticsearch && useradd -u 1000 -g elasticsearch elasticsearch
+RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
+EXPOSE 9200 9300
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["eswrapper"]
+USER 1000:0
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER present
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('elasticsearch ironbank variant: labels, tini entrypoint', () => {
+    const v = lintContent(`FROM redhat/ubi9:9.3 AS builder
+RUN dnf install -y tar gzip shadow-utils
+COPY elasticsearch.tar.gz /opt/
+RUN tar xzf /opt/elasticsearch.tar.gz -C /opt
+
+FROM redhat/ubi9-minimal:9.3
+COPY --from=builder /opt/elasticsearch /usr/share/elasticsearch
+RUN microdnf install -y findutils shadow-utils && microdnf clean all
+RUN groupadd -g 1000 elasticsearch && useradd -u 1000 -g elasticsearch -d /usr/share/elasticsearch elasticsearch
+LABEL name="Elasticsearch" vendor="Elastic" version="8.12.0"
+EXPOSE 9200 9300
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
+CMD ["eswrapper"]
+USER 1000:0
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER 1000:0
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+});
+
+// ── cockroachdb/cockroach patterns ─────────────────────────────────────
+
+describe('OSS: cockroachdb/cockroach patterns', () => {
+  it('deploy image: ubi-minimal, microdnf, no USER', () => {
+    const v = lintContent(`FROM registry.access.redhat.com/ubi10/ubi-minimal
+RUN microdnf update -y && microdnf install -y ca-certificates tzdata hostname tar gzip xz && rm -rf /var/cache/yum
+RUN mkdir /usr/local/lib/cockroach /cockroach /licenses /docker-entrypoint-initdb.d
+COPY cockroach.sh cockroach /cockroach/
+COPY LICENSE THIRD-PARTY-NOTICES.txt /licenses/
+COPY libgeos.so libgeos_c.so /usr/local/lib/cockroach/
+WORKDIR /cockroach/
+ENV PATH=/cockroach:$PATH
+ENV COCKROACH_CHANNEL=official-docker
+EXPOSE 26257 8080
+ENTRYPOINT ["/cockroach/cockroach.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);   // untagged base
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('bazelbuilder: massive build image with SHELL override', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM ubuntu:noble AS fetch
+ARG TARGETPLATFORM
+SHELL ["/usr/bin/bash", "-c"]
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl gnupg2
+
+FROM ubuntu:noble
+ARG TARGETPLATFORM
+SHELL ["/usr/bin/bash", "-c"]
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends autoconf bison ca-certificates clang-20 cmake curl flex g++ git gnupg2 libncurses-dev make netbase openjdk-8-jre openssh-client patch python-is-python3 python3 unzip zip
+RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v3.20.3/cmake-3.20.3-linux-x86_64.tar.gz" -o cmake.tar.gz && tar --strip-components=1 -C /usr -xzf cmake.tar.gz && rm cmake.tar.gz
+ENTRYPOINT ["autouseradd", "--user", "roach", "--no-create-home"]
+CMD ["/usr/bin/bash"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('kdc test fixture: alpine, apk, no USER', () => {
+    const v = lintContent(`FROM alpine:3.14
+RUN apk add --no-cache krb5-server && rm -rf /var/cache/apk/*
+COPY krb5.conf /etc/krb5.conf
+RUN kdb5_util create -s -P kpass && kadmin.local -q "addprinc -pw psql tester@MY.EX"
+EXPOSE 88
+EXPOSE 88/udp
+CMD ["/start.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('acceptance test: ubuntu:18.04, broad COPY, complex deps', () => {
+    const v = lintContent(`FROM ubuntu:18.04
+ARG TARGETPLATFORM
+RUN apt-get update && apt-get install --yes --no-install-recommends ca-certificates curl
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg > /etc/apt/trusted.gpg.d/yarn.asc
+RUN apt-get update && apt-get install --yes --no-install-recommends make maven nodejs gcc golang php-cli php-pgsql python python-psycopg2 ruby ruby-pg yarn python3-dev python3-pip python3-setuptools
+RUN pip3 install --upgrade pip && pip3 install psycopg
+COPY . /testdata
+CMD ["/bin/bash"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);   // unpinned pip
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // no multi-stage
+  });
+
+  it('roachprod: multi-stage with ARG BAZEL_IMAGE, git clone', () => {
+    const v = lintContent(`ARG BAZEL_IMAGE
+FROM $BAZEL_IMAGE AS builder
+ARG OWNER
+ARG REPO
+ARG SHA
+RUN git clone https://github.com/$OWNER/$REPO /build
+WORKDIR /build
+RUN git checkout $SHA
+RUN bazel build --config=crosslinux //pkg/cmd/roachprod:roachprod
+RUN cp $(bazel info bazel-bin --config=crosslinux)/pkg/cmd/roachprod/roachprod_/roachprod ./
+
+FROM golang:1.25
+COPY entrypoint.sh build.sh /build/
+RUN ["/build/build.sh"]
+COPY --from=builder /build/roachprod /usr/local/bin/roachprod
+ENTRYPOINT ["/build/entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('cypress e2e: single RUN with pnpm install', () => {
+    const v = lintContent(`FROM cypress/browsers:node-22.11.0-chrome-130.0.6723.69-1-ff-132.0-edge-130.0.2849.56-1
+RUN curl -fsSL https://get.pnpm.io/install.sh | env SHELL=bash PNPM_HOME=/usr/local/bin PNPM_VERSION=9.15.5 sh -
+RUN pnpm --version
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // missing .dockerignore hint
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+});
+
+// ── nats-io/nats-server patterns ───────────────────────────────────────
+
+describe('OSS: nats-io/nats-server patterns', () => {
+  it('nightly build: multi-stage, --platform, alpine:latest', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+ARG VERSION="nightly"
+ARG GIT_COMMIT
+ARG TARGETOS
+ARG TARGETARCH
+ENV GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on CGO_ENABLED=0
+RUN apk add --no-cache ca-certificates
+RUN update-ca-certificates
+WORKDIR /src
+COPY ./nats-server/ /src/nats-server/
+RUN cd /src/nats-server && go build -trimpath -o /src/out/$TARGETOS/$TARGETARCH/nats-server .
+
+FROM --platform=$TARGETPLATFORM alpine:latest
+ARG TARGETOS
+ARG TARGETARCH
+COPY ./nats-server/docker/nats-server.conf /nats/conf/nats-server.conf
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /src/out/$TARGETOS/$TARGETARCH/nats-server /bin/nats-server
+EXPOSE 4222 8222 6222 5222
+ENTRYPOINT ["/bin/nats-server"]
+CMD ["-c", "/nats/conf/nats-server.conf"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // alpine:latest
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning in final stage
+    expect(v.some(v => v.rule === 'DL3003')).toBe(true);   // cd instead of WORKDIR
+  });
+
+  it('nats scratch image: minimal binary-only', () => {
+    const v = lintContent(`FROM scratch
+COPY nats-server /nats-server
+EXPOSE 4222 8222 6222
+ENTRYPOINT ["/nats-server"]
+CMD ["--config", "/nats-server.conf"]
+`);
+    // scratch images produce no violations for USER/HEALTHCHECK in current rules
+    expect(v.length).toBe(0);
+  });
+
+  it('nats with healthcheck: proper production setup', () => {
+    const v = lintContent(`FROM alpine:3.20
+RUN apk add --no-cache ca-certificates curl
+COPY nats-server /usr/local/bin/
+RUN adduser -D -u 1000 nats
+USER nats
+EXPOSE 4222 8222
+HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:8222/healthz || exit 1
+ENTRYPOINT ["nats-server"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // .dockerignore hint
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('nats cluster config: env-heavy, multiple ports', () => {
+    const v = lintContent(`FROM nats:2.10-alpine
+ENV NATS_CLUSTER_PORT=6222
+ENV NATS_ROUTES="nats://nats-1:6222,nats://nats-2:6222"
+COPY nats-cluster.conf /etc/nats/nats-cluster.conf
+EXPOSE 4222 6222 8222
+CMD ["nats-server", "-c", "/etc/nats/nats-cluster.conf"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+});
+
+// ── Cross-repo patterns: redis/mongo/elasticsearch/cockroach/nats ─────
+
+describe('OSS scan: DB/messaging cross-repo patterns', () => {
+  it('microdnf usage (cockroachdb, elasticsearch): custom package manager', () => {
+    const v = lintContent(`FROM registry.access.redhat.com/ubi9-minimal:9.3
+RUN microdnf install -y shadow-utils tar gzip && microdnf clean all
+RUN groupadd -g 1000 app && useradd -u 1000 -g app app
+COPY app /usr/local/bin/app
+USER app
+ENTRYPOINT ["/usr/local/bin/app"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER present
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('source build pattern (redis, mongo): compile from tarball', () => {
+    const v = lintContent(`FROM debian:bookworm AS builder
+RUN apt-get update && apt-get install -y gcc make libc6-dev libssl-dev
+ARG VERSION=7.2.4
+ADD https://example.com/app-$VERSION.tar.gz /tmp/
+RUN tar xzf /tmp/app-$VERSION.tar.gz -C /usr/src && make -C /usr/src/app -j && make -C /usr/src/app install
+
+FROM debian:bookworm-slim
+COPY --from=builder /usr/local/bin/app-server /usr/local/bin/
+USER nobody
+EXPOSE 6379
+CMD ["app-server"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR in final
+  });
+
+  it('multi-platform build (nats, cockroach): BUILDPLATFORM + TARGETPLATFORM', () => {
+    const v = lintContent(`FROM --platform=$BUILDPLATFORM golang:1.22 AS builder
+ARG TARGETOS TARGETARCH
+ENV GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0
+WORKDIR /src
+COPY . .
+RUN go build -o /app
+
+FROM --platform=$TARGETPLATFORM gcr.io/distroless/static:nonroot
+COPY --from=builder /app /app
+USER nonroot:nonroot
+ENTRYPOINT ["/app"]
+`);
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY .
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // .dockerignore hint
+  });
+
+  it('database port exposure pattern: standard DB ports', () => {
+    const v = lintContent(`FROM alpine:3.20
+RUN apk add --no-cache postgresql-client redis mongodb-tools
+EXPOSE 5432 6379 27017 9200 26257
+CMD ["sleep", "infinity"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // apk pinning
+  });
+
+  it('grafana integration (cockroachdb): grafana/grafana:master, env-heavy', () => {
+    const v = lintContent(`FROM grafana/grafana:master
+ENV GF_INSTALL_PLUGINS grafana-clock-panel,briangann-gauge-panel
+ENV GF_SECURITY_ADMIN_PASSWORD x
+ENV GF_USERS_ALLOW_SIGN_UP false
+ENV GF_DASHBOARDS_JSON_ENABLED true
+COPY postgres.yml /etc/grafana/provisioning/datasources/postgres.yml
+COPY dashboards.yml /etc/grafana/provisioning/dashboards/dashboards.yml
+`);
+    expect(v.some(v => v.rule === 'DV1001')).toBe(true);   // password in ENV
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);   // .dockerignore hint
+  });
+});
