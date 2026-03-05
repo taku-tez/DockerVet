@@ -1101,6 +1101,454 @@ RUN make install
   });
 });
 
+// ── argoproj/argo-cd patterns ──────────────────────────────────────────
+
+describe('OSS: argoproj/argo-cd patterns', () => {
+  it('main Dockerfile: multi-stage with unpinned apt, dist-upgrade, DEBIAN_FRONTEND as ENV', () => {
+    const v = lintContent(`FROM docker.io/library/golang:1.26.0@sha256:abc123 AS builder
+WORKDIR /tmp
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    openssh-server nginx unzip fcgiwrap git make wget gcc sudo zip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+FROM docker.io/library/ubuntu:25.10@sha256:def456
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get dist-upgrade -y && apt-get install -y git tini ca-certificates gpg
+COPY --from=builder /tmp/argocd /usr/local/bin/argocd
+ENTRYPOINT ["argocd"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3005')).toBe(true);   // dist-upgrade
+    expect(v.some(v => v.rule === 'DV4007')).toBe(true);   // DEBIAN_FRONTEND as ENV
+    expect(v.some(v => v.rule === 'DV2002')).toBe(true);   // dist-upgrade warning
+  });
+
+  it('Dockerfile.dev: FROM internal stage alias without tag triggers DL3006', () => {
+    const v = lintContent(`FROM argocd-base
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3006')).toBe(true);
+    expect(v.some(v => v.rule === 'DV1009')).toBe(true);
+  });
+
+  it('Dockerfile.tilt: single-stage Go build, no USER, no apt cleanup', () => {
+    const v = lintContent(`FROM docker.io/library/golang:1.26.0
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update
+RUN apt-get install -y curl openssh-server nginx
+RUN make build
+COPY argocd-server /usr/local/bin/
+`);
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+    expect(v.some(v => v.rule === 'DL3009')).toBe(true);   // apt lists not deleted
+  });
+
+  it('gitops-engine Dockerfile: COPY . broad context, no CMD/ENTRYPOINT', () => {
+    const v = lintContent(`FROM golang:1.22 AS builder
+WORKDIR /src
+COPY go.mod /src/go.mod
+COPY go.sum /src/go.sum
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /dist/gitops ./agent
+
+FROM alpine/git:v2.45.2
+COPY --from=builder /dist/gitops /usr/local/bin/gitops
+`);
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);   // COPY . broad context
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // no CMD/ENTRYPOINT in final stage
+  });
+
+  it('test/e2e Dockerfile: CMD with double quotes triggers DL3025', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y git ssh
+CMD "start.sh"
+`);
+    expect(v.some(v => v.rule === 'DL3025')).toBe(true);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('ui-test Dockerfile: npm install with sudo, ADD for URL', () => {
+    const v = lintContent(`FROM node:20
+ADD https://example.com/test-runner.tar.gz /tmp/
+RUN npm install -g yarn
+RUN yarn install
+COPY . /app
+CMD ["yarn", "test"]
+`);
+    expect(v.some(v => v.rule === 'DV3023')).toBe(false);  // no ARG in URL
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+});
+
+// ── fluxcd/flux2 patterns ──────────────────────────────────────────────
+
+describe('OSS: fluxcd/flux2 patterns', () => {
+  it('main Dockerfile: multi-stage alpine, unpinned apk, curl download without checksum', () => {
+    const v = lintContent(`FROM alpine:3.23 AS builder
+RUN apk add --no-cache ca-certificates curl
+ARG ARCH=linux/amd64
+ARG KUBECTL_VER=1.35.0
+RUN curl -sL https://dl.k8s.io/release/v\${KUBECTL_VER}/bin/\${ARCH}/kubectl \
+    -o /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl
+
+FROM alpine:3.23 AS flux-cli
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/
+COPY --chmod=755 flux /usr/local/bin/
+USER 65534:65534
+ENTRYPOINT [ "flux" ]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV3019')).toBe(true);   // download without checksum
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('flux2: unquoted ARG in download URL triggers DV3023', () => {
+    const v = lintContent(`FROM alpine:3.23
+ARG ARCH=linux/amd64
+RUN curl -sL https://example.com/bin/$ARCH/tool -o /usr/local/bin/tool
+`);
+    expect(v.some(v => v.rule === 'DV3023')).toBe(true);
+  });
+
+  it('flux2: proper USER 65534 does not trigger DV1006', () => {
+    const v = lintContent(`FROM alpine:3.23
+RUN apk add --no-cache ca-certificates
+COPY flux /usr/local/bin/
+USER 65534:65534
+ENTRYPOINT ["flux"]
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);
+  });
+});
+
+// ── jaegertracing/jaeger patterns ──────────────────────────────────────
+
+describe('OSS: jaegertracing/jaeger patterns', () => {
+  it('cmd/jaeger Dockerfile: ARG base_image, multiple EXPOSE, proper USER', () => {
+    const v = lintContent(`ARG base_image
+FROM $base_image AS release
+ARG TARGETARCH
+ARG USER_UID=10001
+ENV JAEGER_LISTEN_HOST=0.0.0.0
+EXPOSE 4317
+EXPOSE 4318
+EXPOSE 16686
+COPY jaeger-linux-$TARGETARCH /cmd/jaeger/jaeger-linux
+VOLUME ["/tmp"]
+ENTRYPOINT ["/cmd/jaeger/jaeger-linux"]
+USER \${USER_UID}
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+    expect(v.some(v => v.rule === 'DV3010')).toBe(true);   // ENV with listen address
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('hotrod example: multi-stage with pinned digest, scratch final', () => {
+    const v = lintContent(`FROM alpine:3.23.0@sha256:abc123 AS cert
+RUN apk add --update --no-cache ca-certificates
+
+FROM scratch
+ARG TARGETARCH
+EXPOSE 8080 8081 8082 8083
+COPY --from=cert /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY hotrod-linux-$TARGETARCH /go/bin/hotrod-linux
+ENTRYPOINT ["/go/bin/hotrod-linux"]
+CMD ["all"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk (--update --no-cache but no version)
+    expect(v.some(v => v.rule === 'DL3006')).toBe(false);  // digest-pinned
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // scratch is acceptable
+  });
+
+  it('base Dockerfile: alpine multi-stage, no CMD/ENTRYPOINT in final', () => {
+    const v = lintContent(`FROM alpine:3.23.3@sha256:abc123 AS cert
+RUN apk add --update --no-cache ca-certificates mailcap
+
+FROM alpine:3.23.3@sha256:abc123
+COPY --from=cert /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=cert /etc/mime.types /etc/mime.types
+`);
+    expect(v.some(v => v.rule === 'DV4005')).toBe(true);   // no CMD/ENTRYPOINT
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+  });
+
+  it('es-index-cleaner/es-rollover: minimal scratch images (no violations)', () => {
+    const v = lintContent(`FROM scratch
+ARG TARGETARCH
+COPY es-index-cleaner-linux-$TARGETARCH /go/bin/es-index-cleaner-linux
+EXPOSE 8080
+ENTRYPOINT ["/go/bin/es-index-cleaner-linux"]
+`);
+    // scratch images are minimal — no apt/apk, no USER needed
+    expect(v.length).toBe(0);
+  });
+
+  it('remote-storage: VOLUME with missing HEALTHCHECK and no USER', () => {
+    const v = lintContent(`ARG base_image
+FROM $base_image
+VOLUME ["/data"]
+COPY config.yaml /etc/config.yaml
+ENTRYPOINT ["/bin/remote-storage"]
+`);
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+});
+
+// ── open-telemetry/opentelemetry-collector-contrib patterns ────────────
+
+describe('OSS: open-telemetry/opentelemetry-collector-contrib patterns', () => {
+  it('otelcontribcol: multi-stage with scratch final, USER set, apk unpinned', () => {
+    const v = lintContent(`FROM alpine:latest@sha256:abc123 AS prep
+RUN apk --update add ca-certificates
+
+FROM scratch
+ARG USER_UID=10001
+ARG USER_GID=10001
+USER \${USER_UID}:\${USER_GID}
+COPY --from=prep /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY otelcontribcol /
+EXPOSE 4317 55680 55679
+ENTRYPOINT ["/otelcontribcol"]
+CMD ["--config", "/etc/otel/config.yaml"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DL3019')).toBe(true);   // apk --update without --no-cache
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+  });
+
+  it('golden cmd: alpine with apk add and no version pin', () => {
+    const v = lintContent(`FROM alpine:latest@sha256:abc123
+RUN apk --update add ca-certificates
+COPY golden /
+ENTRYPOINT ["/golden"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);
+    expect(v.some(v => v.rule === 'DL3019')).toBe(true);
+  });
+
+  it('mongodb receiver test: COPY script with chmod, no USER', () => {
+    const v = lintContent(`FROM mongo:4.0
+COPY scripts/setup.sh /setup.sh
+RUN chmod +x /setup.sh
+EXPOSE 27017
+`);
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV3021')).toBe(true);   // chmod on COPY (use --chmod)
+    expect(v.some(v => v.rule === 'DV4003')).toBe(true);   // no WORKDIR
+  });
+
+  it('redis cluster test: apt install with pipe, no cleanup', () => {
+    const v = lintContent(`FROM debian:bullseye
+RUN apt-get update && apt-get install -y redis-server ruby
+RUN gem install redis
+RUN chmod +x /setup.sh
+COPY setup.sh /setup.sh
+EXPOSE 6379
+CMD ["/setup.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);   // apt cache not cleaned
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('simpleprometheus example: double-quote CMD, COPY . broad context', () => {
+    const v = lintContent(`FROM golang:1.21 AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o /counter
+
+FROM scratch
+COPY --from=builder /counter /counter
+CMD "/counter"
+`);
+    expect(v.some(v => v.rule === 'DL3025')).toBe(true);   // CMD double-quoted string
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);   // COPY . broad context
+    expect(v.some(v => v.rule === 'DV1005')).toBe(true);   // broad COPY without .dockerignore
+  });
+
+  it('journald receiver: apt without recommends flag, wget usage', () => {
+    const v = lintContent(`FROM debian:bullseye
+RUN apt-get update && apt-get install -y systemd journalctl wget
+RUN wget https://example.com/otel-collector -O /usr/local/bin/otelcol
+ENTRYPOINT ["/usr/local/bin/otelcol"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);   // --no-install-recommends missing
+    expect(v.some(v => v.rule === 'DL3047')).toBe(true);   // wget usage (use curl/ADD)
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);
+  });
+
+  it('snmp agent test: DL3013 pip without version, DL3042 --no-cache-dir', () => {
+    const v = lintContent(`FROM python:3.11-slim
+RUN pip install pysnmp
+COPY snmp_agent.py /
+CMD ["python", "/snmp_agent.py"]
+`);
+    expect(v.some(v => v.rule === 'DL3013')).toBe(true);   // pip without version
+    expect(v.some(v => v.rule === 'DL3042')).toBe(true);   // pip --no-cache-dir
+  });
+});
+
+// ── grafana/grafana patterns ───────────────────────────────────────────
+
+describe('OSS: grafana/grafana patterns', () => {
+  it('main Dockerfile: complex multi-stage, alpine + node + golang', () => {
+    const v = lintContent(`FROM alpine:3.23.3 AS alpine-base
+FROM golang:1.25.7-alpine AS go-builder-base
+FROM node:24-alpine AS js-builder-base
+
+FROM js-builder-base AS js-builder
+WORKDIR /tmp/grafana
+RUN apk add --no-cache make build-base python3
+COPY package.json yarn.lock ./
+COPY packages packages
+RUN yarn install --immutable
+
+FROM go-builder-base AS go-builder
+WORKDIR /tmp/grafana
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN make build
+
+FROM alpine-base
+RUN apk add --no-cache ca-certificates tzdata musl
+COPY --from=go-builder /tmp/grafana/bin/grafana /usr/share/grafana/bin/
+COPY --from=js-builder /tmp/grafana/public /usr/share/grafana/public/
+EXPOSE 3000
+USER 472
+ENTRYPOINT ["/usr/share/grafana/bin/grafana"]
+`);
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DV1006')).toBe(false);  // USER is set
+  });
+
+  it('devenv smtp: centos with yum, no version pin', () => {
+    const v = lintContent(`FROM centos:centos7
+LABEL maintainer="test@example.com"
+RUN yum update -y && yum install -y net-snmp net-snmp-utils && yum clean all
+COPY bootstrap.sh /tmp/bootstrap.sh
+EXPOSE 161
+ENTRYPOINT ["/tmp/bootstrap.sh"]
+`);
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);   // unpinned yum
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('devenv debtest: DL3015 --no-install-recommends missing, apt lists not deleted', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y wget adduser libfontconfig1
+COPY grafana.deb /tmp/
+RUN dpkg -i /tmp/grafana.deb
+CMD ["grafana-server"]
+`);
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);   // --no-install-recommends
+    expect(v.some(v => v.rule === 'DV1007')).toBe(true);   // apt cache not cleaned
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);
+  });
+
+  it('devenv buildcontainer: centos with yum, single-stage build, COPY .', () => {
+    const v = lintContent(`FROM centos:7
+RUN yum install -y gcc gcc-c++ make git rpm-build
+RUN yum install -y epel-release
+WORKDIR /build
+COPY . .
+RUN make rpm
+`);
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);   // unpinned yum
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DV1004')).toBe(true);   // single-stage with build tools
+    expect(v.some(v => v.rule === 'DV1008')).toBe(true);   // COPY . broad context
+  });
+
+  it('packaging/docker/custom: :latest tag, ARG after ENV, VOLUME before COPY', () => {
+    const v = lintContent(`FROM grafana/grafana:latest
+ENV GF_INSTALL_PLUGINS=""
+ARG GF_UID="472"
+COPY custom.ini /etc/grafana/custom.ini
+CMD ["grafana-server"]
+`);
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DV4004')).toBe(true);   // ARG after ENV
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('devenv prometheus block: ADD with URL (DV3020), :latest tag (DL3007)', () => {
+    const v = lintContent(`FROM prom/prometheus:latest
+ADD https://example.com/prometheus.yml /etc/prometheus/prometheus.yml
+CMD ["--config.file=/etc/prometheus/prometheus.yml"]
+`);
+    expect(v.some(v => v.rule === 'DV3020')).toBe(true);   // ADD for URL
+    expect(v.some(v => v.rule === 'DL3007')).toBe(true);   // :latest tag
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('frontend-service proxy: alpine with consecutive RUN, unpinned apk', () => {
+    const v = lintContent(`FROM nginx:alpine
+RUN apk add --no-cache openssl
+RUN mkdir -p /etc/nginx/ssl
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=localhost" -keyout /etc/nginx/ssl/key.pem -out /etc/nginx/ssl/cert.pem
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 443
+CMD ["nginx", "-g", "daemon off;"]
+`);
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+    expect(v.some(v => v.rule === 'DL3018')).toBe(true);   // unpinned apk
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+  });
+
+  it('ha-test: ADD URL (DV3020) + no USER with grafana image', () => {
+    const v = lintContent(`FROM grafana/grafana:10.0.0
+ADD https://example.com/provisioning.tar.gz /etc/grafana/
+COPY datasources.yaml /etc/grafana/provisioning/datasources/
+ENTRYPOINT ["/run.sh"]
+`);
+    expect(v.some(v => v.rule === 'DV3020')).toBe(true);   // ADD with URL
+    expect(v.some(v => v.rule === 'DL3057')).toBe(true);   // no HEALTHCHECK
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);   // no USER
+  });
+
+  it('verify-repo-update deb: DL3015 --no-install-recommends missing, consecutive RUN', () => {
+    const v = lintContent(`FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+RUN wget -q -O /tmp/grafana.deb https://example.com/grafana.deb
+RUN dpkg -i /tmp/grafana.deb || apt-get install -f -y
+`);
+    expect(v.some(v => v.rule === 'DL3015')).toBe(true);   // --no-install-recommends missing
+    expect(v.some(v => v.rule === 'DL3008')).toBe(true);   // unpinned apt
+    expect(v.some(v => v.rule === 'DV1006')).toBe(true);
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);   // consecutive RUN
+  });
+
+  it('verify-repo-update rpm: yum install without version pin', () => {
+    const v = lintContent(`FROM centos:7
+RUN yum install -y yum-utils
+RUN yum-config-manager --add-repo https://example.com/grafana.repo
+RUN yum install -y grafana
+CMD ["grafana-server"]
+`);
+    expect(v.some(v => v.rule === 'DL3033')).toBe(true);
+    expect(v.some(v => v.rule === 'DV4002')).toBe(true);
+  });
+});
+
+// ── open-telemetry/opentelemetry-collector note ────────────────────────
+// open-telemetry/opentelemetry-collector has no Dockerfiles (uses contrib repo).
+// Tests above cover opentelemetry-collector-contrib patterns.
+
 // ── helm/helm note ─────────────────────────────────────────────────────
 // helm/helm has no Dockerfiles in the repository (binary distributed via GitHub releases).
 // Tests for Helm-like patterns (Go binary distribution without Docker) are not applicable.
