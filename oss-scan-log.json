@@ -12815,5 +12815,125 @@
     },
     "notableFindings": "No Dockerfiles in main repo; patterns derived from official redis Docker image",
     "improvements": []
+  },
+  {
+    "repo": "vercel/next.js",
+    "files": 11,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 1,
+      "warnings": 51,
+      "infos": 39,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh in CI action Dockerfile. DL3008 apt pinning. Standard Next.js dev tooling."
+  },
+  {
+    "repo": "denoland/deno",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 1,
+      "warnings": 3,
+      "infos": 5,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh for Deno install — legitimate. Single Dockerfile with standard DL3008/DV2004."
+  },
+  {
+    "repo": "TryGhost/Ghost",
+    "files": 5,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 16,
+      "infos": 14,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DV1008 COPY . in devcontainer. DL3018 apk pinning across multiple dev/test Dockerfiles."
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "files": 5,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 2,
+      "warnings": 37,
+      "infos": 33,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD in CI Dockerfiles. DV4007 DEBIAN_FRONTEND as ENV. DL3008 apt pinning heavy."
+  },
+  {
+    "repo": "gogs/gogs",
+    "files": 2,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 28,
+      "infos": 7,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DV3009 correctly flags EXPOSE 22 (SSH). DL3018 heavy apk pinning (24x). DV1008 COPY . legitimate."
+  },
+  {
+    "repo": "mailcow/mailcow-dockerized",
+    "files": 15,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 5,
+      "warnings": 314,
+      "infos": 60,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. 15 service Dockerfiles (acme, backup, clamd, dockerapi, dovecot, netfilter, nginx, olefy, phpfpm, etc). DL3017/DV2010 apk upgrade (3x). Heavy DL3018 apk pinning. DV3024 tar without checksum in clamd build."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 4,
+      "warnings": 16,
+      "infos": 18,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (4x). DV4007 DEBIAN_FRONTEND as ENV. DV1007 apt cache not cleaned. Standard Go/Debian builds."
+  },
+  {
+    "repo": "louislam/dockge",
+    "files": 3,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 11,
+      "infos": 12,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (5x). DV1004 single-stage with build tools. DV1008 COPY . legitimate for Node.js build."
+  },
+  {
+    "repo": "dockur/windows",
+    "files": 1,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 0,
+      "warnings": 3,
+      "infos": 3,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DV3020 ADD remote URL without checksum. DV2001 apt-get update/install separation. Minimal Dockerfile."
+  },
+  {
+    "repo": "zammad/zammad",
+    "files": 7,
+    "date": "2026-03-05",
+    "findings": {
+      "errors": 10,
+      "warnings": 14,
+      "infos": 27,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags LDAP_ADMIN_PASSWORD/LDAP_PASSWORDS in doc/developer_manual LDAP test Dockerfile. DL3020 ADD (8x). DL3008 apt pinning."
   }
 ]
