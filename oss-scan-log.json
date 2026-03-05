@@ -15223,5 +15223,145 @@
       "info": 30
     },
     "notes": "Clean scan, no FP. DV1009 digest (10x). Go multi-stage."
+  },
+  {
+    "repo": "restic/rest-server",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 17,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 8,
+      "style": 2
+    },
+    "notableFindings": "DV1009 no digest (3x), DL3006 untagged image (2x), DL3018 apk pinning — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "containrrr/watchtower",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 20,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 7,
+      "style": 2
+    },
+    "notableFindings": "DL3018 apk pinning (10x dominant), DV3008 git clone, DV4012 consecutive COPY — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "netbox-community/netbox-docker",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (23x dominant), DL3042 pip cache, DV4010 chown -R — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 73,
+    "severities": {
+      "error": 2,
+      "warning": 37,
+      "info": 33,
+      "style": 1
+    },
+    "notableFindings": "DL3008 apt pinning (18x), DL3018 apk pinning (8x), DV5003 (3x), DV1007 apt cache (3x) — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "languagetool-org/languagetool",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3006 untagged image, DV1006 root, DV1009 no digest — minimal clean Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "BookStackApp/BookStack",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 37,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (22x dominant), DV2004 no --no-install-recommends, DV4013 apt-get install cache — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "kanboard/kanboard",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 74,
+    "severities": {
+      "error": 2,
+      "warning": 61,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (36x), DL3008 apt pinning (21x), DL3020 ADD vs COPY (2x), DV4007 DEBIAN_FRONTEND as ENV — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "envoyproxy/ratelimit",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 26,
+    "severities": {
+      "error": 1,
+      "warning": 15,
+      "info": 10,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (5x), DL3008 apt pinning (4x), DV1004 no multi-stage, DV5003 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "woodpecker-ci/plugin-git",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 0,
+      "warning": 7,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (5x), DV1009 no digest (2x) — all legitimate. Clean Alpine-based plugin image.",
+    "improvements": []
+  },
+  {
+    "repo": "aquasecurity/harbor-scanner-trivy",
+    "scannedAt": "2026-03-05T17:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (3x), DV4003 no WORKDIR (2x), DL3057 no HEALTHCHECK — all legitimate. Very clean distroless-based Dockerfiles.",
+    "improvements": []
   }
 ]
