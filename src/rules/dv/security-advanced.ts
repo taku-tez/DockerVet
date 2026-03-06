@@ -943,6 +943,64 @@ export const DV3030: Rule = {
   },
 };
 
+// DV3031: Modifying /etc/sudoers or /etc/sudoers.d/ — privilege escalation risk
+export const DV3031: Rule = {
+  id: 'DV3031', severity: 'warning',
+  description: 'Modifying sudoers grants privilege escalation paths in the container.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const sudoersWrite = /(?:echo|printf|tee|cat|sed|>>?)\s*[^;|&]*\/etc\/sudoers(?:\.d\/)?/;
+    const visudo = /\bvisudo\b/;
+    const nopasswd = /NOPASSWD/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (sudoersWrite.test(args) || visudo.test(args)) {
+          const hasNopasswd = nopasswd.test(args);
+          const severity = hasNopasswd ? 'error' as const : 'warning' as const;
+          violations.push({
+            rule: 'DV3031', severity,
+            message: hasNopasswd
+              ? 'Modifying /etc/sudoers with NOPASSWD grants passwordless root access. This is a privilege escalation risk. Avoid sudo in containers; use USER instruction instead.'
+              : 'Modifying /etc/sudoers grants privilege escalation paths. Prefer using the USER instruction to switch to a non-root user.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3032: CMD/ENTRYPOINT running sshd — SSH daemon is a container anti-pattern
+export const DV3032: Rule = {
+  id: 'DV3032', severity: 'warning',
+  description: 'Running SSH daemon in a container is an anti-pattern. Use docker exec instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const sshdPattern = /\bsshd\b|\/usr\/sbin\/sshd/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'CMD' && inst.type !== 'ENTRYPOINT') continue;
+        if (sshdPattern.test(inst.arguments)) {
+          violations.push({ rule: 'DV3032', severity: 'warning', message: 'Running sshd in a container is an anti-pattern. It increases attack surface and adds unnecessary complexity. Use `docker exec` or `kubectl exec` for debugging access.', line: inst.line });
+        }
+      }
+    }
+    // Also check RUN starting sshd as a daemon (service/systemctl patterns)
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (/(?:service\s+ssh(?:d)?\s+start|systemctl\s+(?:start|enable)\s+ssh(?:d)?)\b/.test(inst.arguments)) {
+          violations.push({ rule: 'DV3032', severity: 'warning', message: 'Starting SSH service in RUN instruction. SSH daemons in containers increase attack surface. Use `docker exec` instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3028: useradd without --no-log-init (large sparse lastlog file risk)
 export const DV3028: Rule = {
   id: 'DV3028', severity: 'info',

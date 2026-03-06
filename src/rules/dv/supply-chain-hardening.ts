@@ -1,5 +1,5 @@
 import { Rule, Violation } from '../types';
-import { CopyInstruction } from '../../parser/types';
+import { CopyInstruction, WorkdirInstruction } from '../../parser/types';
 
 // ---------------------------------------------------------------------------
 // DV6xxx: Supply Chain & Runtime Hardening
@@ -203,6 +203,60 @@ export const DV6008: Rule = {
         const c = inst as CopyInstruction;
         if (c.sources.some(s => gitDir.test(s) || s === '.git')) {
           violations.push({ rule: 'DV6008', severity: 'warning', message: 'Copying .git directory into the image leaks repository history, credentials, and metadata. Add .git to .dockerignore or copy only the needed files.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6011: curl/wget downloading from http:// (non-TLS) URLs in RUN — MITM risk
+export const DV6011: Rule = {
+  id: 'DV6011', severity: 'warning',
+  description: 'Avoid downloading files over plain HTTP. Use HTTPS to prevent man-in-the-middle attacks.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Match curl/wget with an http:// URL (not https://)
+    // Exclude localhost/127.0.0.1 — local downloads are safe
+    const httpDownload = /(?:curl|wget)\s+[^;|&]*\bhttp:\/\/(?!(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])[\/:)}\s])/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (httpDownload.test(inst.arguments)) {
+          violations.push({ rule: 'DV6011', severity: 'warning', message: 'Downloading files over plain HTTP is vulnerable to man-in-the-middle attacks. Use HTTPS URLs instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6012: WORKDIR set to sensitive system directory
+export const DV6012: Rule = {
+  id: 'DV6012', severity: 'warning',
+  description: 'Avoid using sensitive system directories as WORKDIR.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const sensitiveDirs: Record<string, string> = {
+      '/': 'filesystem root',
+      '/etc': 'system configuration',
+      '/var': 'system variable data',
+      '/usr': 'system programs',
+      '/bin': 'system binaries',
+      '/sbin': 'system administration binaries',
+      '/lib': 'system libraries',
+      '/dev': 'device files',
+      '/proc': 'process information',
+      '/sys': 'system information',
+      '/boot': 'boot loader files',
+    };
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'WORKDIR') continue;
+        const dir = inst.arguments.trim().replace(/\/+$/, '') || '/';
+        const info = sensitiveDirs[dir];
+        if (info) {
+          violations.push({ rule: 'DV6012', severity: 'warning', message: `WORKDIR set to "${dir}" (${info}). Use a dedicated application directory like /app or /opt/app instead.`, line: inst.line });
         }
       }
     }
