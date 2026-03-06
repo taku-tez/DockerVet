@@ -13933,5 +13933,119 @@
       "style": 1
     },
     "notes": "Clean scan, no FP. Only DV4003, DL3057, DV4012. Very clean distroless-based Dockerfile."
+  },
+  {
+    "repo": "librenms/librenms",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 2
+    },
+    "notes": "Clean scan, no FP. DL3013 pip pinning (7x), DV1006 root. Simple Python/PHP image."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 4,
+      "warnings": 16,
+      "info": 18,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD (4x), DV1009 digest (7x), DL3018 apk (5x). Standard Go multi-stage builds."
+  },
+  {
+    "repo": "wallabag/wallabag",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 2,
+      "warnings": 27,
+      "info": 16,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (24x). DV1003 curl|sh legitimate (Composer installer)."
+  },
+  {
+    "repo": "graylog2/graylog-docker",
+    "files": 4,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 1,
+      "warnings": 10,
+      "info": 29,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DV3027 dist-upgrade (4x), DV4010 chown -R (4x), DV4002 consecutive RUN. All legitimate."
+  },
+  {
+    "repo": "yobasystems/alpine-mariadb",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (14x). Simple Alpine MariaDB images."
+  },
+  {
+    "repo": "caddyserver/caddy-docker",
+    "files": 16,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 26,
+      "info": 38
+    },
+    "notes": "FP found: DV5003 flagged 6 builder Dockerfiles (builder/Dockerfile) suggesting distroless for build-tool containers. Fixed by skipping single-stage images in builder paths."
+  },
+  {
+    "repo": "sonatype/docker-nexus3",
+    "files": 5,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 20,
+      "info": 28
+    },
+    "notes": "Clean scan, no FP. DL3018 apk (11x), DV3028 useradd (4x), DL3006 untagged (4x). Multiple image variants."
+  },
+  {
+    "repo": "borgmatic-collective/borgmatic",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 12,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DL3016 npm pinning (4x), DL3018 apk (3x). Standard Alpine backup tool image."
+  },
+  {
+    "repo": "itzg/docker-minecraft-server",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 1,
+      "warnings": 7,
+      "info": 4,
+      "style": 9
+    },
+    "notes": "Clean scan, no FP. DL3052 unused ARG (9x) — ARGs consumed via env vars in mounted build scripts and as cache busters. Known limitation."
+  },
+  {
+    "repo": "NginxProxyManager/nginx-proxy-manager",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 2,
+      "warnings": 14,
+      "info": 15
+    },
+    "notes": "Clean scan, no FP. DL3008 apt (9x), DV1009 digest (5x), DV1003 curl|sh in dev Dockerfile (legitimate)."
   }
 ]
