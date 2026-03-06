@@ -40,6 +40,7 @@ import {
   DV4011, DV4012, DV4013, DV4015, DV4016, DV4018, DV4019, DV4020, DV4021, DV4022, DV4023,
 } from './dv/best-practices';
 import { DV5001, DV5002, DV5003 } from './dv/base-image-rules';
+import { DV6001, DV6002, DV6003, DV6004 } from './dv/supply-chain-hardening';
 
 export const ALL_RULES: Rule[] = [
   DL3000, DL3001, DL3002, DL3003, DL3004, DL3005, DL3006, DL3007,
@@ -58,6 +59,7 @@ export const ALL_RULES: Rule[] = [
   DV4001, DV4002, DV4003, DV4004, DV4005, DV4006, DV4007, DV4008, DV4009, DV4010,
   DV4011, DV4012, DV4013, DV4015, DV4016, DV4017, DV4018, DV4019, DV4020, DV4021, DV4022, DV4023,
   DV5001, DV5002, DV5003,
+  DV6001, DV6002, DV6003, DV6004,
 ];
 
 export const RULE_MAP = new Map<string, Rule>(ALL_RULES.map(r => [r.id, r]));
