@@ -108,3 +108,108 @@ ENTRYPOINT ["/app/start.sh"]`;
     expect(hasRule(lintDockerfile(df), 'DV4020')).toBe(false);
   });
 });
+
+// DV4021 - gem install without --no-document
+describe('DV4021 - gem install without --no-document', () => {
+  it('flags gem install without --no-document', () => {
+    expect(hasRule(lintDockerfile('FROM ruby\nRUN gem install bundler'), 'DV4021')).toBe(true);
+  });
+  it('flags gem install with multiple gems', () => {
+    expect(hasRule(lintDockerfile('FROM ruby\nRUN gem install rails sinatra'), 'DV4021')).toBe(true);
+  });
+  it('does not flag gem install with --no-document', () => {
+    expect(hasRule(lintDockerfile('FROM ruby\nRUN gem install --no-document bundler'), 'DV4021')).toBe(false);
+  });
+  it('does not flag gem install with --no-doc', () => {
+    expect(hasRule(lintDockerfile('FROM ruby\nRUN gem install --no-doc bundler'), 'DV4021')).toBe(false);
+  });
+  it('does not flag gem install with --no-ri --no-rdoc (legacy)', () => {
+    expect(hasRule(lintDockerfile('FROM ruby\nRUN gem install --no-ri --no-rdoc bundler'), 'DV4021')).toBe(false);
+  });
+  it('flags gem install in multi-command RUN', () => {
+    expect(hasRule(lintDockerfile('FROM ruby\nRUN apt-get update && gem install puma'), 'DV4021')).toBe(true);
+  });
+});
+
+// DV4022 - npm install instead of npm ci
+describe('DV4022 - npm install instead of npm ci', () => {
+  it('flags bare npm install', () => {
+    expect(hasRule(lintDockerfile('FROM node\nRUN npm install'), 'DV4022')).toBe(true);
+  });
+  it('flags npm install --production', () => {
+    expect(hasRule(lintDockerfile('FROM node\nRUN npm install --production'), 'DV4022')).toBe(true);
+  });
+  it('does not flag npm install <specific-package>', () => {
+    expect(hasRule(lintDockerfile('FROM node\nRUN npm install express'), 'DV4022')).toBe(false);
+  });
+  it('does not flag npm ci', () => {
+    expect(hasRule(lintDockerfile('FROM node\nRUN npm ci'), 'DV4022')).toBe(false);
+  });
+  it('does not flag npm ci --production', () => {
+    expect(hasRule(lintDockerfile('FROM node\nRUN npm ci --production'), 'DV4022')).toBe(false);
+  });
+  it('flags npm install in chained commands', () => {
+    expect(hasRule(lintDockerfile('FROM node\nCOPY package*.json ./\nRUN npm install && npm run build'), 'DV4022')).toBe(true);
+  });
+});
+
+// DV4023 - Multiple consecutive ENV instructions
+describe('DV4023 - Multiple consecutive ENV instructions', () => {
+  it('flags 3 consecutive ENV instructions', () => {
+    const df = `FROM ubuntu
+ENV FOO=bar
+ENV BAZ=qux
+ENV HELLO=world`;
+    expect(hasRule(lintDockerfile(df), 'DV4023')).toBe(true);
+  });
+  it('flags 4 consecutive ENV instructions', () => {
+    const df = `FROM ubuntu
+ENV A=1
+ENV B=2
+ENV C=3
+ENV D=4`;
+    expect(hasRule(lintDockerfile(df), 'DV4023')).toBe(true);
+  });
+  it('does not flag 2 consecutive ENV instructions', () => {
+    const df = `FROM ubuntu
+ENV FOO=bar
+ENV BAZ=qux`;
+    expect(hasRule(lintDockerfile(df), 'DV4023')).toBe(false);
+  });
+  it('does not flag ENV instructions separated by other instructions', () => {
+    const df = `FROM ubuntu
+ENV FOO=bar
+RUN echo hi
+ENV BAZ=qux
+COPY . .
+ENV HELLO=world`;
+    expect(hasRule(lintDockerfile(df), 'DV4023')).toBe(false);
+  });
+  it('does not flag single ENV with multiple vars', () => {
+    const df = `FROM ubuntu
+ENV FOO=bar BAZ=qux HELLO=world`;
+    expect(hasRule(lintDockerfile(df), 'DV4023')).toBe(false);
+  });
+});
+
+// DV3028 - useradd without --no-log-init
+describe('DV3028 - useradd without --no-log-init', () => {
+  it('flags useradd without --no-log-init', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN useradd appuser'), 'DV3028')).toBe(true);
+  });
+  it('flags useradd with other flags but not --no-log-init', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN useradd -m -s /bin/bash appuser'), 'DV3028')).toBe(true);
+  });
+  it('does not flag useradd with --no-log-init', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN useradd --no-log-init appuser'), 'DV3028')).toBe(false);
+  });
+  it('does not flag useradd with --no-log-init and other flags', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN useradd --no-log-init -m -s /bin/bash appuser'), 'DV3028')).toBe(false);
+  });
+  it('does not flag adduser (which does not have this issue)', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN adduser --disabled-password appuser'), 'DV3028')).toBe(false);
+  });
+  it('flags useradd in chained command', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN groupadd app && useradd -g app appuser'), 'DV3028')).toBe(true);
+  });
+});

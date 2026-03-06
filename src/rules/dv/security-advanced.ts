@@ -899,3 +899,22 @@ export const DV4017: Rule = {
     return violations;
   },
 };
+
+// DV3028: useradd without --no-log-init (large sparse lastlog file risk)
+export const DV3028: Rule = {
+  id: 'DV3028', severity: 'info',
+  description: 'useradd without --no-log-init can create a huge sparse lastlog file.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (/\buseradd\b/.test(args) && !/--no-log-init/.test(args)) {
+          violations.push({ rule: 'DV3028', severity: 'info', message: 'useradd without --no-log-init can create a huge sparse lastlog file. Use `useradd --no-log-init` or `adduser` instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};

@@ -466,6 +466,72 @@ export const DV4019: Rule = {
   },
 };
 
+// DV4021: gem install without --no-document
+export const DV4021: Rule = {
+  id: 'DV4021', severity: 'info',
+  description: 'Use `gem install --no-document` to avoid installing unnecessary documentation.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (/gem\s+install\b/.test(args) && !(/--no-doc(ument)?/.test(args) || /--no-ri/.test(args) || /--no-rdoc/.test(args))) {
+          violations.push({ rule: 'DV4021', severity: 'info', message: 'gem install without --no-document includes unnecessary documentation. Use `gem install --no-document` to reduce image size.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4022: npm install instead of npm ci for deterministic builds
+export const DV4022: Rule = {
+  id: 'DV4022', severity: 'info',
+  description: 'Prefer `npm ci` over `npm install` for deterministic, reproducible builds.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // Match `npm install` but not `npm install <specific-package>` (which is adding a dep, not installing all)
+        // npm install with no args or with only flags like --production
+        // Exclude shell operators (&&, ||, ;) after npm install — those are chained commands, not package names
+        if (/\bnpm\s+install\b/.test(args) && !/\bnpm\s+install\s+[a-zA-Z@]/.test(args)) {
+          violations.push({ rule: 'DV4022', severity: 'info', message: 'Use `npm ci` instead of `npm install` for deterministic builds. npm ci uses package-lock.json exactly and is faster in CI.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4023: Multiple consecutive ENV instructions that could be consolidated
+export const DV4023: Rule = {
+  id: 'DV4023', severity: 'info',
+  description: 'Multiple consecutive ENV instructions can be consolidated into one.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      let consecutiveEnvCount = 0;
+      let firstEnvLine = 0;
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV') {
+          consecutiveEnvCount++;
+          if (consecutiveEnvCount === 1) firstEnvLine = inst.line;
+          if (consecutiveEnvCount === 3) {
+            violations.push({ rule: 'DV4023', severity: 'info', message: 'Multiple consecutive ENV instructions detected. Consolidate into a single ENV to reduce image layers.', line: firstEnvLine });
+          }
+        } else {
+          consecutiveEnvCount = 0;
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV4020: Shell form ENTRYPOINT (prevents proper signal handling)
 export const DV4020: Rule = {
   id: 'DV4020', severity: 'warning',
