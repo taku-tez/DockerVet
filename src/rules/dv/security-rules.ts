@@ -487,7 +487,10 @@ export const DV1013: Rule = {
         const env = inst as EnvInstruction;
         for (const pair of env.pairs) {
           for (const secretArg of secretArgs) {
-            const refPattern = new RegExp(`\\$\\{?${secretArg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\}?`);
+            const escaped = secretArg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Match direct references like $VAR, ${VAR}, ${VAR:-default}
+            // but skip ${VAR:+word} — the :+ operator substitutes a literal word, NOT the variable's value
+            const refPattern = new RegExp(`\\$\\{${escaped}(?::(?!\\+)[^}]*)?\\}|\\$${escaped}(?![a-zA-Z0-9_])`);
             if (refPattern.test(pair.value)) {
               violations.push({
                 rule: 'DV1013', severity: 'error',

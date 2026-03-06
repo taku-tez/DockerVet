@@ -13556,5 +13556,118 @@
       "style": 4
     },
     "notes": "Clean scan, no FP. Test fixtures (1-4.Dockerfile) contain intentional bad patterns for Renovate's Dockerfile manager testing. DL3006 flags backtick in 4.Dockerfile test fixture — legitimate test data. DL3008 apt (19x) in main Dockerfile."
+  },
+  {
+    "repo": "apitable/apitable",
+    "files": 12,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 12,
+      "warnings": 19,
+      "info": 43,
+      "style": 4
+    },
+    "notes": "DV1001 correctly flags MINIO_ACCESS_KEY, MYSQL_PASSWORD, REDIS_PASSWORD etc in all-in-one dev Dockerfile. DV3021 MySQL/Redis port exposure. All legitimate."
+  },
+  {
+    "repo": "cubeFS/cubefs",
+    "files": 2,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 24,
+      "info": 19
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (15x), DV1006 root, DV4003 no WORKDIR. Standard Go build."
+  },
+  {
+    "repo": "berty/berty",
+    "files": 2,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 35,
+      "info": 12
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (26x), DL3016 npm pinning (4x). Heavy dependency installation for gRPC/protobuf build."
+  },
+  {
+    "repo": "autowarefoundation/autoware",
+    "files": 5,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 26,
+      "info": 53,
+      "style": 41
+    },
+    "notes": "Clean scan, no FP. DL3056 LABEL with empty value (40x style). DV4003 no WORKDIR (26x). DL3008/DL3009 apt pinning. Autonomous driving framework."
+  },
+  {
+    "repo": "containrrr/watchtower",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 11,
+      "info": 7,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (10x). Minimal Go Alpine multi-stage builds."
+  },
+  {
+    "repo": "sonatype/docker-nexus3",
+    "files": 5,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 20,
+      "info": 24
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (11x), DV3023 EXPOSE sensitive port, DL3006 untagged images. Standard Java/Alpine builds."
+  },
+  {
+    "repo": "apache/zookeeper",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 15,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (11x). Single dev Dockerfile. Simple Java build."
+  },
+  {
+    "repo": "eclipse-mosquitto/mosquitto",
+    "files": 6,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 61,
+      "info": 34
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (43x), DL3008 apt (10x). 6 Dockerfiles for different versions (1.6, 2.0 etc). MQTT broker."
+  },
+  {
+    "repo": "gogs/gogs",
+    "files": 2,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 28,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (23x). Self-hosted Git service with Alpine multi-stage build."
+  },
+  {
+    "repo": "hedgedoc/hedgedoc",
+    "files": 2,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (6x). Minimal Node.js multi-stage build. Collaborative markdown editor."
   }
 ]

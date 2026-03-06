@@ -432,6 +432,26 @@ RUN apk add --no-cache git
 `);
     expect(v.some(v => v.rule === 'DV1013')).toBe(true);
   });
+
+  it('does not flag ${var:+word} expansion (word is literal, not secret value)', () => {
+    // LibreTranslate pattern: ENV ENABLE_SSHD=${root_password:+true}
+    // The :+ operator substitutes "true" (a literal), NOT the password value
+    const v = lintContent(`FROM python:3.11-slim
+ARG root_password=""
+ENV ENABLE_SSHD=\${root_password:+true}
+CMD ["python", "app.py"]
+`);
+    expect(v.some(v => v.rule === 'DV1013')).toBe(false);
+  });
+
+  it('still flags ${var:-default} expansion (value IS exposed)', () => {
+    const v = lintContent(`FROM python:3.11-slim
+ARG root_password=""
+ENV MY_PASS=\${root_password:-default}
+CMD ["python", "app.py"]
+`);
+    expect(v.some(v => v.rule === 'DV1013')).toBe(true);
+  });
 });
 
 // ── Cross-repo rule coverage ───────────────────────────────────────────
