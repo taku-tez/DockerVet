@@ -1,4 +1,5 @@
 import { Rule, Violation } from '../types';
+import { CopyInstruction } from '../../parser/types';
 
 // ---------------------------------------------------------------------------
 // DV6xxx: Supply Chain & Runtime Hardening
@@ -81,6 +82,88 @@ export const DV6004: Rule = {
         if (inst.type !== 'RUN') continue;
         if (fullSuppression.test(inst.arguments)) {
           violations.push({ rule: 'DV6004', severity: 'info', message: 'RUN command suppresses all output (> /dev/null 2>&1). This hides errors during build. Redirect only stdout if needed, or remove the suppression.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6005: npm install with --unsafe-perm allows lifecycle scripts to run as root
+export const DV6005: Rule = {
+  id: 'DV6005', severity: 'warning',
+  description: 'Avoid npm install --unsafe-perm, which allows lifecycle scripts to run as root.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const unsafePerm = /npm\s+install\b[^&|;]*--unsafe-perm/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (unsafePerm.test(inst.arguments)) {
+          violations.push({ rule: 'DV6005', severity: 'warning', message: 'npm install with --unsafe-perm allows lifecycle scripts to execute as root. This enables malicious packages to run arbitrary code with elevated privileges. Remove --unsafe-perm or run as a non-root user.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6006: npm/yarn configured with HTTP (non-TLS) registry
+export const DV6006: Rule = {
+  id: 'DV6006', severity: 'warning',
+  description: 'Avoid configuring npm/yarn with an HTTP (non-TLS) registry URL.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // npm config set registry http://... or npm install --registry http://...
+    const npmHttpRegistry = /npm\s+(?:config\s+set\s+registry|install\b[^&|;]*--registry)\s+http:\/\//;
+    // yarn config set registry http://...
+    const yarnHttpRegistry = /yarn\s+config\s+set\s+registry\s+http:\/\//;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (npmHttpRegistry.test(inst.arguments)) {
+          violations.push({ rule: 'DV6006', severity: 'warning', message: 'npm registry configured with HTTP (non-TLS). Use HTTPS to prevent man-in-the-middle attacks on package downloads.', line: inst.line });
+        } else if (yarnHttpRegistry.test(inst.arguments)) {
+          violations.push({ rule: 'DV6006', severity: 'warning', message: 'yarn registry configured with HTTP (non-TLS). Use HTTPS to prevent man-in-the-middle attacks on package downloads.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6007: apt-key usage is deprecated and insecure
+export const DV6007: Rule = {
+  id: 'DV6007', severity: 'warning',
+  description: 'apt-key is deprecated. Use signed-by in sources list instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const aptKey = /apt-key\s+(?:add|adv)/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (aptKey.test(inst.arguments)) {
+          violations.push({ rule: 'DV6007', severity: 'warning', message: 'apt-key is deprecated and adds keys to the global trusted keyring, allowing them to authenticate any repository. Use [signed-by=/path/to/key.gpg] in sources.list.d instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6008: COPY or ADD of .git directory leaks repository history
+export const DV6008: Rule = {
+  id: 'DV6008', severity: 'warning',
+  description: 'Avoid copying .git directory into the image.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const gitDir = /(?:^|[/\\])\.git(?:[/\\]|$)/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
+        const c = inst as CopyInstruction;
+        if (c.sources.some(s => gitDir.test(s) || s === '.git')) {
+          violations.push({ rule: 'DV6008', severity: 'warning', message: 'Copying .git directory into the image leaks repository history, credentials, and metadata. Add .git to .dockerignore or copy only the needed files.', line: inst.line });
         }
       }
     }

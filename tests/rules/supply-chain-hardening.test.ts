@@ -106,3 +106,93 @@ describe('DV6004 - Full output suppression in RUN', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN make install'), 'DV6004')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// DV6005 - npm install --unsafe-perm
+// ---------------------------------------------------------------------------
+describe('DV6005 - npm install --unsafe-perm', () => {
+  it('flags npm install --unsafe-perm', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install --unsafe-perm'), 'DV6005')).toBe(true);
+  });
+  it('flags npm install with mixed flags including --unsafe-perm', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install --production --unsafe-perm -g express'), 'DV6005')).toBe(true);
+  });
+  it('does not flag normal npm install', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install --production'), 'DV6005')).toBe(false);
+  });
+  it('does not flag npm ci', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm ci'), 'DV6005')).toBe(false);
+  });
+  it('does not flag yarn install', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN yarn install'), 'DV6005')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6006 - npm/yarn HTTP registry
+// ---------------------------------------------------------------------------
+describe('DV6006 - npm/yarn HTTP registry', () => {
+  it('flags npm config set registry http://', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm config set registry http://registry.internal.corp/'), 'DV6006')).toBe(true);
+  });
+  it('flags npm install --registry http://', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install --registry http://registry.corp/ express'), 'DV6006')).toBe(true);
+  });
+  it('flags yarn config set registry http://', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN yarn config set registry http://registry.corp/'), 'DV6006')).toBe(true);
+  });
+  it('does not flag npm config set registry https://', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm config set registry https://registry.npmjs.org/'), 'DV6006')).toBe(false);
+  });
+  it('does not flag npm install --registry https://', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install --registry https://registry.npmjs.org/ express'), 'DV6006')).toBe(false);
+  });
+  it('does not flag yarn config set registry https://', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN yarn config set registry https://registry.yarnpkg.com/'), 'DV6006')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6007 - apt-key deprecated usage
+// ---------------------------------------------------------------------------
+describe('DV6007 - apt-key deprecated', () => {
+  it('flags apt-key add', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN curl -fsSL https://example.com/key.gpg | apt-key add -'), 'DV6007')).toBe(true);
+  });
+  it('flags apt-key adv --keyserver', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN apt-key adv --keyserver hkp://keyserver.ubuntu.com --recv-keys ABCDEF'), 'DV6007')).toBe(true);
+  });
+  it('does not flag gpg --dearmor with signed-by pattern', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN curl -fsSL https://example.com/key.gpg | gpg --dearmor -o /usr/share/keyrings/example.gpg'), 'DV6007')).toBe(false);
+  });
+  it('does not flag Dockerfile without apt-key', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y curl'), 'DV6007')).toBe(false);
+  });
+  it('does not flag apt-get commands', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN apt-get install -y gnupg'), 'DV6007')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6008 - COPY/ADD .git directory
+// ---------------------------------------------------------------------------
+describe('DV6008 - COPY/ADD .git directory', () => {
+  it('flags COPY .git into image', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY .git /app/.git'), 'DV6008')).toBe(true);
+  });
+  it('flags COPY .git/ into image', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY .git/ /app/'), 'DV6008')).toBe(true);
+  });
+  it('flags ADD .git into image', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nADD .git /app/.git'), 'DV6008')).toBe(true);
+  });
+  it('does not flag COPY of normal directories', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY src/ /app/src/'), 'DV6008')).toBe(false);
+  });
+  it('does not flag COPY . . (covered by DV1008)', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY . .'), 'DV6008')).toBe(false);
+  });
+  it('does not flag .gitignore copy', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY .gitignore /app/'), 'DV6008')).toBe(false);
+  });
+});
