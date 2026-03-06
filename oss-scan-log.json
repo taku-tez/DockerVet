@@ -13811,5 +13811,127 @@
     },
     "notableFindings": "Minimal findings. DV2001 apt-get update separation, DV3020 ADD remote URL, DV1006/DV1009 — all legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "sigstore/cosign",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 1,
+      "info": 3
+    },
+    "notes": "Clean scan, no FP. Minimal findings on single Go builder Dockerfile. DV1006 root, DV5003 distroless recommendation."
+  },
+  {
+    "repo": "aquasecurity/chain-bench",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 10,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning, DV1009 digest pinning, DL3042 pip cache — all legitimate."
+  },
+  {
+    "repo": "kubernetes-sigs/gateway-api",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 3,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DL3042 pip cache, DV5003 distroless recommendation — all legitimate."
+  },
+  {
+    "repo": "woodpecker-ci/plugin-docker-buildx",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 4,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning, DV1009 digest pinning, DV1006 root — all legitimate."
+  },
+  {
+    "repo": "distribution/distribution",
+    "files": 7,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 2,
+      "warnings": 25,
+      "info": 31
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (14x), DV1009 digest pinning (10x), DV3024 tarball without checksum in dev-image, DL3020 ADD vs COPY. All legitimate."
+  },
+  {
+    "repo": "slsa-framework/slsa-verifier",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 1,
+      "info": 1
+    },
+    "notes": "Clean scan, no FP. Only DV1005/DV1008 broad COPY. Extremely clean Dockerfile."
+  },
+  {
+    "repo": "goreleaser/goreleaser",
+    "files": 15,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 10,
+      "warnings": 41,
+      "info": 18
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (10x) in testdata/ fixtures. DL3018 apk pinning (19x) in main Dockerfile. DL3006 untagged alpine in test fixtures. All legitimate."
+  },
+  {
+    "repo": "charmbracelet/vhs",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 23,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning (20x, many font packages). DV2001 apt-get update split, DV3028 useradd without --no-log-init. All legitimate."
+  },
+  {
+    "repo": "charmbracelet/gum",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 2,
+      "info": 1
+    },
+    "notes": "Clean scan, no FP. DL3006 untagged alpine, DV1006 root, DV1009 digest pinning — minimal Dockerfile."
+  },
+  {
+    "repo": "tinygo-org/tinygo",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 10,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (5x), DL3003 cd instead of WORKDIR (3x), DV5003 distroless recommendation. Single-stage Go/LLVM build."
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 0,
+      "info": 2,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Only DV4003, DL3057, DV4012. Very clean distroless-based Dockerfile."
   }
 ]

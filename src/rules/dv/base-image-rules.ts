@@ -239,6 +239,13 @@ export const DV5003: Rule = {
     const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
     if (!lastStage) return violations;
 
+    // Skip builder images — single-stage images whose filename/path indicates they are
+    // build tool containers (not runtime images), e.g. "builder/Dockerfile", "Dockerfile.builder"
+    const fileLower = (ctx.filePath ?? '').toLowerCase();
+    if (ctx.ast.stages.length === 1 && /builder[\\/.]|\.builder$|[\\/]build[\\/]/.test(fileLower)) {
+      return violations;
+    }
+
     const f = lastStage.from;
     if (f.image === 'scratch') return violations;
     if (/\$/.test(f.image)) return violations;
