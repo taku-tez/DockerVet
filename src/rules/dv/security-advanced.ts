@@ -634,7 +634,9 @@ export const DV3023: Rule = {
 
           // Pattern 2: unquoted ARG variable in wget/curl URL
           // Only flag if the variable appears in the URL argument position (not in --output/-o/-d/etc.)
-          const urlRe = new RegExp(`(?:wget|curl)\\s+(?:[^"]*?)\\$(?:\\{${name}\\}|${name})(?!["\\'\\w])`);
+          // Require curl/wget to be in command position (after &&, ||, ;, |, or start of line)
+          // to avoid matching package names like "apk add curl"
+          const urlRe = new RegExp(`(?:^|&&|\\|\\||;|\\|)\\s*(?:wget|curl)\\s+(?:[^"]*?)\\$(?:\\{${name}\\}|${name})(?!["\\'\\w])`);
           if (urlRe.test(args)) {
             // Check if ALL occurrences of this variable are in non-URL argument positions
             // (e.g., --output, -o, -O, --data, -d, --header, etc.)
