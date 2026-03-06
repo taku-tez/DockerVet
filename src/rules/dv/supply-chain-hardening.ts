@@ -333,6 +333,105 @@ export const DV6015: Rule = {
   },
 };
 
+// DV6017: HEALTHCHECK NONE explicitly disables health monitoring
+export const DV6017: Rule = {
+  id: 'DV6017', severity: 'info',
+  description: 'HEALTHCHECK NONE disables container health monitoring.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+    for (const inst of lastStage.instructions) {
+      if (inst.type !== 'HEALTHCHECK') continue;
+      const args = inst.arguments.trim().toUpperCase();
+      if (args === 'NONE') {
+        violations.push({ rule: 'DV6017', severity: 'info', message: 'HEALTHCHECK NONE explicitly disables health monitoring. Orchestrators (Kubernetes, Docker Swarm) rely on health checks for automated recovery. Remove HEALTHCHECK NONE or add a proper health check.', line: inst.line });
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6018: pip install from VCS URL (git+https/git+ssh) without version pin
+export const DV6018: Rule = {
+  id: 'DV6018', severity: 'warning',
+  description: 'pip install from VCS URL without version pin is a supply chain risk.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Match pip install git+https://... or git+ssh://... without @<commit/tag>
+    // Pinned: git+https://github.com/org/repo@v1.0.0 or @abc123
+    // Unpinned: git+https://github.com/org/repo (defaults to HEAD)
+    const pipVcs = /pip3?\s+install\b[^;|&]*\bgit\+(?:https?|ssh):\/\/[^\s]+/g;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        let match: RegExpExecArray | null;
+        const re = new RegExp(pipVcs.source, pipVcs.flags);
+        while ((match = re.exec(args)) !== null) {
+          // Extract the VCS URL from the match
+          const urlMatch = /git\+(?:https?|ssh):\/\/[^\s]+/.exec(match[0]);
+          if (!urlMatch) continue;
+          const url = urlMatch[0];
+          // Check if the URL has a pin (@commit, @tag, @branch) after the repo path
+          // git+https://github.com/org/repo.git@v1.0 or @abc123def
+          // Exclude @user in git+ssh://user@host (authentication, not pinning)
+          // The pin @ appears after the path component (after .git or after /repo)
+          const pathPart = url.replace(/^git\+(?:https?|ssh):\/\/[^/]*/, ''); // strip scheme+host
+          if (!/@[a-zA-Z0-9]/.test(pathPart)) {
+            violations.push({ rule: 'DV6018', severity: 'warning', message: 'pip install from VCS URL without version pin (e.g., @tag or @commit). This fetches HEAD, making builds non-reproducible and vulnerable to supply chain attacks. Pin with @<tag> or @<commit-hash>.', line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6019: Shell form CMD prevents proper signal handling
+export const DV6019: Rule = {
+  id: 'DV6019', severity: 'info',
+  description: 'CMD uses shell form. Use exec form for proper signal handling.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+    // Only check the last CMD (earlier ones are overridden)
+    const cmdInstructions = lastStage.instructions.filter(i => i.type === 'CMD');
+    if (cmdInstructions.length === 0) return violations;
+    const lastCmd = cmdInstructions[cmdInstructions.length - 1];
+    const args = lastCmd.arguments.trim();
+    // Exec form starts with [
+    if (!args.startsWith('[')) {
+      // Skip if ENTRYPOINT is set (CMD in shell form with ENTRYPOINT is a common pattern for default args)
+      const hasEntrypoint = lastStage.instructions.some(i => i.type === 'ENTRYPOINT');
+      if (hasEntrypoint) return violations;
+      violations.push({ rule: 'DV6019', severity: 'info', message: 'CMD uses shell form, which wraps the process in /bin/sh -c and prevents proper signal handling (SIGTERM). Use exec form: CMD ["executable", "arg1"]. This ensures PID 1 receives signals correctly.', line: lastCmd.line });
+    }
+    return violations;
+  },
+};
+
+// DV6020: COPY --chmod or ADD --chmod with overly permissive modes
+export const DV6020: Rule = {
+  id: 'DV6020', severity: 'warning',
+  description: 'COPY/ADD --chmod with overly permissive file modes (777/666).',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const dangerousModes = /--chmod=(?:777|776|666|o\+w|a\+w)/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
+        const raw = inst.raw || inst.arguments || '';
+        if (dangerousModes.test(raw)) {
+          violations.push({ rule: 'DV6020', severity: 'warning', message: `${inst.type} with overly permissive --chmod detected. Avoid 777/666/world-writable modes. Use the minimum required permissions.`, line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV6016: npm install with --force or --legacy-peer-deps bypasses dependency safety
 export const DV6016: Rule = {
   id: 'DV6016', severity: 'warning',
