@@ -13441,5 +13441,120 @@
       "style": 1
     },
     "notes": "Clean scan, no FP. DV1003 curl|sh (2x), DL3008 apt pinning (18x). DV1006 root (3x)."
+  },
+  {
+    "repo": "searxng/searxng",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 10,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. DL3045 COPY without WORKDIR (6x), DV1006/DV1009. Standard devcontainer + builder Dockerfiles."
+  },
+  {
+    "repo": "louislam/dockge",
+    "files": 3,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 11,
+      "info": 12
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (5x), DV1009 (5x). Multi-stage Node.js build with health check builder."
+  },
+  {
+    "repo": "gogs/gogs",
+    "files": 2,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 28,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning (23x). Dockerfile and Dockerfile.next both Go Alpine builds."
+  },
+  {
+    "repo": "wekan/wekan",
+    "files": 5,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 12,
+      "info": 27
+    },
+    "notes": "Clean scan, no FP. Multi-arch Dockerfiles (arm64, s390x). DV1009 (7x), DL3008 (6x). DL3006 on gitpod workspace image legitimate."
+  },
+  {
+    "repo": "Stirling-Tools/Stirling-PDF",
+    "files": 6,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 6,
+      "warnings": 186,
+      "info": 56,
+      "style": 7
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt (95x), DL3018 apk (44x) across unified/lite/ultra Dockerfiles. Large multi-stage Java builds with many system deps."
+  },
+  {
+    "repo": "LibreTranslate/LibreTranslate",
+    "files": 5,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 1,
+      "warnings": 18,
+      "info": 30,
+      "style": 6
+    },
+    "notes": "Clean scan, no FP. DV1009 (10x), DL3052 (6x label-schema deprecated). Multi-variant Dockerfiles (arm, cuda, root-with-sshd). DV3018 in sshd variant legitimate."
+  },
+  {
+    "repo": "usememos/memos",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 7,
+      "info": 3
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (5x). Simple Go Alpine multi-stage build. DL3002 last USER root in scripts/Dockerfile."
+  },
+  {
+    "repo": "sickcodes/Docker-OSX",
+    "files": 7,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 0,
+      "warnings": 46,
+      "info": 25,
+      "style": 15
+    },
+    "notes": "Clean scan, no FP. DL3008 apt (27x), DL3052 label-schema (15x). Multiple Dockerfile variants (auto, naked, naked-auto). Archlinux-based macOS virtualization."
+  },
+  {
+    "repo": "siyuan-note/siyuan",
+    "files": 1,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 4,
+      "warnings": 5,
+      "info": 4,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (4x). Three-stage build (Node, Go, Alpine runtime). Standard note-taking app build."
+  },
+  {
+    "repo": "renovatebot/renovate",
+    "files": 7,
+    "date": "2026-03-06",
+    "findings": {
+      "errors": 5,
+      "warnings": 52,
+      "info": 43,
+      "style": 4
+    },
+    "notes": "Clean scan, no FP. Test fixtures (1-4.Dockerfile) contain intentional bad patterns for Renovate's Dockerfile manager testing. DL3006 flags backtick in 4.Dockerfile test fixture — legitimate test data. DL3008 apt (19x) in main Dockerfile."
   }
 ]
