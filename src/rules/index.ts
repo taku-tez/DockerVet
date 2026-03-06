@@ -43,6 +43,7 @@ import { DV5001, DV5002, DV5003 } from './dv/base-image-rules';
 import { DV6001, DV6002, DV6003, DV6004, DV6005, DV6006, DV6007, DV6008, DV6009, DV6010, DV6011, DV6012, DV6013, DV6014, DV6015, DV6016, DV6017, DV6018, DV6019, DV6020 } from './dv/supply-chain-hardening';
 import { DV7001, DV7002, DV7003, DV7004 } from './dv/runtime-hardening';
 import { DV8001, DV8002, DV8003, DV8004 } from './dv/container-isolation';
+import { DV9001, DV9002, DV9003, DV9004, DV9005, DV9006 } from './dv/build-hygiene';
 
 export const ALL_RULES: Rule[] = [
   DL3000, DL3001, DL3002, DL3003, DL3004, DL3005, DL3006, DL3007,
@@ -66,6 +67,7 @@ export const ALL_RULES: Rule[] = [
   DV6011, DV6012, DV6013, DV6014, DV6015, DV6016, DV6017, DV6018, DV6019, DV6020,
   DV7001, DV7002, DV7003, DV7004,
   DV8001, DV8002, DV8003, DV8004,
+  DV9001, DV9002, DV9003, DV9004, DV9005, DV9006,
 ];
 
 export const RULE_MAP = new Map<string, Rule>(ALL_RULES.map(r => [r.id, r]));

@@ -24,59 +24,84 @@ const OUTDATED_IMAGE_MAP: Record<string, ImageVersion> = {
     note: 'Ubuntu 24.04 LTS (Noble Numbat)',
   },
   debian: {
-    outdated: ['7', '8', '9', '10', 'wheezy', 'jessie', 'stretch', 'buster'],
+    outdated: ['7', '8', '9', '10', '11', 'wheezy', 'jessie', 'stretch', 'buster', 'bullseye'],
     recommended: 'debian:12',
     note: 'Debian 12 (Bookworm)',
   },
   node: {
-    outdated: ['8', '10', '12', '14', '16', '17', '18', '19', '20', '21'],
+    outdated: ['8', '10', '12', '14', '16', '17', '18', '19', '20', '21', '23'],
     recommended: 'node:22',
-    note: 'Node.js 22 LTS (Iron)',
+    note: 'Node.js 22 LTS',
   },
   python: {
-    outdated: ['2', '2.7', '3.6', '3.7', '3.8', '3.9', '3.10'],
-    recommended: 'python:3.12',
-    note: 'Python 3.12',
+    outdated: ['2', '2.7', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11'],
+    recommended: 'python:3.13',
+    note: 'Python 3.13',
   },
   alpine: {
-    outdated: ['3.14', '3.15', '3.16', '3.17', '3.18'],
-    recommended: 'alpine:3.20',
-    note: 'Alpine 3.20',
+    outdated: ['3.14', '3.15', '3.16', '3.17', '3.18', '3.19'],
+    recommended: 'alpine:3.21',
+    note: 'Alpine 3.21',
   },
   golang: {
-    outdated: ['1.17', '1.18', '1.19', '1.20', '1.21'],
-    recommended: 'golang:1.23',
-    note: 'Go 1.23',
+    outdated: ['1.17', '1.18', '1.19', '1.20', '1.21', '1.22', '1.23'],
+    recommended: 'golang:1.24',
+    note: 'Go 1.24',
+  },
+  'eclipse-temurin': {
+    outdated: ['8', '11', '13', '14', '15', '16', '17', '18', '19', '20'],
+    recommended: 'eclipse-temurin:21',
+    note: 'Eclipse Temurin 21 LTS',
   },
   openjdk: {
     outdated: ['8', '11', '13', '14', '15', '16', '17', '18', '19', '20'],
     recommended: 'eclipse-temurin:21',
-    note: 'Eclipse Temurin 21 LTS',
+    note: 'Eclipse Temurin 21 LTS (openjdk is deprecated)',
   },
   maven: {
     outdated: ['3.6', '3.7', '3.8'],
     recommended: 'maven:3.9',
     note: 'Maven 3.9',
   },
+  gradle: {
+    outdated: ['6', '7'],
+    recommended: 'gradle:8',
+    note: 'Gradle 8',
+  },
   nginx: {
-    outdated: ['1.18', '1.19', '1.20', '1.21', '1.22', '1.23', '1.24'],
+    outdated: ['1.18', '1.19', '1.20', '1.21', '1.22', '1.23', '1.24', '1.25', '1.26'],
     recommended: 'nginx:1.27',
     note: 'nginx 1.27',
   },
   php: {
-    outdated: ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1'],
-    recommended: 'php:8.3',
-    note: 'PHP 8.3',
+    outdated: ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2'],
+    recommended: 'php:8.4',
+    note: 'PHP 8.4',
   },
   ruby: {
-    outdated: ['2.6', '2.7', '3.0', '3.1'],
-    recommended: 'ruby:3.3',
-    note: 'Ruby 3.3',
+    outdated: ['2.6', '2.7', '3.0', '3.1', '3.2'],
+    recommended: 'ruby:3.4',
+    note: 'Ruby 3.4',
   },
   rust: {
-    outdated: ['1.65', '1.66', '1.67', '1.68', '1.69', '1.70', '1.71', '1.72', '1.73', '1.74', '1.75'],
-    recommended: 'rust:1.80',
-    note: 'Rust 1.80',
+    outdated: ['1.65', '1.66', '1.67', '1.68', '1.69', '1.70', '1.71', '1.72', '1.73', '1.74', '1.75', '1.76', '1.77', '1.78', '1.79', '1.80', '1.81', '1.82', '1.83'],
+    recommended: 'rust:1.84',
+    note: 'Rust 1.84',
+  },
+  dotnet: {
+    outdated: ['3.1', '5.0', '6.0', '7.0'],
+    recommended: 'mcr.microsoft.com/dotnet/sdk:9.0',
+    note: '.NET 9.0 (or 8.0 LTS)',
+  },
+  'dotnet/sdk': {
+    outdated: ['3.1', '5.0', '6.0', '7.0'],
+    recommended: 'mcr.microsoft.com/dotnet/sdk:9.0',
+    note: '.NET 9.0',
+  },
+  'dotnet/aspnet': {
+    outdated: ['3.1', '5.0', '6.0', '7.0'],
+    recommended: 'mcr.microsoft.com/dotnet/aspnet:9.0',
+    note: '.NET ASP.NET 9.0',
   },
 };
 
@@ -96,14 +121,16 @@ const EOL_IMAGE_DB: Record<string, EolInfo> = {
   'ubuntu:18.04': { eolDate: '2023-04-30', note: 'Ubuntu 18.04 LTS EOL' },
   'ubuntu:20.04': { eolDate: '2025-04-30', note: 'Ubuntu 20.04 LTS EOL' },
   // Debian
-  'debian:7':      { eolDate: '2018-05-31', note: 'Debian 7 (Wheezy) EOL' },
-  'debian:8':      { eolDate: '2020-06-30', note: 'Debian 8 (Jessie) EOL' },
-  'debian:9':      { eolDate: '2022-06-30', note: 'Debian 9 (Stretch) EOL' },
-  'debian:10':     { eolDate: '2024-06-30', note: 'Debian 10 (Buster) EOL' },
-  'debian:wheezy': { eolDate: '2018-05-31', note: 'Debian 7 (Wheezy) EOL' },
-  'debian:jessie': { eolDate: '2020-06-30', note: 'Debian 8 (Jessie) EOL' },
-  'debian:stretch':{ eolDate: '2022-06-30', note: 'Debian 9 (Stretch) EOL' },
-  'debian:buster': { eolDate: '2024-06-30', note: 'Debian 10 (Buster) EOL' },
+  'debian:7':       { eolDate: '2018-05-31', note: 'Debian 7 (Wheezy) EOL' },
+  'debian:8':       { eolDate: '2020-06-30', note: 'Debian 8 (Jessie) EOL' },
+  'debian:9':       { eolDate: '2022-06-30', note: 'Debian 9 (Stretch) EOL' },
+  'debian:10':      { eolDate: '2024-06-30', note: 'Debian 10 (Buster) EOL' },
+  'debian:11':      { eolDate: '2026-06-30', note: 'Debian 11 (Bullseye) EOL approaching' },
+  'debian:wheezy':  { eolDate: '2018-05-31', note: 'Debian 7 (Wheezy) EOL' },
+  'debian:jessie':  { eolDate: '2020-06-30', note: 'Debian 8 (Jessie) EOL' },
+  'debian:stretch': { eolDate: '2022-06-30', note: 'Debian 9 (Stretch) EOL' },
+  'debian:buster':  { eolDate: '2024-06-30', note: 'Debian 10 (Buster) EOL' },
+  'debian:bullseye':{ eolDate: '2026-06-30', note: 'Debian 11 (Bullseye) EOL approaching' },
   // Node.js
   'node:8':  { eolDate: '2019-12-31', note: 'Node.js 8 EOL' },
   'node:10': { eolDate: '2021-04-30', note: 'Node.js 10 EOL' },
@@ -111,20 +138,39 @@ const EOL_IMAGE_DB: Record<string, EolInfo> = {
   'node:14': { eolDate: '2023-04-30', note: 'Node.js 14 EOL' },
   'node:16': { eolDate: '2023-09-11', note: 'Node.js 16 EOL' },
   'node:18': { eolDate: '2025-04-30', note: 'Node.js 18 EOL' },
-  'node:20': { eolDate: '2026-04-30', note: 'Node.js 20 EOL' },
+  'node:20': { eolDate: '2026-04-30', note: 'Node.js 20 EOL approaching' },
   // Python
+  'python:2':   { eolDate: '2020-01-01', note: 'Python 2 EOL' },
   'python:2.7': { eolDate: '2020-01-01', note: 'Python 2.7 EOL' },
   'python:3.6': { eolDate: '2021-12-23', note: 'Python 3.6 EOL' },
   'python:3.7': { eolDate: '2023-06-27', note: 'Python 3.7 EOL' },
   'python:3.8': { eolDate: '2024-10-31', note: 'Python 3.8 EOL' },
+  'python:3.9': { eolDate: '2025-10-31', note: 'Python 3.9 EOL' },
   // Alpine
   'alpine:3.14': { eolDate: '2023-05-01', note: 'Alpine 3.14 EOL' },
   'alpine:3.15': { eolDate: '2023-11-01', note: 'Alpine 3.15 EOL' },
   'alpine:3.16': { eolDate: '2024-05-23', note: 'Alpine 3.16 EOL' },
   'alpine:3.17': { eolDate: '2024-11-22', note: 'Alpine 3.17 EOL' },
+  'alpine:3.18': { eolDate: '2025-05-09', note: 'Alpine 3.18 EOL' },
+  'alpine:3.19': { eolDate: '2025-11-01', note: 'Alpine 3.19 EOL' },
   // OpenJDK
   'openjdk:8':  { eolDate: '2022-05-01', note: 'OpenJDK 8 (community) EOL' },
   'openjdk:11': { eolDate: '2024-10-31', note: 'OpenJDK 11 EOL' },
+  // Go
+  'golang:1.21': { eolDate: '2024-08-13', note: 'Go 1.21 EOL' },
+  'golang:1.22': { eolDate: '2025-02-11', note: 'Go 1.22 EOL' },
+  // PHP
+  'php:8.0': { eolDate: '2023-11-26', note: 'PHP 8.0 EOL' },
+  'php:8.1': { eolDate: '2025-12-31', note: 'PHP 8.1 EOL approaching' },
+  // .NET
+  'dotnet:3.1':      { eolDate: '2022-12-13', note: '.NET 3.1 EOL' },
+  'dotnet:5.0':      { eolDate: '2022-05-10', note: '.NET 5.0 EOL' },
+  'dotnet:6.0':      { eolDate: '2024-11-12', note: '.NET 6.0 EOL' },
+  'dotnet:7.0':      { eolDate: '2024-05-14', note: '.NET 7.0 EOL' },
+  'dotnet/sdk:3.1':  { eolDate: '2022-12-13', note: '.NET SDK 3.1 EOL' },
+  'dotnet/sdk:5.0':  { eolDate: '2022-05-10', note: '.NET SDK 5.0 EOL' },
+  'dotnet/sdk:6.0':  { eolDate: '2024-11-12', note: '.NET SDK 6.0 EOL' },
+  'dotnet/sdk:7.0':  { eolDate: '2024-05-14', note: '.NET SDK 7.0 EOL' },
 };
 
 /**
@@ -141,7 +187,11 @@ const SAFER_ALTERNATIVES: Record<string, BaseImageAlternative> = {
   node:     { alternative: 'gcr.io/distroless/nodejs22-debian12', reason: 'Distroless Node image has no shell or package manager' },
   python:   { alternative: 'gcr.io/distroless/python3-debian12', reason: 'Distroless Python image has no shell' },
   openjdk:  { alternative: 'gcr.io/distroless/java21-debian12', reason: 'Distroless Java image reduces attack surface' },
+  'eclipse-temurin': { alternative: 'gcr.io/distroless/java21-debian12', reason: 'Distroless Java image reduces attack surface' },
   golang:   { alternative: 'gcr.io/distroless/static-debian12', reason: 'Use distroless/static as final stage for Go binaries' },
+  rust:     { alternative: 'gcr.io/distroless/cc-debian12', reason: 'Use distroless/cc as final stage for Rust binaries (includes libgcc)' },
+  dotnet:   { alternative: 'mcr.microsoft.com/dotnet/runtime-deps:9.0-noble-chiseled', reason: 'Chiseled .NET images are Ubuntu-based distroless with minimal attack surface' },
+  'dotnet/aspnet': { alternative: 'mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled', reason: 'Chiseled ASP.NET images are distroless with minimal attack surface' },
 };
 
 // ---------------------------------------------------------------------------
@@ -149,10 +199,19 @@ const SAFER_ALTERNATIVES: Record<string, BaseImageAlternative> = {
 // ---------------------------------------------------------------------------
 
 function parseImageName(fullImage: string): { name: string; tag: string } {
-  // Handle registry prefix: e.g. docker.io/library/node:18 → node:18
   let image = fullImage;
-  const lastSlash = image.lastIndexOf('/');
-  if (lastSlash !== -1) image = image.slice(lastSlash + 1);
+
+  // Handle well-known registry prefixes:
+  // - docker.io/library/node:18 → node:18
+  // - mcr.microsoft.com/dotnet/sdk:8.0 → dotnet/sdk:8.0
+  // - ghcr.io/org/image:tag → image:tag
+  const mcrMatch = image.match(/^mcr\.microsoft\.com\/(.+)$/);
+  if (mcrMatch) {
+    image = mcrMatch[1];
+  } else {
+    const lastSlash = image.lastIndexOf('/');
+    if (lastSlash !== -1) image = image.slice(lastSlash + 1);
+  }
 
   const colonIdx = image.indexOf(':');
   if (colonIdx === -1) return { name: image, tag: 'latest' };
