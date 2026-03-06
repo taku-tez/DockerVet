@@ -900,6 +900,49 @@ export const DV4017: Rule = {
   },
 };
 
+// DV3029: Cloud credential directory COPY/ADD (~/.aws, ~/.config/gcloud, ~/.azure, ~/.kube)
+export const DV3029: Rule = {
+  id: 'DV3029', severity: 'error',
+  description: 'Do not COPY/ADD cloud credential directories into the image.',
+  check(ctx) {
+    const cloudCredDirs = /(?:\.aws|\.config\/gcloud|\.azure|\.kube)(?:\/|$)/i;
+    const cloudCredFiles = /(?:\.aws\/credentials|\.aws\/config|\.boto|\.config\/gcloud\/credentials\.db|kubeconfig|\.kube\/config)$/i;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
+        const c = inst as CopyInstruction;
+        if (c.sources.some(s => cloudCredDirs.test(s) || cloudCredFiles.test(s))) {
+          violations.push({ rule: 'DV3029', severity: 'error', message: 'Do not COPY/ADD cloud credential directories (~/.aws, ~/.kube, ~/.azure, ~/.config/gcloud). Use runtime credential injection (IAM roles, workload identity, mounted secrets).', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3030: Docker socket exposed via VOLUME
+export const DV3030: Rule = {
+  id: 'DV3030', severity: 'error',
+  description: 'Avoid exposing the Docker socket via VOLUME.',
+  check(ctx) {
+    const dockerSocket = /\/var\/run\/docker\.sock/;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'VOLUME' && dockerSocket.test(inst.arguments)) {
+          violations.push({ rule: 'DV3030', severity: 'error', message: 'VOLUME /var/run/docker.sock exposes the Docker daemon socket, enabling full host compromise. Avoid mounting the Docker socket in images.', line: inst.line });
+        }
+        // Also check COPY/ADD of docker.sock
+        if ((inst.type === 'COPY' || inst.type === 'ADD') && dockerSocket.test(inst.arguments)) {
+          violations.push({ rule: 'DV3030', severity: 'error', message: 'COPY/ADD of Docker socket path detected. This enables container escape and full host compromise.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3028: useradd without --no-log-init (large sparse lastlog file risk)
 export const DV3028: Rule = {
   id: 'DV3028', severity: 'info',

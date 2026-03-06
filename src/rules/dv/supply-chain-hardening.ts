@@ -151,6 +151,45 @@ export const DV6007: Rule = {
   },
 };
 
+// DV6009: pip install --break-system-packages bypasses PEP 668 protection
+export const DV6009: Rule = {
+  id: 'DV6009', severity: 'warning',
+  description: 'Avoid pip install --break-system-packages. Use a virtual environment instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const breakSysPkg = /pip3?\s+install\b[^&|;]*--break-system-packages/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (breakSysPkg.test(inst.arguments)) {
+          violations.push({ rule: 'DV6009', severity: 'warning', message: 'pip install --break-system-packages bypasses PEP 668 environment isolation. Use a virtual environment (python -m venv) or --user install to avoid corrupting system Python packages.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6010: yarn/npm install without lockfile (non-deterministic builds)
+export const DV6010: Rule = {
+  id: 'DV6010', severity: 'info',
+  description: 'Package install without frozen lockfile may produce non-deterministic builds.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // yarn install without --frozen-lockfile or --immutable
+        if (/\byarn\s+install\b/.test(args) && !/--frozen-lockfile|--immutable/.test(args)) {
+          violations.push({ rule: 'DV6010', severity: 'info', message: 'yarn install without --frozen-lockfile or --immutable may produce non-deterministic builds. Use `yarn install --frozen-lockfile` (v1) or `yarn install --immutable` (v2+).', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV6008: COPY or ADD of .git directory leaks repository history
 export const DV6008: Rule = {
   id: 'DV6008', severity: 'warning',

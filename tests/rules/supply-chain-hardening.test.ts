@@ -196,3 +196,45 @@ describe('DV6008 - COPY/ADD .git directory', () => {
     expect(hasRule(lintDockerfile('FROM node:20\nCOPY .gitignore /app/'), 'DV6008')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// DV6009 - pip install --break-system-packages
+// ---------------------------------------------------------------------------
+describe('DV6009 - pip install --break-system-packages', () => {
+  it('flags pip install --break-system-packages', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN pip install --break-system-packages flask'), 'DV6009')).toBe(true);
+  });
+  it('flags pip3 install --break-system-packages', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN pip3 install --break-system-packages requests'), 'DV6009')).toBe(true);
+  });
+  it('flags --break-system-packages at end of command', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN pip install flask --break-system-packages'), 'DV6009')).toBe(true);
+  });
+  it('does not flag normal pip install', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN pip install --no-cache-dir flask'), 'DV6009')).toBe(false);
+  });
+  it('does not flag pip install in venv', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN python -m venv /venv && /venv/bin/pip install flask'), 'DV6009')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6010 - yarn install without frozen lockfile
+// ---------------------------------------------------------------------------
+describe('DV6010 - yarn install without frozen lockfile', () => {
+  it('flags yarn install without --frozen-lockfile', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY . .\nRUN yarn install'), 'DV6010')).toBe(true);
+  });
+  it('passes yarn install --frozen-lockfile', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY . .\nRUN yarn install --frozen-lockfile'), 'DV6010')).toBe(false);
+  });
+  it('passes yarn install --immutable', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY . .\nRUN yarn install --immutable'), 'DV6010')).toBe(false);
+  });
+  it('does not flag yarn add (not install)', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN yarn add express'), 'DV6010')).toBe(false);
+  });
+  it('does not flag npm install (different package manager)', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install'), 'DV6010')).toBe(false);
+  });
+});

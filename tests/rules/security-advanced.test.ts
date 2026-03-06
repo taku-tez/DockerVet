@@ -590,3 +590,51 @@ describe('DV4017 - PATH contains writable directory', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nENV PATH=$PATH:/usr/local/bin'), 'DV4017')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// DV3029 - Cloud credential directory COPY/ADD
+// ---------------------------------------------------------------------------
+describe('DV3029 - Cloud credential directory COPY', () => {
+  it('flags COPY .aws/', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY .aws/ /root/.aws/'), 'DV3029')).toBe(true);
+  });
+  it('flags COPY ~/.kube/config', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY kubeconfig /root/.kube/config'), 'DV3029')).toBe(true);
+  });
+  it('flags ADD .config/gcloud/', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nADD .config/gcloud/ /root/.config/gcloud/'), 'DV3029')).toBe(true);
+  });
+  it('flags COPY .azure/ directory', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY .azure/ /root/.azure/'), 'DV3029')).toBe(true);
+  });
+  it('flags COPY .aws/credentials file', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY .aws/credentials /root/.aws/credentials'), 'DV3029')).toBe(true);
+  });
+  it('passes COPY of normal app files', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY app.py /app/'), 'DV3029')).toBe(false);
+  });
+  it('passes COPY of requirements.txt', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nCOPY requirements.txt /app/'), 'DV3029')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV3030 - Docker socket exposed via VOLUME
+// ---------------------------------------------------------------------------
+describe('DV3030 - Docker socket exposure', () => {
+  it('flags VOLUME /var/run/docker.sock', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /var/run/docker.sock'), 'DV3030')).toBe(true);
+  });
+  it('flags VOLUME with docker.sock in JSON array', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME ["/var/run/docker.sock"]'), 'DV3030')).toBe(true);
+  });
+  it('flags COPY of docker.sock', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nCOPY /var/run/docker.sock /var/run/docker.sock'), 'DV3030')).toBe(true);
+  });
+  it('passes normal VOLUME', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /data'), 'DV3030')).toBe(false);
+  });
+  it('passes VOLUME /var/log', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nVOLUME /var/log'), 'DV3030')).toBe(false);
+  });
+});
