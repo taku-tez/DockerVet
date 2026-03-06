@@ -263,3 +263,95 @@ export const DV6012: Rule = {
     return violations;
   },
 };
+
+// DV6013: curl/wget download without --fail flag
+export const DV6013: Rule = {
+  id: 'DV6013', severity: 'warning',
+  description: 'curl/wget used without failure flags. HTTP errors produce silent bad downloads.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // Check curl without --fail or -f (ignore -fsSL etc. which includes f)
+        if (/\bcurl\b/.test(args) && !/\bcurl\b[^|;]*\s(?:--fail\b|-[a-zA-Z]*f)/.test(args)) {
+          violations.push({ rule: 'DV6013', severity: 'warning', message: 'curl used without --fail/-f flag. HTTP error responses (4xx/5xx) will be silently saved instead of failing the build. Use `curl -fsSL` or `curl --fail`.', line: inst.line });
+        }
+        // Check wget without --tries or specific failure handling isn't the concern;
+        // wget fails on HTTP errors by default, but not with -q which hides errors
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6014: HEALTHCHECK with too-short interval (< 5s)
+export const DV6014: Rule = {
+  id: 'DV6014', severity: 'info',
+  description: 'HEALTHCHECK interval too short, causing unnecessary resource consumption.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const intervalRe = /--interval=(\d+)(s|ms|m)?/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'HEALTHCHECK') continue;
+        const match = inst.arguments.match(intervalRe);
+        if (match) {
+          const val = parseInt(match[1], 10);
+          const unit = match[2] || 's';
+          let seconds = val;
+          if (unit === 'ms') seconds = val / 1000;
+          else if (unit === 'm') seconds = val * 60;
+          if (seconds < 5) {
+            violations.push({ rule: 'DV6014', severity: 'info', message: `HEALTHCHECK interval is ${match[0]} (< 5s). Very frequent health checks waste CPU and network resources. Use at least 10s.`, line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6015: git clone without --depth (full history wastes space and may leak info)
+export const DV6015: Rule = {
+  id: 'DV6015', severity: 'info',
+  description: 'git clone without --depth fetches full history, wasting image space.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // Find git clone commands without --depth or --single-branch
+        if (/\bgit\s+clone\b/.test(args) && !/--depth\b/.test(args) && !/--single-branch\b/.test(args)) {
+          violations.push({ rule: 'DV6015', severity: 'info', message: 'git clone without --depth fetches full repository history, increasing image size and potentially exposing sensitive historical data. Use `git clone --depth 1` for smaller images.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6016: npm install with --force or --legacy-peer-deps bypasses dependency safety
+export const DV6016: Rule = {
+  id: 'DV6016', severity: 'warning',
+  description: 'npm install with --force/--legacy-peer-deps bypasses dependency safety checks.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (/\bnpm\s+(?:install|i|ci)\b/.test(args)) {
+          if (/--force\b/.test(args)) {
+            violations.push({ rule: 'DV6016', severity: 'warning', message: 'npm install with --force bypasses peer dependency checks and overrides protections. This can introduce incompatible or vulnerable transitive dependencies.', line: inst.line });
+          } else if (/--legacy-peer-deps\b/.test(args)) {
+            violations.push({ rule: 'DV6016', severity: 'warning', message: 'npm install with --legacy-peer-deps ignores peer dependency conflicts. This may allow incompatible or vulnerable dependency versions.', line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};

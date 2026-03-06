@@ -238,3 +238,96 @@ describe('DV6010 - yarn install without frozen lockfile', () => {
     expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install'), 'DV6010')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// DV6013 - curl without --fail flag
+// ---------------------------------------------------------------------------
+describe('DV6013 - curl without --fail flag', () => {
+  it('flags curl without --fail', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -sL https://example.com/install.sh -o /tmp/install.sh'), 'DV6013')).toBe(true);
+  });
+  it('flags curl with only -sL (no fail)', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -sL https://example.com/file.tar.gz | tar xz'), 'DV6013')).toBe(true);
+  });
+  it('passes curl with -f flag', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -fsSL https://example.com/install.sh -o /tmp/install.sh'), 'DV6013')).toBe(false);
+  });
+  it('passes curl with --fail flag', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl --fail -sL https://example.com/install.sh | bash'), 'DV6013')).toBe(false);
+  });
+  it('does not flag RUN without curl', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN wget https://example.com/file.tar.gz'), 'DV6013')).toBe(false);
+  });
+  it('passes curl with -fsSL combined flags', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -'), 'DV6013')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6014 - HEALTHCHECK with interval < 5s
+// ---------------------------------------------------------------------------
+describe('DV6014 - HEALTHCHECK with too-short interval', () => {
+  it('flags --interval=1s', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nHEALTHCHECK --interval=1s CMD curl -f http://localhost/'), 'DV6014')).toBe(true);
+  });
+  it('flags --interval=2s', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nHEALTHCHECK --interval=2s --timeout=3s CMD wget -q http://localhost/'), 'DV6014')).toBe(true);
+  });
+  it('flags --interval=500ms', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nHEALTHCHECK --interval=500ms CMD true'), 'DV6014')).toBe(true);
+  });
+  it('passes --interval=30s', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nHEALTHCHECK --interval=30s CMD curl -f http://localhost/'), 'DV6014')).toBe(false);
+  });
+  it('passes --interval=10s', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nHEALTHCHECK --interval=10s CMD true'), 'DV6014')).toBe(false);
+  });
+  it('passes HEALTHCHECK without interval (uses default 30s)', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nHEALTHCHECK CMD curl -f http://localhost/'), 'DV6014')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6015 - git clone without --depth
+// ---------------------------------------------------------------------------
+describe('DV6015 - git clone without --depth', () => {
+  it('flags git clone without --depth', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN git clone https://github.com/user/repo.git /app'), 'DV6015')).toBe(true);
+  });
+  it('flags git clone with branch but no depth', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN git clone -b main https://github.com/user/repo.git'), 'DV6015')).toBe(true);
+  });
+  it('passes git clone --depth 1', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN git clone --depth 1 https://github.com/user/repo.git /app'), 'DV6015')).toBe(false);
+  });
+  it('passes git clone --single-branch', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN git clone --single-branch https://github.com/user/repo.git'), 'DV6015')).toBe(false);
+  });
+  it('does not flag non-git RUN', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN echo hello'), 'DV6015')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV6016 - npm install with --force / --legacy-peer-deps
+// ---------------------------------------------------------------------------
+describe('DV6016 - npm install with --force/--legacy-peer-deps', () => {
+  it('flags npm install --force', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install --force'), 'DV6016')).toBe(true);
+  });
+  it('flags npm ci --legacy-peer-deps', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY package*.json ./\nRUN npm ci --legacy-peer-deps'), 'DV6016')).toBe(true);
+  });
+  it('flags npm i --force', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm i --force'), 'DV6016')).toBe(true);
+  });
+  it('passes normal npm install', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm install'), 'DV6016')).toBe(false);
+  });
+  it('passes npm ci without unsafe flags', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nCOPY package*.json ./\nRUN npm ci'), 'DV6016')).toBe(false);
+  });
+  it('does not flag yarn install --force (different manager)', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN yarn install --force'), 'DV6016')).toBe(false);
+  });
+});
