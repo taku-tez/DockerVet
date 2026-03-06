@@ -821,6 +821,46 @@ export const DV3020: Rule = {
   },
 };
 
+// DV3026: chmod 777 or overly permissive file permissions
+export const DV3026: Rule = {
+  id: 'DV3026', severity: 'warning',
+  description: 'Avoid overly permissive file permissions (chmod 777/666).',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Match chmod with dangerous permission modes: 777, 776, 666, etc.
+    // Also match o+w (other writable), a+w (all writable)
+    const dangerousChmod = /chmod\s+(?:-[Rrf]+\s+)*(?:777|776|775|666|o\+w|a\+w)\b/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (dangerousChmod.test(inst.arguments)) {
+          violations.push({ rule: 'DV3026', severity: 'warning', message: 'Overly permissive file permissions detected. Avoid chmod 777/666/o+w. Use the minimum required permissions.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3027: apt-get upgrade / apk upgrade / yum update in Dockerfile
+export const DV3027: Rule = {
+  id: 'DV3027', severity: 'warning',
+  description: 'Avoid running dist-upgrade/upgrade in Dockerfiles. Update the base image instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const upgradePatterns = /(?:apt-get|apt)\s+(?:dist-)?upgrade|apk\s+upgrade|yum\s+update\b(?!\s+--)|dnf\s+upgrade/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (upgradePatterns.test(inst.arguments)) {
+          violations.push({ rule: 'DV3027', severity: 'warning', message: 'Avoid running upgrade/dist-upgrade in Dockerfiles. This creates non-reproducible builds. Update the base image tag instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV4017: PATH contains writable directory (PATH pollution attack)
 export const DV4017: Rule = {
   id: 'DV4017', severity: 'warning',

@@ -424,3 +424,64 @@ export const DV4012: Rule = {
     return violations;
   },
 };
+
+// DV4018: Multiple HEALTHCHECK instructions (only last one takes effect)
+export const DV4018: Rule = {
+  id: 'DV4018', severity: 'warning',
+  description: 'Multiple HEALTHCHECK instructions found. Only the last one takes effect.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      const healthchecks = stage.instructions.filter(i => i.type === 'HEALTHCHECK');
+      if (healthchecks.length > 1) {
+        for (let i = 0; i < healthchecks.length - 1; i++) {
+          violations.push({ rule: 'DV4018', severity: 'warning', message: 'Multiple HEALTHCHECK instructions found. Only the last one takes effect; earlier ones are silently ignored.', line: healthchecks[i].line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4019: WORKDIR with relative path
+export const DV4019: Rule = {
+  id: 'DV4019', severity: 'warning',
+  description: 'WORKDIR should use absolute paths for clarity and predictability.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'WORKDIR') continue;
+        const w = inst as WorkdirInstruction;
+        const dir = w.path || inst.arguments.trim();
+        // Skip variable references like $HOME or ${APP_DIR}
+        if (/^\$/.test(dir)) continue;
+        // Flag relative paths (not starting with /)
+        if (dir && !dir.startsWith('/')) {
+          violations.push({ rule: 'DV4019', severity: 'warning', message: `WORKDIR "${dir}" uses a relative path. Use an absolute path for clarity and predictability.`, line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4020: Shell form ENTRYPOINT (prevents proper signal handling)
+export const DV4020: Rule = {
+  id: 'DV4020', severity: 'warning',
+  description: 'ENTRYPOINT uses shell form. Use exec form for proper signal handling.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+    for (const inst of lastStage.instructions) {
+      if (inst.type !== 'ENTRYPOINT') continue;
+      const args = inst.arguments.trim();
+      // Exec form starts with [
+      if (!args.startsWith('[')) {
+        violations.push({ rule: 'DV4020', severity: 'warning', message: 'ENTRYPOINT uses shell form, which wraps the process in /bin/sh -c and prevents proper signal handling (SIGTERM). Use exec form: ENTRYPOINT ["executable", "arg1"].', line: inst.line });
+      }
+    }
+    return violations;
+  },
+};
