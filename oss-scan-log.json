@@ -14047,5 +14047,149 @@
       "info": 15
     },
     "notes": "Clean scan, no FP. DL3008 apt (9x), DV1009 digest (5x), DV1003 curl|sh in dev Dockerfile (legitimate)."
+  },
+  {
+    "repo": "openobserve/openobserve",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 329,
+    "severities": {
+      "error": 0,
+      "warning": 164,
+      "info": 157,
+      "style": 8
+    },
+    "notableFindings": "DL3008 apt pinning (108x), DV1009 digest (34x), DV1006 root (15x), DL3022 COPY --from=ent undefined alias (named build context). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "juspay/hyperswitch",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 83,
+    "severities": {
+      "error": 1,
+      "warning": 36,
+      "info": 46,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (18x), DV1009 digest (9x), DV1003 curl|sh, DV4017 PATH pollution (.cargo/bin). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "paradedb/paradedb",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 60,
+    "severities": {
+      "error": 1,
+      "warning": 36,
+      "info": 20,
+      "style": 3
+    },
+    "notableFindings": "DL3008 apt pinning (29x), DV3008 git clone (3x), DV1003 curl|sh, DV4017 PATH pollution (.cargo/bin). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "neondatabase/neon",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 419,
+    "severities": {
+      "error": 8,
+      "warning": 251,
+      "info": 136,
+      "style": 24
+    },
+    "notableFindings": "DL3008 apt pinning (138x), DL3003 cd instead of WORKDIR (60x), DV3024 tarball without checksum (5x), DV3031 sudoers NOPASSWD, DV3018 chpasswd plaintext. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "lightdash/lightdash",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 18,
+    "severities": {
+      "error": 3,
+      "warning": 9,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DV1001 correctly flags LIGHTDASH_SECRET='not very secret' in .gitpod.Dockerfile. DV3014 hardcoded DB conn. DL3004 sudo. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "flagsmith/flagsmith",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 31,
+    "severities": {
+      "error": 1,
+      "warning": 13,
+      "info": 15,
+      "style": 2
+    },
+    "notableFindings": "DV3025 git credential.helper store. DV3023 FP fixed: $PYTHON_VERSION in apk add package name matched as curl URL arg. DL3018 apk pinning (7x). All legitimate after fix.",
+    "improvements": [
+      "Fixed DV3023: require curl/wget at command position to avoid FP on package names in apk/apt install"
+    ]
+  },
+  {
+    "repo": "growthbook/growthbook",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 18,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (7x), DV1009 digest (3x), DV4022 npm ci recommendation. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "risingwavelabs/risingwave",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 286,
+    "severities": {
+      "error": 19,
+      "warning": 136,
+      "info": 127,
+      "style": 4
+    },
+    "notableFindings": "DL3008 apt pinning (38x), DV6013 curl no --fail (19x), DV1009 digest (19x), DV1006 root (13x), DL3020 ADD vs COPY (12x), DV1003 curl|sh (7x). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/answer",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 30,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 9,
+      "style": 1
+    },
+    "notableFindings": "DV3023 FP fixed: $TIMEZONE in 'ln -sf' after 'apk add curl' was matched as curl URL arg. DL3018 apk pinning (14x), DV4009 chmod 777. All legitimate after fix.",
+    "improvements": [
+      "Fixed DV3023: require curl/wget at command position to avoid FP on package names in apk/apt install"
+    ]
+  },
+  {
+    "repo": "element-hq/synapse",
+    "scannedAt": "2026-03-07T02:04:25+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 51,
+    "severities": {
+      "error": 2,
+      "warning": 27,
+      "info": 21,
+      "style": 1
+    },
+    "notableFindings": "DL3008 apt pinning (18x), DV1009 digest (6x), DV1003 curl|sh (2x), DV1006 root (3x). All legitimate.",
+    "improvements": []
   }
 ]
