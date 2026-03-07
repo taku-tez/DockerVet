@@ -1065,7 +1065,7 @@ export const DV3033: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     // Well-known localhost / internal-only URLs are acceptable over HTTP
-    const localhostPattern = /^http:\/\/(?:localhost|127\.0\.0\.1|::1|0\.0\.0\.0)[\/:]/i;
+    const localhostPattern = /^http:\/\/(?:localhost|127\.0\.0\.1|::1|0\.0\.0\.0|[a-z0-9.-]+\.svc\.cluster\.local)[\/:]/i;
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'ADD') {
@@ -1081,8 +1081,12 @@ export const DV3033: Rule = {
           }
         }
         if (inst.type === 'RUN') {
+          // Strip echo/printf string content to avoid flagging URLs in config output
+          const argsStripped = inst.arguments
+            .replace(/\b(?:echo|printf)\s+(?:-[enE]+\s+)*(?:'[^']*'|"[^"]*")/g, '')
+            .replace(/\b(?:echo|printf)\s+(?:-[enE]+\s+)*[^|;&\n]*/g, '');
           // Detect curl/wget with http:// URLs
-          const httpUrls = inst.arguments.match(/\bhttps?:\/\/\S+/g);
+          const httpUrls = argsStripped.match(/\bhttps?:\/\/\S+/g);
           if (httpUrls) {
             for (const url of httpUrls) {
               if (/^http:\/\//i.test(url) && !localhostPattern.test(url)) {
