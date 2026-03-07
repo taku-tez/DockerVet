@@ -99,3 +99,37 @@ describe('DV7004 - chmod setuid/setgid', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN chmod +x /entrypoint.sh'), 'DV7004')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// DV7005 - USER switches back to root after non-root
+// ---------------------------------------------------------------------------
+describe('DV7005 - USER root re-escalation', () => {
+  it('flags USER root after USER nonroot in final stage', () => {
+    const df = 'FROM ubuntu:22.04\nUSER appuser\nRUN echo hello\nUSER root';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(true);
+  });
+  it('flags USER 0 after USER appuser in final stage', () => {
+    const df = 'FROM ubuntu:22.04\nUSER appuser\nUSER 0';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(true);
+  });
+  it('does not flag single USER root', () => {
+    const df = 'FROM ubuntu:22.04\nUSER root';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(false);
+  });
+  it('does not flag USER root then USER appuser (ends non-root)', () => {
+    const df = 'FROM ubuntu:22.04\nUSER root\nRUN apt-get install -y curl\nUSER appuser';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(false);
+  });
+  it('does not flag single non-root USER', () => {
+    const df = 'FROM ubuntu:22.04\nUSER nobody';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(false);
+  });
+  it('does not flag non-final stage USER re-escalation', () => {
+    const df = 'FROM ubuntu:22.04 AS build\nUSER appuser\nUSER root\nFROM alpine:3.18\nUSER nobody';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(false);
+  });
+  it('flags in final stage of multi-stage build', () => {
+    const df = 'FROM ubuntu:22.04 AS build\nRUN make\nFROM alpine:3.18\nUSER appuser\nRUN echo hello\nUSER root';
+    expect(hasRule(lintDockerfile(df), 'DV7005')).toBe(true);
+  });
+});

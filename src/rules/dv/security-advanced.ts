@@ -146,8 +146,22 @@ export const DV3007: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
-        if (/wget\s+.*--no-check-certificate/.test(inst.arguments) || /curl\s+.*\s-k[\s$]/.test(inst.arguments) || /curl\s+.*--insecure/.test(inst.arguments)) {
+        const args = inst.arguments;
+        // curl/wget TLS bypass
+        if (/wget\s+.*--no-check-certificate/.test(args) || /curl\s+.*\s-k[\s$]/.test(args) || /curl\s+.*--insecure/.test(args)) {
           violations.push({ rule: 'DV3007', severity: 'warning', message: 'Avoid disabling TLS certificate verification (--no-check-certificate / -k / --insecure).', line: inst.line });
+        }
+        // pip --trusted-host bypasses TLS verification for package downloads
+        if (/pip3?\s+install\s+.*--trusted-host/.test(args)) {
+          violations.push({ rule: 'DV3007', severity: 'warning', message: 'pip install --trusted-host bypasses TLS certificate verification for package downloads. Use a properly configured package index with valid TLS.', line: inst.line });
+        }
+        // git config http.sslVerify false
+        if (/git\s+config\s+.*http\.sslVerify\s+false/i.test(args)) {
+          violations.push({ rule: 'DV3007', severity: 'warning', message: 'git config http.sslVerify false disables TLS verification for Git operations, enabling man-in-the-middle attacks.', line: inst.line });
+        }
+        // npm config set strict-ssl false
+        if (/npm\s+config\s+set\s+strict-ssl\s+false/i.test(args)) {
+          violations.push({ rule: 'DV3007', severity: 'warning', message: 'npm config set strict-ssl false disables TLS certificate verification for npm registry connections.', line: inst.line });
         }
       }
     }

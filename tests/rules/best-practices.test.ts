@@ -341,3 +341,26 @@ describe('DV4016 - Invalid COPY --from stage reference', () => {
     expect(hasRule(lintDockerfile('FROM golang AS builder\nRUN go build\nFROM ubuntu\nCOPY --from=builder /go/bin/app /app'), 'DV4016')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// DV4024 - HEALTHCHECK NONE disables health monitoring
+// ---------------------------------------------------------------------------
+describe('DV4024 - HEALTHCHECK NONE', () => {
+  it('flags HEALTHCHECK NONE in final stage', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nHEALTHCHECK NONE'), 'DV4024')).toBe(true);
+  });
+  it('does not flag HEALTHCHECK CMD', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nHEALTHCHECK CMD curl -f http://localhost/'), 'DV4024')).toBe(false);
+  });
+  it('does not flag when no HEALTHCHECK present', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN echo hello'), 'DV4024')).toBe(false);
+  });
+  it('flags HEALTHCHECK NONE in final stage of multi-stage', () => {
+    const df = 'FROM ubuntu:22.04 AS build\nHEALTHCHECK CMD curl -f http://localhost/\nFROM alpine:3.18\nHEALTHCHECK NONE';
+    expect(hasRule(lintDockerfile(df), 'DV4024')).toBe(true);
+  });
+  it('does not flag HEALTHCHECK NONE in non-final stage', () => {
+    const df = 'FROM ubuntu:22.04 AS build\nHEALTHCHECK NONE\nFROM alpine:3.18\nHEALTHCHECK CMD curl -f http://localhost/';
+    expect(hasRule(lintDockerfile(df), 'DV4024')).toBe(false);
+  });
+});

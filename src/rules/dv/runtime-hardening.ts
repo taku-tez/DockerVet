@@ -1,5 +1,5 @@
 import { Rule, Violation } from '../types';
-import { EnvInstruction } from '../../parser/types';
+import { EnvInstruction, UserInstruction } from '../../parser/types';
 
 // ---------------------------------------------------------------------------
 // DV7xxx: Runtime Hardening
@@ -91,6 +91,43 @@ export const DV7003: Rule = {
           });
         }
       }
+    }
+    return violations;
+  },
+};
+
+// DV7005: USER switches back to root in the final stage after setting non-root user
+export const DV7005: Rule = {
+  id: 'DV7005', severity: 'warning',
+  description: 'USER switches back to root after setting a non-root user in the final stage.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+
+    // Track USER instructions in the final stage
+    const userInstructions: Array<{ user: string; line: number }> = [];
+    for (const inst of lastStage.instructions) {
+      if (inst.type !== 'USER') continue;
+      const u = inst as UserInstruction;
+      const userName = u.user || inst.arguments.trim().split(/[:\s]/)[0];
+      userInstructions.push({ user: userName, line: inst.line });
+    }
+
+    // Look for pattern: non-root user followed by root user (privilege re-escalation)
+    // We only flag if the LAST USER instruction is root — if it's non-root, the container
+    // ultimately runs as non-root which is fine (intermediate root for setup is acceptable).
+    if (userInstructions.length < 2) return violations;
+    const lastUser = userInstructions[userInstructions.length - 1];
+    const hasNonRoot = userInstructions.slice(0, -1).some(u =>
+      u.user !== 'root' && u.user !== '0'
+    );
+    if (hasNonRoot && (lastUser.user === 'root' || lastUser.user === '0')) {
+      violations.push({
+        rule: 'DV7005', severity: 'warning',
+        message: 'USER switches back to root after setting a non-root user. The container will run as root, defeating the purpose of the earlier USER instruction. Move root-required operations before the final USER instruction.',
+        line: lastUser.line,
+      });
     }
     return violations;
   },

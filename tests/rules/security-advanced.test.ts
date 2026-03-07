@@ -117,6 +117,24 @@ describe('DV3007 - TLS verification disabled', () => {
   it('passes normal wget', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu\nRUN wget https://example.com'), 'DV3007')).toBe(false);
   });
+  it('flags pip install --trusted-host', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.11\nRUN pip install --trusted-host pypi.internal.com mypackage'), 'DV3007')).toBe(true);
+  });
+  it('flags pip3 install --trusted-host', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.11\nRUN pip3 install --trusted-host pypi.example.com mypackage'), 'DV3007')).toBe(true);
+  });
+  it('flags git config http.sslVerify false', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git config --global http.sslVerify false'), 'DV3007')).toBe(true);
+  });
+  it('flags npm config set strict-ssl false', () => {
+    expect(hasRule(lintDockerfile('FROM node:18\nRUN npm config set strict-ssl false'), 'DV3007')).toBe(true);
+  });
+  it('passes pip install without --trusted-host', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.11\nRUN pip install flask'), 'DV3007')).toBe(false);
+  });
+  it('passes git config with sslVerify true', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu\nRUN git config --global http.sslVerify true'), 'DV3007')).toBe(false);
+  });
 });
 
 describe('DV3008 - git clone', () => {

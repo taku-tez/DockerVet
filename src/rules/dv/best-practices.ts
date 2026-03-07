@@ -1,6 +1,6 @@
 import { Rule, Violation } from '../types';
 import { forEachInstruction } from '../utils';
-import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction, WorkdirInstruction } from '../../parser/types';
+import { ArgInstruction, CopyInstruction, EnvInstruction, ExposeInstruction, HealthcheckInstruction, WorkdirInstruction } from '../../parser/types';
 
 // DV4001: Multiple package install in separate RUNs
 export const DV4001: Rule = {
@@ -546,6 +546,29 @@ export const DV4020: Rule = {
       // Exec form starts with [
       if (!args.startsWith('[')) {
         violations.push({ rule: 'DV4020', severity: 'warning', message: 'ENTRYPOINT uses shell form, which wraps the process in /bin/sh -c and prevents proper signal handling (SIGTERM). Use exec form: ENTRYPOINT ["executable", "arg1"].', line: inst.line });
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4024: HEALTHCHECK NONE disables health monitoring
+export const DV4024: Rule = {
+  id: 'DV4024', severity: 'warning',
+  description: 'HEALTHCHECK NONE disables health monitoring for the container.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+    for (const inst of lastStage.instructions) {
+      if (inst.type !== 'HEALTHCHECK') continue;
+      const h = inst as HealthcheckInstruction;
+      if (h.none || /^\s*NONE\s*$/i.test(inst.arguments)) {
+        violations.push({
+          rule: 'DV4024', severity: 'warning',
+          message: 'HEALTHCHECK NONE disables health monitoring. Container orchestrators (Docker Swarm, Kubernetes) cannot detect unhealthy containers without a health check. Consider adding a proper HEALTHCHECK instruction.',
+          line: inst.line,
+        });
       }
     }
     return violations;
