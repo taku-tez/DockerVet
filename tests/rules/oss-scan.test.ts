@@ -5850,7 +5850,7 @@ USER fluent
     expect(v.some(v => v.rule === 'DV4007')).toBe(true);    // DEBIAN_FRONTEND=noninteractive is set as ENV. Use 
   });
 
-  it('clients/cmd/logstash/Dockerfile: 3 rules (DL3028, DV1011, DV4002)', () => {
+  it('clients/cmd/logstash/Dockerfile: 2 rules (DL3028, DV4002)', () => {
     const v = lintContent(`FROM logstash:9.3.1@sha256:d804f4994cebd9002e33a6f0b561dd3a15108222045f5d182da3c2675f26d177
 
 USER logstash
@@ -5878,7 +5878,7 @@ RUN gem build logstash-output-loki.gemspec && \\
 EXPOSE 5044
 `);
     expect(v.some(v => v.rule === 'DL3028')).toBe(true);    // Pin versions in gem install. Instead of `gem insta
-    expect(v.some(v => v.rule === 'DV1011')).toBe(true);    // Possible AWS secret access key detected in ENV "PA
+    expect(v.some(v => v.rule === 'DV1011')).toBe(false);   // PATH with many slashes is not a secret (FP fixed)
     expect(v.some(v => v.rule === 'DV4002')).toBe(true);    // 3 consecutive RUN instructions detected. Consider 
   });
 

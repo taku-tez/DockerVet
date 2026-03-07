@@ -374,6 +374,10 @@ function checkCloudKeyPattern(value: string, varName?: string): string | null {
     if (name === 'AWS secret access key') {
       if (PURE_HEX.test(value)) continue;
       if (varName && GPG_KEY_VAR.test(varName)) continue;
+      // Path-like values: semicolons (LUA_PATH, CLASSPATH) or many slashes are not secrets
+      if (value.includes(';') || (value.match(/\//g) || []).length > 3) continue;
+      // Variable names ending in _PATH/_CPATH are search paths, not secrets
+      if (varName && /_(C?PATH|CLASSPATH|LIBPATH)$/i.test(varName)) continue;
     }
     return name;
   }
