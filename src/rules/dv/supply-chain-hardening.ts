@@ -454,3 +454,60 @@ export const DV6016: Rule = {
     return violations;
   },
 };
+
+// DV6021: pip install --extra-index-url is a dependency confusion attack vector.
+// When --extra-index-url is used alongside the default PyPI index, an attacker can
+// register a higher-version package on PyPI with the same name as an internal package,
+// causing pip to prefer the malicious public version. Use --index-url (replaces default)
+// instead, or use --no-deps with a lock file.
+export const DV6021: Rule = {
+  id: 'DV6021', severity: 'warning',
+  description: 'pip install with --extra-index-url enables dependency confusion attacks.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (/\bpip3?\s+install\b/.test(args) && /--extra-index-url\b/.test(args)) {
+          violations.push({ rule: 'DV6021', severity: 'warning', message: 'pip install with --extra-index-url enables dependency confusion attacks. An attacker can publish a higher-version package on PyPI with the same name as your internal package. Use --index-url (replaces default PyPI) instead, or use a lock file with hash checking.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV6022: go install/get with GOPROXY=direct or GONOSUMDB bypasses Go module proxy security.
+// The Go module proxy (proxy.golang.org) and checksum database (sum.golang.org) protect
+// against tampered modules. Bypassing them removes a critical supply chain security layer.
+export const DV6022: Rule = {
+  id: 'DV6022', severity: 'warning',
+  description: 'Go module proxy or checksum database bypassed, reducing supply chain security.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV') {
+          const envInst = inst as import('../../parser/types').EnvInstruction;
+          for (const pair of envInst.pairs) {
+            if (/^GOPROXY$/i.test(pair.key) && /\bdirect\b/.test(pair.value) && !/proxy\.golang\.org/.test(pair.value)) {
+              violations.push({ rule: 'DV6022', severity: 'warning', message: 'GOPROXY=direct bypasses the Go module proxy, removing a supply chain security layer. The module proxy caches and verifies modules; bypassing it allows fetching tampered code directly from VCS.', line: inst.line });
+            }
+            if (/^GONOSUMDB$/i.test(pair.key) && pair.value && pair.value !== '') {
+              violations.push({ rule: 'DV6022', severity: 'warning', message: `GONOSUMDB=${pair.value} disables checksum verification for matching modules. This allows tampered dependencies to be used without detection. Remove GONOSUMDB or restrict its scope.`, line: inst.line });
+            }
+          }
+        }
+        if (inst.type === 'RUN') {
+          const args = inst.arguments;
+          // Inline GOPROXY=direct before go install/get
+          if (/\bGOPROXY=direct\b/.test(args) && /\bgo\s+(?:install|get|mod)\b/.test(args) && !/proxy\.golang\.org/.test(args)) {
+            violations.push({ rule: 'DV6022', severity: 'warning', message: 'GOPROXY=direct in RUN bypasses the Go module proxy. The proxy caches and verifies modules; bypassing it allows fetching tampered code directly from VCS.', line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};

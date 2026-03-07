@@ -1270,3 +1270,62 @@ export const DV3036: Rule = {
     return violations;
   },
 };
+
+// DV3039: Hardcoded credentials in HEALTHCHECK commands
+// HEALTHCHECK CMD may contain URLs or credentials visible in image metadata (docker inspect).
+// Unlike RUN, HEALTHCHECK is stored in the image config, not just build layers.
+export const DV3039: Rule = {
+  id: 'DV3039', severity: 'error',
+  description: 'Hardcoded credentials detected in HEALTHCHECK command.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Patterns for credentials in HEALTHCHECK commands
+    const credentialPatterns = [
+      // URLs with embedded credentials: http://user:pass@host
+      { pattern: /https?:\/\/[^:@\s]+:[^@\s]+@/i, msg: 'HEALTHCHECK contains a URL with embedded credentials (user:pass@host). These are visible via `docker inspect`. Use environment variables or a healthcheck script instead.' },
+      // Authorization headers with tokens
+      { pattern: /(?:Authorization[:\s]+Bearer|Bearer|Token)\s+[A-Za-z0-9_.\-+/=]{20,}/i, msg: 'HEALTHCHECK contains an authorization header or token. HEALTHCHECK commands are visible via `docker inspect`. Use environment variables or a healthcheck script instead.' },
+      // Explicit password/secret flags
+      { pattern: /(?:--password|--secret|--token|-p)\s+["']?[^\s"']{8,}/i, msg: 'HEALTHCHECK contains a password/secret/token flag. HEALTHCHECK commands are visible via `docker inspect`. Use environment variables or a healthcheck script instead.' },
+    ];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'HEALTHCHECK') continue;
+        const args = inst.arguments;
+        if (/^\s*NONE\s*$/i.test(args)) continue;
+        for (const { pattern, msg } of credentialPatterns) {
+          if (pattern.test(args)) {
+            violations.push({ rule: 'DV3039', severity: 'error', message: msg, line: inst.line });
+            break; // One violation per HEALTHCHECK instruction
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3040: npmrc/pypirc/pip.conf COPY leaks credentials
+// Copying .npmrc, .pypirc, or pip.conf into images may leak registry authentication tokens.
+// These files often contain _authToken, password, or HTTP basic auth credentials.
+export const DV3040: Rule = {
+  id: 'DV3040', severity: 'warning',
+  description: 'Avoid copying package manager config files that may contain registry credentials.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Match common package manager config files that store credentials
+    const sensitiveConfigs = /(?:^|\/)(?:\.npmrc|\.pypirc|pip\.conf|\.yarnrc\.yml|\.yarnrc|\.cargo\/credentials|\.nuget\/NuGet\.Config|\.docker\/config\.json|\.gem\/credentials)(?:$|["'\s])/i;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
+        const raw = inst.raw || inst.arguments;
+        if (sensitiveConfigs.test(raw)) {
+          const match = raw.match(sensitiveConfigs);
+          const filename = match ? match[0].trim().replace(/^\//, '') : 'config file';
+          violations.push({ rule: 'DV3040', severity: 'warning', message: `Copying "${filename}" may leak registry credentials (auth tokens, passwords). Use BuildKit --mount=type=secret or multi-stage builds to avoid persisting credentials in image layers.`, line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
