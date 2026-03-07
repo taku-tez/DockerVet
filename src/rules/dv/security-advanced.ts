@@ -283,6 +283,16 @@ export const DV3012: Rule = {
       /\bAIza[0-9A-Za-z_-]{35}\b/,                                    // Google API key
       /\bsk-[A-Za-z0-9]{20,}T3BlbkFJ[A-Za-z0-9]{20,}/,               // OpenAI API key
       /\bsk-(?:proj|svcacct)-[A-Za-z0-9_-]{40,}/,                     // OpenAI project/service key
+      /\bsk-ant-(?:api\d{2}|admin\d{2}|key\d{2})-[A-Za-z0-9_-]{20,}/, // Anthropic API key
+      /\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{20,}/,                // Stripe API key
+      /\bxox[bpas]-[0-9]+-[A-Za-z0-9-]+/,                             // Slack bot/user/app token
+      /\bhooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]+/, // Slack webhook URL
+      /\bvcel_[A-Za-z0-9_-]{20,}/,                                    // Vercel token
+      /\batlasv1-[A-Za-z0-9_-]{20,}/,                                 // Terraform Cloud token
+      /\bSG\.[A-Za-z0-9_-]{22,}\.[A-Za-z0-9_-]{22,}/,                // SendGrid API key
+      /\bSK[0-9a-f]{32}/,                                              // Twilio API key
+      /\bdapi[0-9a-f]{32,}/,                                           // Databricks PAT
+      /\bAKCp[A-Za-z0-9]{10,}/,                                       // JFrog Artifactory token
     ];
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
@@ -1144,6 +1154,52 @@ export const DV3034: Rule = {
         // gem install --no-verify (skip SSL verification)
         if (/gem\s+(?:install|sources)\s+.*--no-verify/.test(args) || /gem\s+sources\s+.*-a\s+http:\/\//.test(args)) {
           violations.push({ rule: 'DV3034', severity: 'warning', message: 'gem with --no-verify or HTTP source disables integrity/TLS verification for Ruby package downloads.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3035: JWT token hardcoded in RUN instruction
+// JWT tokens (eyJhbG...) in RUN commands indicate hardcoded authentication tokens.
+// These tokens may grant access to APIs/services and should never be baked into image layers.
+export const DV3035: Rule = {
+  id: 'DV3035', severity: 'error',
+  description: 'Hardcoded JWT token detected in RUN instruction.',
+  check(ctx) {
+    // Match JWT: base64url-encoded header.payload.signature (3 dot-separated parts)
+    // Header always starts with eyJ (base64 of '{"')
+    const jwtPattern = /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (jwtPattern.test(inst.arguments)) {
+          violations.push({ rule: 'DV3035', severity: 'error', message: 'Hardcoded JWT token detected in RUN instruction. JWT tokens should be provided via --mount=type=secret or runtime environment variables.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3036: Azure SAS token in URL
+// Azure Shared Access Signatures contain sig= parameter with sensitive signing key material.
+// These should use BuildKit secrets or runtime environment injection.
+export const DV3036: Rule = {
+  id: 'DV3036', severity: 'error',
+  description: 'Azure SAS token detected in URL.',
+  check(ctx) {
+    // Match Azure blob/file/queue/table storage URLs with SAS token parameters (sig=)
+    const sasPattern = /(?:blob|file|queue|table|dfs)\.core\.windows\.net\/[^"'\s]*[?&]sig=[A-Za-z0-9%+/=]+/;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN' && inst.type !== 'ADD') continue;
+        const text = inst.type === 'ADD' ? inst.raw : inst.arguments;
+        if (sasPattern.test(text)) {
+          violations.push({ rule: 'DV3036', severity: 'error', message: 'Azure SAS token detected in URL. SAS tokens contain signing key material and should not be hardcoded. Use --mount=type=secret or runtime environment variables.', line: inst.line });
         }
       }
     }
