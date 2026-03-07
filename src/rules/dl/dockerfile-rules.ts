@@ -626,3 +626,55 @@ export const DL3057: Rule = {
     return violations;
   },
 };
+
+// DL4006: Set SHELL to pipefail-enabled bash when using pipes in RUN
+// Without pipefail, only the exit code of the last command in a pipe is checked.
+// e.g., `RUN curl http://example.com | tar xz` — if curl fails, the build continues.
+export const DL4006: Rule = {
+  id: 'DL4006', severity: 'warning',
+  description: 'Set the SHELL option -o pipefail before RUN with a pipe in.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      let hasPipefail = false;
+      for (const inst of stage.instructions) {
+        // Track SHELL instructions that enable pipefail
+        if (inst.type === 'SHELL') {
+          const shellArgs = inst.arguments.toLowerCase();
+          if (shellArgs.includes('pipefail')) {
+            hasPipefail = true;
+          }
+          continue;
+        }
+
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+
+        // Check if this RUN uses an inline "set -o pipefail" or "set -euo pipefail"
+        if (/\bset\s+[^;|&]*pipefail/.test(args)) continue;
+
+        // Check if RUN uses bash -c with pipefail inline
+        if (/\bbash\s+-[a-zA-Z]*o\s+pipefail\b/.test(args)) continue;
+        if (/\bbash\s+[^;|&]*-o\s+pipefail\b/.test(args)) continue;
+
+        // Check for pipes (but not || which is logical OR, or |& for stderr redirect)
+        // Also skip heredoc bodies and strings that contain | inside quotes
+        const stripped = args
+          .replace(/\\\n/g, ' ')           // join continuations
+          .replace(/"[^"]*"/g, '""')       // strip double-quoted strings
+          .replace(/'[^']*'/g, "''")       // strip single-quoted strings
+          .replace(/\|\|/g, '  ')          // remove logical OR
+          .replace(/\|&/g, '  ');          // remove |& (bash stderr redirect)
+
+        if (/\|/.test(stripped) && !hasPipefail) {
+          violations.push({
+            rule: 'DL4006', severity: 'warning',
+            message: 'Set the SHELL option -o pipefail before RUN with a pipe in. If any command in a pipe fails, the whole pipe succeeds regardless. Use `SHELL ["/bin/bash", "-o", "pipefail", "-c"]` or add `set -o pipefail &&` before the pipe.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};

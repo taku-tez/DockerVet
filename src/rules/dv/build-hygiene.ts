@@ -14,7 +14,7 @@ export const DV9001: Rule = {
     const sensitivePatterns = [
       { pattern: /(?:^|\/)\.env(?:\.|$)/i, name: '.env file' },
       { pattern: /(?:^|\/)\.git(?:\/|$)/i, name: '.git directory' },
-      { pattern: /id_rsa|id_ed25519|id_ecdsa|id_dsa/i, name: 'SSH private key' },
+      { pattern: /(?:id_rsa|id_ed25519|id_ecdsa|id_dsa)(?!\.pub\b)/i, name: 'SSH private key' },
       { pattern: /\.pem$|\.key$/i, name: 'private key file' },
       { pattern: /\.pfx$|\.p12$/i, name: 'certificate bundle' },
       { pattern: /(?:^|\/)\.aws(?:\/|$)/i, name: '.aws credentials directory' },
