@@ -138,6 +138,18 @@ export const DV3006: Rule = {
 };
 
 // DV3007: TLS verification disabled
+// TLS-disabling environment variable patterns (checked in ENV instructions by DV3007)
+const TLS_DISABLE_ENV_PATTERNS: Array<{ key: RegExp; value: RegExp; description: string }> = [
+  { key: /^NODE_TLS_REJECT_UNAUTHORIZED$/i, value: /^0$/, description: 'NODE_TLS_REJECT_UNAUTHORIZED=0 disables TLS certificate verification for all Node.js HTTPS requests.' },
+  { key: /^PYTHONHTTPSVERIFY$/i, value: /^0$/, description: 'PYTHONHTTPSVERIFY=0 disables TLS certificate verification for Python urllib/requests.' },
+  { key: /^GIT_SSL_NO_VERIFY$/i, value: /^(true|1)$/i, description: 'GIT_SSL_NO_VERIFY disables TLS certificate verification for all Git operations.' },
+  { key: /^CURL_CA_BUNDLE$/i, value: /^$/, description: 'CURL_CA_BUNDLE="" disables curl certificate verification by clearing the CA bundle path.' },
+  { key: /^SSL_CERT_FILE$/i, value: /^\/dev\/null$/i, description: 'SSL_CERT_FILE=/dev/null disables TLS certificate verification by pointing to an empty CA file.' },
+  { key: /^REQUESTS_CA_BUNDLE$/i, value: /^(\/dev\/null|)$/i, description: 'REQUESTS_CA_BUNDLE set to /dev/null or empty disables TLS certificate verification for Python requests library.' },
+  { key: /^GONOSUMCHECK$/i, value: /./,  description: 'GONOSUMCHECK disables Go module checksum verification, allowing tampered dependencies.' },
+  { key: /^GOFLAGS$/i, value: /-insecure/, description: 'GOFLAGS=-insecure disables TLS verification for Go module downloads.' },
+];
+
 export const DV3007: Rule = {
   id: 'DV3007', severity: 'warning',
   description: 'Avoid disabling TLS certificate verification.',
@@ -145,23 +157,35 @@ export const DV3007: Rule = {
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
-        if (inst.type !== 'RUN') continue;
-        const args = inst.arguments;
-        // curl/wget TLS bypass
-        if (/wget\s+.*--no-check-certificate/.test(args) || /curl\s+.*\s-k[\s$]/.test(args) || /curl\s+.*--insecure/.test(args)) {
-          violations.push({ rule: 'DV3007', severity: 'warning', message: 'Avoid disabling TLS certificate verification (--no-check-certificate / -k / --insecure).', line: inst.line });
+        if (inst.type === 'RUN') {
+          const args = inst.arguments;
+          // curl/wget TLS bypass
+          if (/wget\s+.*--no-check-certificate/.test(args) || /curl\s+.*\s-k[\s$]/.test(args) || /curl\s+.*--insecure/.test(args)) {
+            violations.push({ rule: 'DV3007', severity: 'warning', message: 'Avoid disabling TLS certificate verification (--no-check-certificate / -k / --insecure).', line: inst.line });
+          }
+          // pip --trusted-host bypasses TLS verification for package downloads
+          if (/pip3?\s+install\s+.*--trusted-host/.test(args)) {
+            violations.push({ rule: 'DV3007', severity: 'warning', message: 'pip install --trusted-host bypasses TLS certificate verification for package downloads. Use a properly configured package index with valid TLS.', line: inst.line });
+          }
+          // git config http.sslVerify false
+          if (/git\s+config\s+.*http\.sslVerify\s+false/i.test(args)) {
+            violations.push({ rule: 'DV3007', severity: 'warning', message: 'git config http.sslVerify false disables TLS verification for Git operations, enabling man-in-the-middle attacks.', line: inst.line });
+          }
+          // npm config set strict-ssl false
+          if (/npm\s+config\s+set\s+strict-ssl\s+false/i.test(args)) {
+            violations.push({ rule: 'DV3007', severity: 'warning', message: 'npm config set strict-ssl false disables TLS certificate verification for npm registry connections.', line: inst.line });
+          }
         }
-        // pip --trusted-host bypasses TLS verification for package downloads
-        if (/pip3?\s+install\s+.*--trusted-host/.test(args)) {
-          violations.push({ rule: 'DV3007', severity: 'warning', message: 'pip install --trusted-host bypasses TLS certificate verification for package downloads. Use a properly configured package index with valid TLS.', line: inst.line });
-        }
-        // git config http.sslVerify false
-        if (/git\s+config\s+.*http\.sslVerify\s+false/i.test(args)) {
-          violations.push({ rule: 'DV3007', severity: 'warning', message: 'git config http.sslVerify false disables TLS verification for Git operations, enabling man-in-the-middle attacks.', line: inst.line });
-        }
-        // npm config set strict-ssl false
-        if (/npm\s+config\s+set\s+strict-ssl\s+false/i.test(args)) {
-          violations.push({ rule: 'DV3007', severity: 'warning', message: 'npm config set strict-ssl false disables TLS certificate verification for npm registry connections.', line: inst.line });
+        // ENV-based TLS disabling patterns
+        if (inst.type === 'ENV') {
+          const env = inst as EnvInstruction;
+          for (const pair of env.pairs) {
+            for (const tlsPattern of TLS_DISABLE_ENV_PATTERNS) {
+              if (tlsPattern.key.test(pair.key) && tlsPattern.value.test(pair.value)) {
+                violations.push({ rule: 'DV3007', severity: 'warning', message: tlsPattern.description, line: inst.line });
+              }
+            }
+          }
         }
       }
     }
@@ -1080,6 +1104,46 @@ export const DV3028: Rule = {
         const args = inst.arguments;
         if (/\buseradd\b/.test(args) && !/--no-log-init/.test(args)) {
           violations.push({ rule: 'DV3028', severity: 'info', message: 'useradd without --no-log-init can create a huge sparse lastlog file. Use `useradd --no-log-init` or `adduser` instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3034: Unsafe package manager configurations that weaken supply chain security
+export const DV3034: Rule = {
+  id: 'DV3034', severity: 'warning',
+  description: 'Avoid disabling package manager security checks (npm audit signatures, yarn integrity, etc.).',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // npm config set ignore-scripts true (globally disables lifecycle scripts verification)
+        // Note: --ignore-scripts on install is a SECURITY feature, but setting it globally via config is suspicious
+        if (/npm\s+config\s+set\s+audit\s+false/i.test(args)) {
+          violations.push({ rule: 'DV3034', severity: 'warning', message: 'npm config set audit false disables npm audit checks. Vulnerabilities in dependencies will not be reported.', line: inst.line });
+        }
+        // npm config set fund false is fine (just hides funding messages), skip it
+        // npm install --force bypasses peer dependency checks and integrity verification
+        if (/npm\s+install\s+.*--force\b/.test(args) && !/--force\s+.*--audit/.test(args)) {
+          violations.push({ rule: 'DV3034', severity: 'warning', message: 'npm install --force bypasses peer dependency and integrity checks. Use --legacy-peer-deps for peer dep issues only.', line: inst.line });
+        }
+        // yarn install --no-verify (skip integrity verification)
+        // Note: --skip-integrity-check is yarn v1, --no-immutable is yarn v2+
+        if (/yarn\s+(?:install\s+)?.*--skip-integrity-check/.test(args)) {
+          violations.push({ rule: 'DV3034', severity: 'warning', message: 'yarn --skip-integrity-check disables package integrity verification, allowing tampered packages.', line: inst.line });
+        }
+        // pip install --no-verify (not an actual pip flag but related: --no-deps --no-build-isolation)
+        // pip install from HTTP (non-HTTPS) index
+        if (/pip3?\s+install\s+.*--index-url\s+http:\/\//.test(args) || /pip3?\s+install\s+.*-i\s+http:\/\//.test(args)) {
+          violations.push({ rule: 'DV3034', severity: 'warning', message: 'pip install with HTTP (non-HTTPS) index URL. Use HTTPS to prevent package tampering.', line: inst.line });
+        }
+        // gem install --no-verify (skip SSL verification)
+        if (/gem\s+(?:install|sources)\s+.*--no-verify/.test(args) || /gem\s+sources\s+.*-a\s+http:\/\//.test(args)) {
+          violations.push({ rule: 'DV3034', severity: 'warning', message: 'gem with --no-verify or HTTP source disables integrity/TLS verification for Ruby package downloads.', line: inst.line });
         }
       }
     }

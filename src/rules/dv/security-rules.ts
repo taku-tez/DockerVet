@@ -9,6 +9,10 @@ const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|acces
 // Similarly, _URL / _ENDPOINT / _ADDR / _HOST suffixes indicate configuration endpoints, not secret values.
 // e.g. ANCHORE_FEEDS_TOKEN_URL stores an OAuth endpoint URL, not the token itself.
 const FILE_PATH_SUFFIX = /(?:_FILE|_URL|_ENDPOINT|_ADDR|_HOST)$/i;
+// Secret-management configuration suffixes: variable names ending with these describe
+// HOW secrets are managed (backend type, encoding, helper), not secret VALUES themselves.
+// e.g. CREDENTIAL_STORE_TYPE=vault, SECRET_BACKEND=aws, PASSWORD_ENCODING=sha256
+const SECRET_MGMT_CONFIG_SUFFIX = /(?:_STORE(?:_TYPE)?|_BACKEND|_PROVIDER|_HELPER|_POLICY|_ENGINE|_DRIVER|_ENCODING|_STRATEGY|_METHOD|_SCHEME|_FORMAT|_CLASS|_MODE|_HANDLER|_MANAGER|_RESOLVER)$/i;
 // Version/build identifiers: ARG/ENV names ending with these suffixes are version pins, not secrets.
 // e.g. AWS_SECRETSMANAGER_JDBC_VERSION=2.0.3 — "SECRET" is part of "SECRETSMANAGER" (a service name),
 // and the value is a semantic version string, not a secret.
@@ -49,6 +53,7 @@ function isNonSecretValue(key: string, value: string): boolean {
   if (value.startsWith('$')) return true;
   if (FILE_PATH_SUFFIX.test(key)) return true;
   if (VERSION_OR_BUILD_SUFFIX.test(key)) return true;
+  if (SECRET_MGMT_CONFIG_SUFFIX.test(key)) return true;
   if (FILE_PATH_VALUE.test(value)) return true;
   if (BOOL_OR_INT_VALUE.test(value)) return true;
   if (SEMANTIC_VERSION_VALUE.test(value)) return true;

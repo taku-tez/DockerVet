@@ -611,3 +611,31 @@ export const DV4025: Rule = {
     return violations;
   },
 };
+
+// DV4026: Shell-form ENTRYPOINT won't receive signals properly
+export const DV4026: Rule = {
+  id: 'DV4026', severity: 'warning',
+  description: 'ENTRYPOINT in shell form wraps the process in /bin/sh -c, preventing proper signal handling (PID 1 issues).',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+    for (const inst of lastStage.instructions) {
+      if (inst.type !== 'ENTRYPOINT') continue;
+      const args = inst.arguments.trim();
+      // Exec form starts with [
+      if (args.startsWith('[')) continue;
+      // Shell form: anything else
+      // Skip if the command already uses exec (e.g., ENTRYPOINT exec java ...)
+      if (/^\s*exec\s+/.test(args)) continue;
+      // Skip if tini or dumb-init is used (proper init process)
+      if (/\b(?:tini|dumb-init)\b/.test(args)) continue;
+      violations.push({
+        rule: 'DV4026', severity: 'warning',
+        message: 'ENTRYPOINT uses shell form, which wraps the process in /bin/sh -c and prevents proper signal handling. Use exec form: ENTRYPOINT ["executable", "arg1"] or prefix with exec.',
+        line: inst.line,
+      });
+    }
+    return violations;
+  },
+};
