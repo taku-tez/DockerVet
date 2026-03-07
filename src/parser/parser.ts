@@ -46,9 +46,19 @@ function parseFromArgs(args: string, line: number): FromInstruction {
     image = img;
     digest = d;
   } else if (imageSpec.includes(':')) {
-    const [img, t] = imageSpec.split(':', 2);
-    image = img;
-    tag = t;
+    // Handle registry ports: registry.example.com:5000/image:tag
+    // The tag is after the LAST colon, but only if what follows doesn't contain '/'
+    // (which would indicate a port/path, not a tag).
+    // Docker image reference format: [registry[:port]/]name[:tag]
+    const lastColon = imageSpec.lastIndexOf(':');
+    const afterColon = imageSpec.slice(lastColon + 1);
+    if (afterColon.includes('/')) {
+      // The last colon is part of a registry:port, no tag specified
+      image = imageSpec;
+    } else {
+      image = imageSpec.slice(0, lastColon);
+      tag = afterColon;
+    }
   }
 
   return {

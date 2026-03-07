@@ -215,12 +215,30 @@ describe('DL3006 - Tag version explicitly', () => {
   });
 });
 
+describe('DL3006 - Registry with port', () => {
+  it('passes tagged image from private registry with port', () => {
+    expect(hasRule(lintDockerfile('FROM registry.example.com:5000/myimage:v1'), 'DL3006')).toBe(false);
+  });
+  it('flags untagged image from private registry with port', () => {
+    expect(hasRule(lintDockerfile('FROM registry.example.com:5000/myimage'), 'DL3006')).toBe(true);
+  });
+  it('passes digest image from private registry with port', () => {
+    expect(hasRule(lintDockerfile('FROM registry:5000/image@sha256:abcdef1234567890'), 'DL3006')).toBe(false);
+  });
+});
+
 describe('DL3007 - No latest tag', () => {
   it('flags latest', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:latest'), 'DL3007')).toBe(true);
   });
   it('passes specific tag', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04'), 'DL3007')).toBe(false);
+  });
+  it('flags latest from private registry with port', () => {
+    expect(hasRule(lintDockerfile('FROM localhost:5000/app:latest'), 'DL3007')).toBe(true);
+  });
+  it('passes specific tag from private registry with port', () => {
+    expect(hasRule(lintDockerfile('FROM localhost:5000/app:v2.1'), 'DL3007')).toBe(false);
   });
 });
 

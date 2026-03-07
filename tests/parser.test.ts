@@ -66,6 +66,35 @@ describe('Parser', () => {
     expect(ast.stages[0].from.image).toBe('scratch');
   });
 
+  it('parses FROM with private registry port', () => {
+    const ast = parse('FROM registry.example.com:5000/myimage:v1');
+    const from = ast.stages[0].from;
+    expect(from.image).toBe('registry.example.com:5000/myimage');
+    expect(from.tag).toBe('v1');
+  });
+
+  it('parses FROM with registry port and no tag', () => {
+    const ast = parse('FROM localhost:5000/app');
+    const from = ast.stages[0].from;
+    expect(from.image).toBe('localhost:5000/app');
+    expect(from.tag).toBeUndefined();
+  });
+
+  it('parses FROM with registry port and digest', () => {
+    const ast = parse('FROM registry:5000/image@sha256:abcdef1234567890');
+    const from = ast.stages[0].from;
+    expect(from.image).toBe('registry:5000/image');
+    expect(from.digest).toBe('sha256:abcdef1234567890');
+    expect(from.tag).toBeUndefined();
+  });
+
+  it('parses FROM with registry port, nested path, and tag', () => {
+    const ast = parse('FROM myregistry:5000/org/repo:sha-abc123');
+    const from = ast.stages[0].from;
+    expect(from.image).toBe('myregistry:5000/org/repo');
+    expect(from.tag).toBe('sha-abc123');
+  });
+
   it('parses multi-stage builds', () => {
     const ast = parse('FROM node:18 AS builder\nRUN npm build\nFROM nginx:alpine\nCOPY --from=builder /app /usr/share/nginx/html');
     expect(ast.stages.length).toBe(2);
