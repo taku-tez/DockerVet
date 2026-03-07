@@ -58,17 +58,20 @@ export function tokenize(content: string): Token[] {
 
     // Handle heredoc syntax (BuildKit feature): COPY/RUN/ADD with <<DELIMITER
     // Collect all heredoc delimiters from the instruction, then skip until all are closed
+    // Include heredoc body in raw so variable references can be detected (DL3052 etc.)
     const heredocDelimiters = extractHeredocDelimiters(fullLine.trim());
     if (heredocDelimiters.length > 0) {
       let delimIdx = 0;
+      let rawWithHeredoc = fullLine;
       i++;
       while (i < lines.length && delimIdx < heredocDelimiters.length) {
+        rawWithHeredoc += '\n' + lines[i];
         if (lines[i].trim() === heredocDelimiters[delimIdx]) {
           delimIdx++;
         }
         i++;
       }
-      tokens.push({ type: 'INSTRUCTION', line: startLine, value: fullLine.trim(), raw: fullLine });
+      tokens.push({ type: 'INSTRUCTION', line: startLine, value: fullLine.trim(), raw: rawWithHeredoc });
       continue;
     }
 

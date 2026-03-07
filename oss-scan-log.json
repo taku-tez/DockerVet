@@ -14331,5 +14331,120 @@
     },
     "notableFindings": "DL3018 apk pinning (39x) — PHP self-hosted app with many Alpine packages. DV3019 downloaded script without checksum. DV3024 tarball without checksum. All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "vercel/next.js",
+    "files": 11,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 1,
+      "warnings": 53,
+      "info": 47,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. Example Dockerfiles (with-docker, with-docker-compose, with-docker-multi-env). Heavy DL3008 apt pinning (26x), DV1009 digest pinning (19x)."
+  },
+  {
+    "repo": "TryGhost/Ghost",
+    "files": 5,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 0,
+      "warnings": 17,
+      "info": 16
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (10x), DV1006 root (4x), DV4010 chown -R (2x). Standard Node.js multi-stage builds."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 4,
+      "warnings": 16,
+      "info": 18,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning (7x), DL3018 apk pinning (5x), DL3020 ADD vs COPY (4x). Go multi-stage builds with Alpine/Debian variants."
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "files": 1,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 0,
+      "warnings": 1,
+      "info": 2,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Very minimal Dockerfile with only 4 findings. Clean distroless-based operator image."
+  },
+  {
+    "repo": "zulip/zulip",
+    "files": 3,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 5,
+      "warnings": 14,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (7x), DV3028/DV7003 useradd --no-log-init (2x each), DV3031 sudoers NOPASSWD (2x) — all legitimate security findings."
+  },
+  {
+    "repo": "searxng/searxng",
+    "files": 3,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 0,
+      "warnings": 10,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. DL3045 COPY without WORKDIR (6x), DV1006 root (3x). Devcontainer + main Dockerfile."
+  },
+  {
+    "repo": "overleaf/overleaf",
+    "files": 91,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 36,
+      "warnings": 263,
+      "info": 235,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Large repo with 91 Dockerfiles across versioned server-ce directories. DV1009 (91x), DL3045 (83x), DV1006 (79x), DV4003 (71x), DL3003 (44x). Pattern: template-generated Dockerfiles with cd instead of WORKDIR."
+  },
+  {
+    "repo": "element-hq/synapse",
+    "files": 3,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 2,
+      "warnings": 27,
+      "info": 21,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (18x), DV1009 digest (6x). Python multi-stage build with uv package manager."
+  },
+  {
+    "repo": "openbao/openbao",
+    "files": 6,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 1,
+      "warnings": 43,
+      "info": 30
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (14x), DL3008 apt pinning (14x), DV1009 digest (9x). HashiCorp Vault fork with similar Dockerfile patterns."
+  },
+  {
+    "repo": "drakkan/sftpgo",
+    "files": 3,
+    "date": "2026-03-07",
+    "findings": {
+      "errors": 0,
+      "warnings": 22,
+      "info": 26
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (10x), DV1009 digest (6x), DL3008 apt pinning (5x). Go multi-stage builds with Alpine/Debian/Distroless variants."
   }
 ]

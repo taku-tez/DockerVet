@@ -479,10 +479,36 @@ const IMPLICIT_ARGS = new Set([
   'GOFLAGS', 'GOPROXY', 'GONOSUMCHECK', 'GONOSUMDB', 'GOPRIVATE',
   // npm/yarn env vars
   'NPM_CONFIG_REGISTRY', 'NPM_TOKEN', 'YARN_CACHE_FOLDER',
-  // Rust env vars
+  // Rust env vars consumed implicitly by cargo/rustc during RUN cargo build
   'CARGO_REGISTRIES_CRATES_IO_PROTOCOL', 'CARGO_NET_GIT_FETCH_WITH_CLI',
   'RUSTUP_HOME', 'CARGO_HOME',
+  'CARGO_BUILD_INCREMENTAL', 'CARGO_BUILD_TARGET', 'CARGO_BUILD_JOBS',
+  'CARGO_BUILD_RUSTFLAGS', 'CARGO_BUILD_RUSTDOCFLAGS',
+  'CARGO_PROFILE_RELEASE_LTO', 'CARGO_PROFILE_RELEASE_STRIP',
+  'CARGO_PROFILE_RELEASE_CODEGEN_UNITS', 'CARGO_PROFILE_RELEASE_OPT_LEVEL',
+  'RUSTFLAGS', 'RUSTDOCFLAGS',
+  // C/C++ compiler env vars consumed by cc/cmake/make during RUN
+  'CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS', 'AR', 'RANLIB',
+  'PKG_CONFIG_PATH', 'PKG_CONFIG_SYSROOT_DIR',
+  // OpenSSL/static linking env vars consumed by Rust *-sys crates via pkg-config
+  'OPENSSL_DIR', 'OPENSSL_LIB_DIR', 'OPENSSL_INCLUDE_DIR',
+  'OPENSSL_STATIC', 'OPENSSL_NO_VENDOR',
+  'PKG_CONFIG_ALL_STATIC', 'PKG_CONFIG_ALLOW_CROSS',
 ]);
+
+// Additional implicit ARG patterns (prefix matches) — these are consumed as env vars
+// by build tools without explicit $VAR reference in Dockerfile instructions.
+const IMPLICIT_ARG_PREFIXES = [
+  'CARGO_BUILD_',     // cargo build configuration
+  'CARGO_PROFILE_',   // cargo profile overrides
+  'CARGO_TARGET_',    // cargo target-specific config
+  'CMAKE_',           // CMake configuration
+  'OPENSSL_',         // OpenSSL build config
+  'LIBGIT2_',         // libgit2 sys crate
+  'LIBSSH2_',         // libssh2 sys crate
+  'LIBZ_SYS_',        // libz-sys crate
+  'ZSTD_SYS_',        // zstd-sys crate
+];
 
 export const DL3052: Rule = {
   id: 'DL3052', severity: 'style',
@@ -504,6 +530,7 @@ export const DL3052: Rule = {
       const name = arg.name;
       if (!name) continue;
       if (IMPLICIT_ARGS.has(name)) continue;
+      if (IMPLICIT_ARG_PREFIXES.some(p => name.startsWith(p))) continue;
       const re = new RegExp(`\\$\\{?${name}\\}?`);
       if (!re.test(combined)) {
         violations.push({ rule: 'DL3052', severity: 'style', message: `ARG ${name} is declared but never referenced in the Dockerfile.`, line: arg.line });
@@ -518,6 +545,7 @@ export const DL3052: Rule = {
         const name = ai.name;
         if (!name) continue;
         if (IMPLICIT_ARGS.has(name)) continue;
+        if (IMPLICIT_ARG_PREFIXES.some(p => name.startsWith(p))) continue;
         const re = new RegExp(`\\$\\{?${name}\\}?`);
         if (!re.test(combined)) {
           violations.push({ rule: 'DL3052', severity: 'style', message: `ARG ${name} is declared but never referenced in the Dockerfile.`, line: ai.line });

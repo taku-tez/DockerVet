@@ -252,6 +252,10 @@ export function parse(content: string): DockerfileAST {
     }
 
     const instruction = parseInstruction(token.value, token.line);
+    // Preserve full raw content including heredoc body from lexer token
+    if (token.raw && token.raw !== token.value) {
+      instruction.raw = token.raw;
+    }
 
     if (instruction.type === 'FROM') {
       currentStage = { from: instruction as FromInstruction, instructions: [], index: stages.length };
