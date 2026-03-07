@@ -15173,5 +15173,150 @@
     },
     "notableFindings": "DL3008 apt pinning (108x), DV1009 digest pinning (34x), DV1007/DV9005 apt cache cleanup (18x each). Large Rust/Node multi-stage builds. All findings legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "zulip/zulip",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 41,
+    "severities": {
+      "error": 5,
+      "warning": 18,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DV3031 sudoers NOPASSWD, DV3024 tarball without checksum, DV3033 FP on echo string config (fixed), DV3009 EXPOSE 22 in dev vagrant container — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/cosign",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "Minimal clean Dockerfile. DV1006 root, DV1009 no digest — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/trafficserver",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 137,
+    "severities": {
+      "error": 1,
+      "warning": 80,
+      "info": 54,
+      "style": 2
+    },
+    "notableFindings": "Heavy DL3008 apt pinning (53x), DL3003 cd instead of WORKDIR (12x), DV3008 git clone (13x), DV1003 curl|sh. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "minio/operator",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 100,
+    "severities": {
+      "error": 3,
+      "warning": 50,
+      "info": 45,
+      "style": 2
+    },
+    "notableFindings": "DV1012 FP on CA trust bundle (tls-ca-bundle.pem) — fixed. DL3008 apt pinning (16x), DL3007 latest (5x). All legitimate after fix.",
+    "improvements": [
+      "Fixed DV1012: skip CA trust bundle/certificate store paths (public root certs, not sensitive)"
+    ]
+  },
+  {
+    "repo": "containrrr/watchtower",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 11,
+      "info": 9,
+      "style": 2
+    },
+    "notableFindings": "DL3018 apk pinning (10x), DV3008 git clone, DV1008 COPY . — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "portainer/agent",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 22,
+    "severities": {
+      "error": 0,
+      "warning": 4,
+      "info": 9,
+      "style": 9
+    },
+    "notableFindings": "DV4012 consecutive COPY (9x style), DL3006/DL3007 untagged images. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "woodpecker-ci/plugin-git",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (5x), DV6013 curl without --fail. Clean single Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "drakkan/sftpgo",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 55,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 32,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (10x), DL3008 apt pinning (5x), DV7003 useradd no-log-init. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "wundergraph/cosmo",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 22,
+    "totalIssues": 211,
+    "severities": {
+      "error": 6,
+      "warning": 52,
+      "info": 152,
+      "style": 1
+    },
+    "notableFindings": "DV1013 SENTRY_AUTH_TOKEN leak (legitimate). DV9001 .npmrc copied (5x, legitimate). Many DV1004 single-stage builds. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "neondatabase/neon",
+    "scannedAt": "2026-03-08T02:00:00+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 505,
+    "severities": {
+      "error": 8,
+      "warning": 310,
+      "info": 163,
+      "style": 24
+    },
+    "notableFindings": "DV3033 FP: echo string config URLs (broker_endpoint) and svc.cluster.local k8s URLs — both fixed. DL3008 apt pinning (138x), DL4006 pipefail (45x), DL3003 cd (60x). Heavy build infra Dockerfiles.",
+    "improvements": [
+      "Fixed DV3033: strip echo/printf string content before HTTP URL detection",
+      "Fixed DV3033: add .svc.cluster.local to internal URL whitelist (Kubernetes internal DNS)"
+    ]
   }
 ]
