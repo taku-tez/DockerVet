@@ -14446,5 +14446,148 @@
       "info": 26
     },
     "notes": "Clean scan, no FP. DL3018 apk pinning (10x), DV1009 digest (6x), DL3008 apt pinning (5x). Go multi-stage builds with Alpine/Debian/Distroless variants."
+  },
+  {
+    "repo": "distribution/distribution",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 58,
+    "severities": {
+      "error": 2,
+      "warning": 25,
+      "info": 31,
+      "style": 0
+    },
+    "notableFindings": "DV1009(13), DL3018(13), DV1006(7), DV4003(6), DV4005(5)",
+    "improvements": []
+  },
+  {
+    "repo": "nushell/nushell",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 23,
+    "severities": {
+      "error": 2,
+      "warning": 7,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DL3057(2), DV1009(2), DL3003(2), DV3019(2), DV3023(2)",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/cosign",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 0
+    },
+    "notableFindings": "DV1006(1), DV1009(1), DV4005(1), DV5003(1)",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/rekor",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 22,
+    "severities": {
+      "error": 3,
+      "warning": 6,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV1006(4), DL3020(3), DV4003(2), DL3057(2), DV5003(2)",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/fulcio",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 9,
+    "severities": {
+      "error": 2,
+      "warning": 3,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "DV1006(3), DL3020(2), DV4003(1), DV4005(1), DL3057(1)",
+    "improvements": []
+  },
+  {
+    "repo": "notaryproject/notary",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 112,
+    "severities": {
+      "error": 2,
+      "warning": 60,
+      "info": 50,
+      "style": 0
+    },
+    "notableFindings": "DL3008(18), DL3018(18), DV1009(11), DV1008(9), DV1006(8)",
+    "improvements": []
+  },
+  {
+    "repo": "derailed/k9s",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 10,
+      "info": 6,
+      "style": 0
+    },
+    "notableFindings": "DL3018(7), DV1009(2), DV6013(1), DL3057(1), DV1006(1)",
+    "improvements": []
+  },
+  {
+    "repo": "fish-shell/fish-shell",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 84,
+    "severities": {
+      "error": 0,
+      "warning": 43,
+      "info": 41,
+      "style": 0
+    },
+    "notableFindings": "DL3018(17), DL3041(9), DL3057(5), DV1004(5), DV1009(5)",
+    "improvements": []
+  },
+  {
+    "repo": "lapce/lapce",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 65,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 24,
+      "style": 24
+    },
+    "notableFindings": "DL3052 FP on implicit build-tool ARGs (CARGO_BUILD_INCREMENTAL, OPENSSL_STATIC, etc.) + heredoc body vars not visible. Both fixed.",
+    "improvements": [
+      "Fixed DL3052: added build-tool env var prefixes (CARGO_BUILD_*, OPENSSL_*, CMAKE_*, etc.) to IMPLICIT_ARG_PREFIXES",
+      "Fixed parser: heredoc body content now included in instruction raw field for variable reference detection"
+    ]
+  },
+  {
+    "repo": "sharkdp/bat",
+    "scannedAt": "2026-03-07T11:03:26.255491+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 7,
+    "severities": {
+      "error": 0,
+      "warning": 5,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3057(1), DV1006(1), DV4003(1), DL3032(1), DL3033(1)",
+    "improvements": []
   }
 ]
