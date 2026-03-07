@@ -157,3 +157,109 @@ export const DV7004: Rule = {
     return violations;
   },
 };
+
+// DV7006: Kernel parameter manipulation via /proc/sys/ writes or sysctl
+// Writing to /proc/sys/ or using sysctl in containers is a security concern:
+// - Requires privileged mode or specific capabilities (CAP_SYS_ADMIN)
+// - Can weaken host kernel security settings (ip_forward, randomize_va_space, etc.)
+// - Indicates the container expects elevated privileges
+export const DV7006: Rule = {
+  id: 'DV7006', severity: 'warning',
+  description: 'Avoid kernel parameter manipulation in containers.',
+  check(ctx) {
+    // Match writing to /proc/sys/ paths (echo/tee/printf to /proc/sys/...)
+    const procSysWrite = /(?:echo|printf|tee)\s+.*?\/proc\/sys\//;
+    // Also match direct sysctl commands
+    const sysctlCmd = /\bsysctl\s+(?:-w\s+)?[a-zA-Z0-9_.]+\s*=/;
+    // Match reading /proc/sys is fine; only flag writes
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (procSysWrite.test(inst.arguments)) {
+          violations.push({
+            rule: 'DV7006', severity: 'warning',
+            message: 'Writing to /proc/sys/ manipulates kernel parameters. This requires privileged mode and can weaken host security. Use kernel tuning at the host/orchestrator level instead.',
+            line: inst.line,
+          });
+        } else if (sysctlCmd.test(inst.arguments)) {
+          violations.push({
+            rule: 'DV7006', severity: 'warning',
+            message: 'sysctl modifies kernel parameters at runtime. This requires privileged containers and affects host security. Configure kernel parameters via pod securityContext or host-level tuning.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV7007: Process supervisor / multi-service container anti-pattern
+// Running multiple services in a single container violates the one-process-per-container principle.
+// Process supervisors (supervisord, s6-overlay, runit, monit) indicate multi-service design
+// which complicates health checks, logging, scaling, and crash recovery.
+export const DV7007: Rule = {
+  id: 'DV7007', severity: 'info',
+  description: 'Avoid running multiple services in a single container.',
+  check(ctx) {
+    const supervisorInstall = /(?:pip3?\s+install\s+[^&|;]*\bsupervisor\b|apt-get\s+install\s+[^&|;]*\bsupervisor\b|apk\s+add\s+[^&|;]*\bsupervisor\b|yum\s+install\s+[^&|;]*\bsupervisord?\b)/i;
+    const s6Install = /(?:s6-overlay|s6-svscan|s6-supervise)/i;
+    const runitInstall = /(?:apt-get\s+install\s+[^&|;]*\brunit\b|apk\s+add\s+[^&|;]*\brunit\b)/i;
+    const monitInstall = /(?:apt-get\s+install\s+[^&|;]*\bmonit\b|apk\s+add\s+[^&|;]*\bmonit\b)/i;
+    // Also detect cron daemon installation (should use orchestrator scheduling)
+    const cronInstall = /(?:apt-get\s+install\s+[^&|;]*\bcron\b|apk\s+add\s+[^&|;]*\bdcron\b|yum\s+install\s+[^&|;]*\bcronie?\b)/i;
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (supervisorInstall.test(args)) {
+          violations.push({
+            rule: 'DV7007', severity: 'info',
+            message: 'supervisord detected. Running multiple services in one container complicates health checks, logging, and scaling. Consider splitting into separate containers.',
+            line: inst.line,
+          });
+        } else if (s6Install.test(args)) {
+          violations.push({
+            rule: 'DV7007', severity: 'info',
+            message: 's6-overlay process supervisor detected. Consider whether multiple services can be split into separate containers for better orchestration.',
+            line: inst.line,
+          });
+        } else if (runitInstall.test(args)) {
+          violations.push({
+            rule: 'DV7007', severity: 'info',
+            message: 'runit process supervisor detected. Consider splitting services into separate containers for better isolation and scaling.',
+            line: inst.line,
+          });
+        } else if (monitInstall.test(args)) {
+          violations.push({
+            rule: 'DV7007', severity: 'info',
+            message: 'monit process monitor detected. Container orchestrators (Kubernetes, Docker Compose) handle process monitoring. Consider using orchestrator-level health checks instead.',
+            line: inst.line,
+          });
+        } else if (cronInstall.test(args)) {
+          violations.push({
+            rule: 'DV7007', severity: 'info',
+            message: 'cron daemon detected in container. Use orchestrator-level scheduling (Kubernetes CronJob, ECS Scheduled Tasks) instead of in-container cron.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    // Also check ENTRYPOINT/CMD for supervisor
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'CMD' && inst.type !== 'ENTRYPOINT') continue;
+        if (/supervisord/i.test(inst.arguments)) {
+          violations.push({
+            rule: 'DV7007', severity: 'info',
+            message: 'Container entrypoint uses supervisord. Running multiple services in one container complicates health checks, logging, and scaling. Consider splitting into separate containers.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
