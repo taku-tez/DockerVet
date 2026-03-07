@@ -1184,6 +1184,70 @@ export const DV3035: Rule = {
   },
 };
 
+// DV3037: GPG key or signing key fetched over plain HTTP
+// Fetching GPG keys over HTTP is a supply chain risk: an attacker performing MITM can inject
+// a malicious key, allowing them to sign tampered packages that appear trusted.
+export const DV3037: Rule = {
+  id: 'DV3037', severity: 'warning',
+  description: 'GPG key or signing key fetched over plain HTTP instead of HTTPS.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Patterns: curl/wget fetching a key over http:// and piping to apt-key/gpg/keyring
+    const gpgFetchHttp = /(?:curl|wget)\s[^|;&&]*http:\/\/[^|;&&]*(?:\|\s*(?:apt-key\s+add|gpg\s+--dearmor|gpg\s+--import|tee\s+\S*\.gpg|tee\s+\S*keyring))/i;
+    // Direct http:// URL in apt-key adv --keyserver
+    const keyserverHttp = /apt-key\s+adv\s+[^|;&&]*--keyserver\s+http:\/\//i;
+    // Fetching .asc/.gpg/.key files over http://
+    const gpgFileHttp = /(?:curl|wget)\s[^|;&&]*http:\/\/\S+\.(?:asc|gpg|key|pub)\b/i;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (gpgFetchHttp.test(args) || keyserverHttp.test(args) || gpgFileHttp.test(args)) {
+          violations.push({
+            rule: 'DV3037', severity: 'warning',
+            message: 'GPG/signing key fetched over plain HTTP. Use HTTPS to prevent man-in-the-middle substitution of the key, which would allow an attacker to sign malicious packages.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3038: Package repository configured with HTTP instead of HTTPS
+// Adding APT/YUM/DNF repositories using http:// URLs makes the entire package download
+// path vulnerable to MITM attacks, even if individual packages are signed.
+export const DV3038: Rule = {
+  id: 'DV3038', severity: 'warning',
+  description: 'Package repository configured with plain HTTP instead of HTTPS.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Detect echo/tee writing to sources.list with http:// URLs
+    const sourcesListHttp = /(?:echo|tee|cat)\s[^|;]*http:\/\/[^|;]*(?:sources\.list|\.list|\.repo)/i;
+    // Detect add-apt-repository with http://
+    const addAptRepoHttp = /\badd-apt-repository\b[^|;&&]*['"]?\s*(?:deb\s+)?http:\/\//i;
+    // Detect yum-config-manager --add-repo with http://
+    const yumRepoHttp = /\byum-config-manager\s+--add-repo\s+http:\/\//i;
+    // Detect direct write to /etc/yum.repos.d/ with http:// baseurl
+    const yumRepoFileHttp = /baseurl\s*=\s*http:\/\//i;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (sourcesListHttp.test(args) || addAptRepoHttp.test(args) || yumRepoHttp.test(args) || yumRepoFileHttp.test(args)) {
+          violations.push({
+            rule: 'DV3038', severity: 'warning',
+            message: 'Package repository uses plain HTTP. Use HTTPS to prevent man-in-the-middle attacks on package downloads. Even with signed packages, HTTP metadata can be manipulated.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV3036: Azure SAS token in URL
 // Azure Shared Access Signatures contain sig= parameter with sensitive signing key material.
 // These should use BuildKit secrets or runtime environment injection.

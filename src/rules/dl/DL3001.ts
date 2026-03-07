@@ -11,8 +11,13 @@ export const DL3001: Rule = {
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'RUN') {
-          // Strip BuildKit --mount flags before checking
-          const argsWithoutMount = inst.arguments.replace(/--mount=\S+/g, '');
+          // Strip BuildKit --mount flags before checking (both --mount=type=... and --mount type=...)
+          let argsWithoutMount = inst.arguments.replace(/--mount=\S+/g, '');
+          argsWithoutMount = argsWithoutMount.replace(/--mount\s+type=\S+/g, '');
+
+          // Strip inline shell comments (# ... to end of line) to avoid false positives
+          // on words like "mount" appearing in comments about BuildKit --mount
+          argsWithoutMount = argsWithoutMount.replace(/#[^\n]*/g, '');
 
           // Split into individual shell commands on ;, &&, ||, |, newlines
           const shellCmds = argsWithoutMount.split(/[;&|\n]+/).map(s => s.trim()).filter(Boolean);
@@ -24,6 +29,9 @@ export const DL3001: Rule = {
 
               // Skip systemctl/service management commands (e.g., "systemctl enable ssh")
               if (/^\s*(systemctl|update-rc\.d)\s+(enable|disable|start|stop|restart|mask|unmask)\b/.test(shellCmd)) continue;
+
+              // For "mount": skip if it appears as part of --mount context or umount
+              if (cmd === 'mount' && /\bumount\b/.test(shellCmd)) continue;
 
               // Match only as a standalone command at the start of the shell command
               // Not as a flag (--service, -kill) or part of another word
