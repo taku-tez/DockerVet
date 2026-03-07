@@ -253,6 +253,12 @@ export const DV3012: Rule = {
       /\bglpat-[A-Za-z0-9_-]{20,}/,                                  // GitLab PAT
       /\bnpm_[A-Za-z0-9]{36}/,                                       // npm automation token
       /\bpypi-[A-Za-z0-9_-]{50,}/,                                   // PyPI API token
+      /\bhvs\.[A-Za-z0-9_-]{24,}/,                                    // HashiCorp Vault service token
+      /\bhvb\.[A-Za-z0-9_-]{24,}/,                                    // HashiCorp Vault batch token
+      /\bdckr_pat_[A-Za-z0-9_-]{20,}/,                                // Docker Hub PAT
+      /\bAIza[0-9A-Za-z_-]{35}\b/,                                    // Google API key
+      /\bsk-[A-Za-z0-9]{20,}T3BlbkFJ[A-Za-z0-9]{20,}/,               // OpenAI API key
+      /\bsk-(?:proj|svcacct)-[A-Za-z0-9_-]{40,}/,                     // OpenAI project/service key
     ];
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
@@ -1010,6 +1016,51 @@ export const DV3032: Rule = {
         if (inst.type !== 'RUN') continue;
         if (/(?:service\s+ssh(?:d)?\s+start|systemctl\s+(?:start|enable)\s+ssh(?:d)?)\b/.test(inst.arguments)) {
           violations.push({ rule: 'DV3032', severity: 'warning', message: 'Starting SSH service in RUN instruction. SSH daemons in containers increase attack surface. Use `docker exec` instead.', line: inst.line });
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3033: HTTP (non-HTTPS) URLs in ADD or RUN download commands
+// Downloading over plaintext HTTP is vulnerable to man-in-the-middle attacks and content tampering.
+export const DV3033: Rule = {
+  id: 'DV3033', severity: 'warning',
+  description: 'Downloading over HTTP (non-HTTPS) is vulnerable to man-in-the-middle attacks.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Well-known localhost / internal-only URLs are acceptable over HTTP
+    const localhostPattern = /^http:\/\/(?:localhost|127\.0\.0\.1|::1|0\.0\.0\.0)[\/:]/i;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ADD') {
+          const add = inst as CopyInstruction;
+          for (const src of add.sources) {
+            if (/^http:\/\//i.test(src) && !localhostPattern.test(src)) {
+              violations.push({
+                rule: 'DV3033', severity: 'warning',
+                message: `ADD uses HTTP URL "${src}". Use HTTPS to prevent man-in-the-middle attacks and content tampering.`,
+                line: inst.line,
+              });
+            }
+          }
+        }
+        if (inst.type === 'RUN') {
+          // Detect curl/wget with http:// URLs
+          const httpUrls = inst.arguments.match(/\bhttps?:\/\/\S+/g);
+          if (httpUrls) {
+            for (const url of httpUrls) {
+              if (/^http:\/\//i.test(url) && !localhostPattern.test(url)) {
+                violations.push({
+                  rule: 'DV3033', severity: 'warning',
+                  message: `RUN downloads from HTTP URL "${url}". Use HTTPS to prevent man-in-the-middle attacks.`,
+                  line: inst.line,
+                });
+                break; // one per instruction to avoid noise
+              }
+            }
+          }
         }
       }
     }

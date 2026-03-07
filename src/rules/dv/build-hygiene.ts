@@ -145,6 +145,9 @@ export const DV9005: Rule = {
         if (inst.type !== 'RUN') continue;
         const args = inst.arguments;
 
+        // BuildKit --mount=type=cache manages the cache externally; cleanup is unnecessary
+        if (/--mount=type=cache/.test(args)) continue;
+
         // apt-get install without cleanup
         if (/\bapt-get\s+install\b/.test(args)) {
           const hasClean = /\bapt-get\s+clean\b/.test(args) ||

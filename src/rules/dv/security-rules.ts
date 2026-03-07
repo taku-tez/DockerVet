@@ -131,10 +131,16 @@ export const DV1003: Rule = {
   description: 'Avoid piping curl/wget output to shell',
   check(ctx) {
     const violations: Violation[] = [];
-    const unsafePipe = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source|python3?|perl|ruby|node)\b/;
+    // Match curl/wget piped to shell, with optional sudo/env/nohup prefixes before the shell command
+    // Covers: curl ... | sh, curl ... | sudo bash, curl ... | ENV=val sh, curl ... | sudo -E bash
+    const unsafePipe = /(?:curl|wget)\s+[^|]*\|\s*(?:sudo\s+(?:-\w+\s+)*)?(?:\w+=\S+\s+)*(?:sh|bash|zsh|ksh|dash|source|python3?|perl|ruby|node)\b/;
+    // Also detect process substitution: bash <(curl ...) or bash -c "$(curl ...)"
+    const processSubst = /(?:sh|bash|zsh|ksh|dash)\s+<\((?:curl|wget)\b/;
+    const cmdSubst = /(?:sh|bash|zsh|ksh|dash)\s+-c\s+["']?\$\((?:curl|wget)\b/;
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
-        if (inst.type === 'RUN' && unsafePipe.test(inst.arguments)) {
+        if (inst.type !== 'RUN') continue;
+        if (unsafePipe.test(inst.arguments) || processSubst.test(inst.arguments) || cmdSubst.test(inst.arguments)) {
           violations.push({ rule: 'DV1003', severity: 'error', message: 'Avoid piping curl/wget output directly to a shell. Download first, verify, then execute.', line: inst.line });
         }
       }
@@ -233,6 +239,8 @@ export const DV1007: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type !== 'RUN') continue;
         const a = inst.arguments;
+        // BuildKit --mount=type=cache manages the cache externally; cleanup is unnecessary
+        if (/--mount=type=cache/.test(a)) continue;
         // apt-get
         if (/(?:apt-get|apt)\s+install/.test(a) && !/rm\s+(?:-[rf]+\s+|(?:--(?:recursive|force|verbose)\s+)+)*\/var\/lib\/apt\/lists/.test(a)) {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'apt-get cache not cleaned. Add `rm -rf /var/lib/apt/lists/*` in the same RUN instruction.', line: inst.line });
@@ -248,6 +256,14 @@ export const DV1007: Rule = {
         // microdnf
         if (/microdnf\s+install/.test(a) && !/microdnf\s+clean\s+all/.test(a)) {
           violations.push({ rule: 'DV1007', severity: 'warning', message: 'microdnf cache not cleaned. Add `microdnf clean all` in the same RUN instruction.', line: inst.line });
+        }
+        // zypper (SUSE/openSUSE)
+        if (/\bzypper\s+(?:install|in)\b/.test(a) && !/zypper\s+clean/.test(a) && !/rm\s+-rf?\s+\/var\/cache\/zypp/.test(a)) {
+          violations.push({ rule: 'DV1007', severity: 'warning', message: 'zypper cache not cleaned. Add `zypper clean --all` in the same RUN instruction.', line: inst.line });
+        }
+        // tdnf (VMware Photon OS)
+        if (/\btdnf\s+install\b/.test(a) && !/tdnf\s+clean\s+all/.test(a)) {
+          violations.push({ rule: 'DV1007', severity: 'warning', message: 'tdnf cache not cleaned. Add `tdnf clean all` in the same RUN instruction.', line: inst.line });
         }
       }
     }
