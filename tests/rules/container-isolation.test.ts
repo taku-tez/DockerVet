@@ -101,4 +101,58 @@ describe('DV8004 - security-disabling ENV vars', () => {
   it('does not flag unrelated Go ENV', () => {
     expect(hasRule(lintDockerfile('FROM golang:1.22\nENV GOPATH=/go'), 'DV8004')).toBe(false);
   });
+  it('flags GONOSUMDB', () => {
+    expect(hasRule(lintDockerfile('FROM golang:1.22\nENV GONOSUMDB=github.com/private/*'), 'DV8004')).toBe(true);
+  });
+  it('flags NPM_CONFIG_STRICT_SSL=false', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nENV NPM_CONFIG_STRICT_SSL=false'), 'DV8004')).toBe(true);
+  });
+  it('flags YARN_STRICT_SSL=false', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nENV YARN_STRICT_SSL=false'), 'DV8004')).toBe(true);
+  });
+  it('flags PIP_TRUSTED_HOST', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nENV PIP_TRUSTED_HOST=pypi.internal.example.com'), 'DV8004')).toBe(true);
+  });
+  it('flags SSL_CERT_FILE=/dev/null', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nENV SSL_CERT_FILE=/dev/null'), 'DV8004')).toBe(true);
+  });
+  it('does not flag NPM_CONFIG_STRICT_SSL=true', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nENV NPM_CONFIG_STRICT_SSL=true'), 'DV8004')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DV8005 - Security-disabling commands in RUN
+// ---------------------------------------------------------------------------
+describe('DV8005 - security-disabling RUN commands', () => {
+  it('flags npm config set strict-ssl false', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm config set strict-ssl false'), 'DV8005')).toBe(true);
+  });
+  it('flags npm set strict-ssl false', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm set strict-ssl false'), 'DV8005')).toBe(true);
+  });
+  it('flags yarn config set strict-ssl false', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN yarn config set strict-ssl false'), 'DV8005')).toBe(true);
+  });
+  it('flags pip install --trusted-host', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN pip install --trusted-host pypi.internal.com -r requirements.txt'), 'DV8005')).toBe(true);
+  });
+  it('flags git config http.sslVerify false', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN git config --global http.sslVerify false'), 'DV8005')).toBe(true);
+  });
+  it('flags composer config disable-tls true', () => {
+    expect(hasRule(lintDockerfile('FROM php:8.2\nRUN composer config --global disable-tls true'), 'DV8005')).toBe(true);
+  });
+  it('flags conda config ssl_verify false', () => {
+    expect(hasRule(lintDockerfile('FROM continuumio/miniconda3\nRUN conda config --set ssl_verify false'), 'DV8005')).toBe(true);
+  });
+  it('does not flag normal npm install', () => {
+    expect(hasRule(lintDockerfile('FROM node:20\nRUN npm ci --production'), 'DV8005')).toBe(false);
+  });
+  it('does not flag normal pip install', () => {
+    expect(hasRule(lintDockerfile('FROM python:3.12\nRUN pip install --no-cache-dir -r requirements.txt'), 'DV8005')).toBe(false);
+  });
+  it('does not flag git config user.name', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:22.04\nRUN git config --global user.name "builder"'), 'DV8005')).toBe(false);
+  });
 });

@@ -92,6 +92,35 @@ export const DV8003: Rule = {
   },
 };
 
+// DV8005: Security-disabling commands in RUN instructions
+export const DV8005: Rule = {
+  id: 'DV8005', severity: 'warning',
+  description: 'Avoid disabling TLS/SSL verification or security features in RUN commands.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const dangerousCommands: Array<{ pattern: RegExp; msg: string }> = [
+      { pattern: /\bnpm\s+(?:config\s+)?set\s+strict-ssl\s+false/i, msg: 'npm config set strict-ssl false disables TLS certificate verification for npm registry connections.' },
+      { pattern: /\byarn\s+config\s+set\s+strict-ssl\s+false/i, msg: 'yarn config set strict-ssl false disables TLS certificate verification for Yarn registry connections.' },
+      { pattern: /\bpip\s+install\s+[^&|;]*--trusted-host\b/i, msg: 'pip install --trusted-host bypasses TLS verification for the specified host, enabling man-in-the-middle attacks.' },
+      { pattern: /\bgit\s+config\s+[^&|;]*(?:http\.sslVerify|https\.sslVerify)\s+false/i, msg: 'git config http.sslVerify false disables TLS verification for Git operations.' },
+      { pattern: /\bcomposer\s+config\s+[^&|;]*disable-tls\s+true/i, msg: 'composer config disable-tls true disables TLS for all Composer downloads.' },
+      { pattern: /\bgem\s+(?:install|fetch)\s+[^&|;]*--no-verify/i, msg: 'gem --no-verify skips signature verification for RubyGems packages.' },
+      { pattern: /\bconda\s+config\s+[^&|;]*ssl_verify\s+(?:false|0|no)/i, msg: 'conda config ssl_verify false disables TLS verification for Conda package downloads.' },
+    ];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        for (const { pattern, msg } of dangerousCommands) {
+          if (pattern.test(inst.arguments)) {
+            violations.push({ rule: 'DV8005', severity: 'warning', message: msg, line: inst.line });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV8004: Disabling security features via environment variables
 export const DV8004: Rule = {
   id: 'DV8004', severity: 'warning',
@@ -104,8 +133,14 @@ export const DV8004: Rule = {
       { pattern: /PYTHONHTTPSVERIFY\s*=\s*["']?0["']?/i, msg: 'PYTHONHTTPSVERIFY=0 disables TLS certificate verification for Python HTTPS requests.' },
       { pattern: /GIT_SSL_NO_VERIFY\s*=\s*["']?(?:true|1)["']?/i, msg: 'GIT_SSL_NO_VERIFY disables TLS verification for Git operations, enabling man-in-the-middle attacks.' },
       { pattern: /GONOSUMCHECK\s*=\s*/i, msg: 'GONOSUMCHECK disables Go module checksum verification, weakening supply chain integrity.' },
+      { pattern: /GONOSUMDB\s*=\s*/i, msg: 'GONOSUMDB disables Go checksum database lookups for specified modules, weakening supply chain verification.' },
       { pattern: /GOFLAGS\s*=\s*[^&|;]*-insecure/i, msg: 'GOFLAGS=-insecure disables security checks for Go module downloads.' },
       { pattern: /CURL_SSL_BACKEND\s*=\s*["']?insecure/i, msg: 'CURL_SSL_BACKEND=insecure disables TLS verification for curl.' },
+      { pattern: /NPM_CONFIG_STRICT_SSL\s*=\s*["']?false["']?/i, msg: 'NPM_CONFIG_STRICT_SSL=false disables TLS certificate verification for npm registry connections.' },
+      { pattern: /YARN_STRICT_SSL\s*=\s*["']?false["']?/i, msg: 'YARN_STRICT_SSL=false disables TLS certificate verification for Yarn registry connections.' },
+      { pattern: /PIP_TRUSTED_HOST\s*=\s*/i, msg: 'PIP_TRUSTED_HOST bypasses TLS verification for the specified pip hosts, enabling man-in-the-middle attacks.' },
+      { pattern: /REQUESTS_CA_BUNDLE\s*=\s*["']?\s*["']?$/i, msg: 'REQUESTS_CA_BUNDLE set to empty disables CA certificate verification for Python requests library.' },
+      { pattern: /SSL_CERT_FILE\s*=\s*["']?\/dev\/null["']?/i, msg: 'SSL_CERT_FILE=/dev/null disables TLS certificate verification system-wide.' },
     ];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
