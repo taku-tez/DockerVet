@@ -15033,5 +15033,145 @@
     },
     "notableFindings": "DV1009 no digest (4x), DL3018 apk pinning (4x), DL3019 apk cache (4x), DV4001 multiple FROM (3x), DL3007 latest tag (2x). All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "microsoft/garnet",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 62,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DV3021 EXPOSE 6379 (Redis port) — legitimate since Garnet IS a Redis-compatible cache. DV1009 digest pinning (14x), DL3008 apt pinning (6x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gardener/gardener",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 47,
+    "severities": {
+      "error": 1,
+      "warning": 28,
+      "info": 18,
+      "style": 0
+    },
+    "notableFindings": "DV6012 WORKDIR '/' (11x) — multi-binary distroless pattern using root as WORKDIR. DL3008 apt pinning (11x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "keel-hq/keel",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 60,
+    "severities": {
+      "error": 0,
+      "warning": 21,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DV1009 digest pinning (10x), DL3018 apk pinning (6x), DL3057 no HEALTHCHECK (5x). Standard Go Alpine multi-stage builds. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "bufbuild/buf",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 24,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 16,
+      "style": 0
+    },
+    "notableFindings": "DV1009 digest pinning (4x), DV1006 root (3x), DV4003 no WORKDIR (3x). Minimal clean Go builder Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "renovatebot/renovate",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 135,
+    "severities": {
+      "error": 7,
+      "warning": 66,
+      "info": 58,
+      "style": 4
+    },
+    "notableFindings": "DL3008 apt pinning (19x), DL3045 COPY relative dest (9x). __fixtures__/ Dockerfiles are test inputs for renovate's Dockerfile parser. DL3006 backtick escape test fixture. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "distribution/distribution",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 69,
+    "severities": {
+      "error": 2,
+      "warning": 28,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DV1009 digest pinning (13x), DL3018 apk pinning (13x), DV1006 root (7x). Container registry Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/cosign",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 4,
+      "style": 0
+    },
+    "notableFindings": "Minimal clean Dockerfile. DV1006 root, DV1009 digest, DV5003 suggests distroless. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "sigstore/rekor",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 30,
+    "severities": {
+      "error": 3,
+      "warning": 7,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (3x), DV1006 root (4x). Clean Go builder Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "minio/operator",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 100,
+    "severities": {
+      "error": 3,
+      "warning": 50,
+      "info": 45,
+      "style": 2
+    },
+    "notableFindings": "DL3008 apt pinning (16x), DV1009 digest pinning (10x), DV6013 curl without --fail (6x), DL3007 latest tag (5x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openobserve/openobserve",
+    "scannedAt": "2026-03-07T23:00:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 373,
+    "severities": {
+      "error": 0,
+      "warning": 182,
+      "info": 183,
+      "style": 8
+    },
+    "notableFindings": "DL3008 apt pinning (108x), DV1009 digest pinning (34x), DV1007/DV9005 apt cache cleanup (18x each). Large Rust/Node multi-stage builds. All findings legitimate.",
+    "improvements": []
   }
 ]
