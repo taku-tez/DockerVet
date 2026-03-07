@@ -1329,3 +1329,85 @@ export const DV3040: Rule = {
     return violations;
   },
 };
+
+// DV3041: Installation of insecure network protocol packages
+// Packages like telnet, rsh, ftp transmit data (including credentials) in plaintext.
+// Their presence in a container image is a security risk and often indicates poor practices.
+const INSECURE_PROTOCOL_PACKAGES: Array<{ pattern: RegExp; pkg: string; alternative: string }> = [
+  { pattern: /\btelnet\b/, pkg: 'telnet', alternative: 'Use SSH or encrypted protocols instead' },
+  { pattern: /\btelnetd\b/, pkg: 'telnetd', alternative: 'Use SSH for remote access instead' },
+  { pattern: /\brsh-client\b/, pkg: 'rsh-client', alternative: 'Use SSH instead of rsh' },
+  { pattern: /\brsh-server\b/, pkg: 'rsh-server', alternative: 'Use SSH server instead of rsh' },
+  { pattern: /\brlogin\b/, pkg: 'rlogin', alternative: 'Use SSH instead of rlogin' },
+  { pattern: /\bvsftpd\b/, pkg: 'vsftpd', alternative: 'Use SFTP or SCP for file transfer' },
+  { pattern: /\bproftpd(?:-basic)?\b/, pkg: 'proftpd', alternative: 'Use SFTP or SCP for file transfer' },
+  { pattern: /\bftpd?\b/, pkg: 'ftp', alternative: 'Use sftp or scp for secure file transfer' },
+  { pattern: /\binetutils-telnet\b/, pkg: 'inetutils-telnet', alternative: 'Use SSH or encrypted protocols instead' },
+  { pattern: /\binetutils-ftp\b/, pkg: 'inetutils-ftp', alternative: 'Use sftp or scp for secure file transfer' },
+];
+// Package-install commands: apt-get install, apk add, yum/dnf install, etc.
+const PKG_INSTALL_CMD = /(?:apt-get\s+install|apt\s+install|apk\s+add|yum\s+install|dnf\s+install|zypper\s+install|pacman\s+-S)/i;
+export const DV3041: Rule = {
+  id: 'DV3041', severity: 'warning',
+  description: 'Avoid installing packages for insecure network protocols (telnet, rsh, ftp).',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (!PKG_INSTALL_CMD.test(args)) continue;
+        for (const { pattern, pkg, alternative } of INSECURE_PROTOCOL_PACKAGES) {
+          if (pattern.test(args)) {
+            violations.push({
+              rule: 'DV3041', severity: 'warning',
+              message: `Installing "${pkg}" introduces an insecure plaintext protocol. ${alternative}.`,
+              line: inst.line,
+            });
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV3042: Running sshd as container's main process
+// Running an SSH server in a container is an anti-pattern that increases attack surface,
+// bypasses container orchestration logging, and enables unauthorized access.
+// Use `docker exec` or `kubectl exec` for container debugging instead.
+export const DV3042: Rule = {
+  id: 'DV3042', severity: 'warning',
+  description: 'Avoid running sshd as the container main process.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const lastStage = ctx.ast.stages[ctx.ast.stages.length - 1];
+    if (!lastStage) return violations;
+
+    for (const inst of lastStage.instructions) {
+      // Check CMD and ENTRYPOINT for sshd
+      if (inst.type === 'CMD' || inst.type === 'ENTRYPOINT') {
+        const args = inst.arguments;
+        if (/\bsshd\b/.test(args) || /\/usr\/sbin\/sshd/.test(args)) {
+          violations.push({
+            rule: 'DV3042', severity: 'warning',
+            message: 'Running sshd as the container main process increases attack surface and bypasses container orchestration logging. Use `docker exec` or `kubectl exec` for debugging instead.',
+            line: inst.line,
+          });
+        }
+      }
+      // Also detect openssh-server installation (in last stage = likely intended for runtime)
+      if (inst.type === 'RUN') {
+        const args = inst.arguments;
+        if (PKG_INSTALL_CMD.test(args) && /\bopenssh-server\b/.test(args)) {
+          violations.push({
+            rule: 'DV3042', severity: 'info',
+            message: 'Installing openssh-server in a container is usually unnecessary. Use `docker exec` or `kubectl exec` for container access. If SSH is required for the application (e.g., git server), consider using a dedicated SSH image.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
