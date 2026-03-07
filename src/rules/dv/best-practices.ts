@@ -574,3 +574,40 @@ export const DV4024: Rule = {
     return violations;
   },
 };
+
+// DV4025: apt-get install without -y (interactive prompt hangs Docker build)
+export const DV4025: Rule = {
+  id: 'DV4025', severity: 'error',
+  description: 'apt-get install without -y flag will hang the build waiting for interactive confirmation.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // Match apt-get install that is NOT preceded/followed by -y, --yes, or --assume-yes
+        // Split on && or ; to handle chained commands
+        const commands = args.split(/&&|;/);
+        for (const cmd of commands) {
+          const trimmed = cmd.trim();
+          if (!/\bapt-get\s+install\b/.test(trimmed)) continue;
+          // Check if -y, --yes, or --assume-yes is present anywhere in the apt-get install command
+          if (/-y\b|--yes\b|--assume-yes\b/.test(trimmed)) continue;
+          // Also check DEBIAN_FRONTEND=noninteractive before apt-get
+          if (/DEBIAN_FRONTEND=noninteractive/.test(trimmed)) continue;
+          // Check if DEBIAN_FRONTEND=noninteractive is set as ENV earlier in the stage
+          const hasNoninteractiveEnv = stage.instructions.some(i => {
+            if (i.type !== 'ENV' && i.type !== 'ARG') return false;
+            return /DEBIAN_FRONTEND/.test(i.arguments) && /noninteractive/.test(i.arguments);
+          });
+          if (hasNoninteractiveEnv) continue;
+          violations.push({
+            rule: 'DV4025', severity: 'error',
+            message: 'apt-get install without -y/--yes flag. Docker builds are non-interactive and will hang waiting for confirmation. Use `apt-get install -y`.', line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};

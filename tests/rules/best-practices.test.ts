@@ -364,3 +364,40 @@ describe('DV4024 - HEALTHCHECK NONE', () => {
     expect(hasRule(lintDockerfile(df), 'DV4024')).toBe(false);
   });
 });
+
+describe('DV4025 - apt-get install without -y', () => {
+  it('flags apt-get install without -y', () => {
+    const df = 'FROM ubuntu:22.04\nRUN apt-get update && apt-get install curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(true);
+  });
+
+  it('passes with -y flag', () => {
+    const df = 'FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
+  });
+
+  it('passes with --yes flag', () => {
+    const df = 'FROM ubuntu:22.04\nRUN apt-get update && apt-get install --yes curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
+  });
+
+  it('passes with --assume-yes flag', () => {
+    const df = 'FROM ubuntu:22.04\nRUN apt-get update && apt-get install --assume-yes curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
+  });
+
+  it('passes with DEBIAN_FRONTEND=noninteractive in ENV', () => {
+    const df = 'FROM ubuntu:22.04\nENV DEBIAN_FRONTEND=noninteractive\nRUN apt-get update && apt-get install curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
+  });
+
+  it('passes with inline DEBIAN_FRONTEND=noninteractive', () => {
+    const df = 'FROM ubuntu:22.04\nRUN DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
+  });
+
+  it('does not flag non-apt-get commands', () => {
+    const df = 'FROM ubuntu:22.04\nRUN yum install curl';
+    expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
+  });
+});

@@ -43,6 +43,25 @@ function isSelfReferentialPlaceholder(key: string, value: string): boolean {
   return value === kebab || value === lower;
 }
 
+// Helper: check if a value is clearly NOT a real secret (false positive guard)
+function isNonSecretValue(key: string, value: string): boolean {
+  if (!value || value === '' || value.trim() === '') return true;
+  if (value.startsWith('$')) return true;
+  if (FILE_PATH_SUFFIX.test(key)) return true;
+  if (VERSION_OR_BUILD_SUFFIX.test(key)) return true;
+  if (FILE_PATH_VALUE.test(value)) return true;
+  if (BOOL_OR_INT_VALUE.test(value)) return true;
+  if (SEMANTIC_VERSION_VALUE.test(value)) return true;
+  if (ANGLE_BRACKET_PLACEHOLDER.test(value)) return true;
+  if (PLACEHOLDER_KEYWORD.test(value)) return true;
+  if (INSTRUCTIONAL_PLACEHOLDER.test(value)) return true;
+  if (HTTP_URL_VALUE.test(value)) return true;
+  if (isSelfReferentialPlaceholder(key, value)) return true;
+  // Empty-ish base64 value: just "=" or "==" (padding only)
+  if (/^=+$/.test(value)) return true;
+  return false;
+}
+
 // DV1001: Hardcoded secrets in ENV/ARG
 // _meta directories are module test fixtures (e.g. elastic/beats) where dummy credentials are expected
 const DV1001_SKIP_DIRS = /(?:^|[/\\])(?:testdata|test-framework|e2e-tests?|fixtures?|__tests__|_meta|demo|example|sample|getting[_-]?started|[a-z0-9_-]+-fixtures?)(?:[/\\]|$)/i;
@@ -58,14 +77,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !FILE_PATH_SUFFIX.test(pair.key) && !VERSION_OR_BUILD_SUFFIX.test(pair.key) && pair.value && pair.value !== '' && !pair.value.startsWith('$') && !FILE_PATH_VALUE.test(pair.value) && !BOOL_OR_INT_VALUE.test(pair.value) && !SEMANTIC_VERSION_VALUE.test(pair.value) && !ANGLE_BRACKET_PLACEHOLDER.test(pair.value) && !PLACEHOLDER_KEYWORD.test(pair.value) && !INSTRUCTIONAL_PLACEHOLDER.test(pair.value) && !HTTP_URL_VALUE.test(pair.value) && !isSelfReferentialPlaceholder(pair.key, pair.value)) {
+            if (SECRET_PATTERNS.test(pair.key) && !isNonSecretValue(pair.key, pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !FILE_PATH_SUFFIX.test(a.name) && !VERSION_OR_BUILD_SUFFIX.test(a.name) && a.defaultValue && a.defaultValue !== '' && !a.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(a.defaultValue) && !BOOL_OR_INT_VALUE.test(a.defaultValue) && !SEMANTIC_VERSION_VALUE.test(a.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(a.defaultValue) && !PLACEHOLDER_KEYWORD.test(a.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(a.defaultValue) && !HTTP_URL_VALUE.test(a.defaultValue) && !isSelfReferentialPlaceholder(a.name, a.defaultValue)) {
+          if (SECRET_PATTERNS.test(a.name) && !isNonSecretValue(a.name, a.defaultValue || '')) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -73,7 +92,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !FILE_PATH_SUFFIX.test(arg.name) && !VERSION_OR_BUILD_SUFFIX.test(arg.name) && arg.defaultValue && arg.defaultValue !== '' && !arg.defaultValue.startsWith('$') && !FILE_PATH_VALUE.test(arg.defaultValue) && !BOOL_OR_INT_VALUE.test(arg.defaultValue) && !SEMANTIC_VERSION_VALUE.test(arg.defaultValue) && !ANGLE_BRACKET_PLACEHOLDER.test(arg.defaultValue) && !PLACEHOLDER_KEYWORD.test(arg.defaultValue) && !INSTRUCTIONAL_PLACEHOLDER.test(arg.defaultValue) && !HTTP_URL_VALUE.test(arg.defaultValue) && !isSelfReferentialPlaceholder(arg.name, arg.defaultValue)) {
+      if (SECRET_PATTERNS.test(arg.name) && !isNonSecretValue(arg.name, arg.defaultValue || '')) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }
@@ -112,7 +131,7 @@ export const DV1003: Rule = {
   description: 'Avoid piping curl/wget output to shell',
   check(ctx) {
     const violations: Violation[] = [];
-    const unsafePipe = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source)\b/;
+    const unsafePipe = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source|python3?|perl|ruby|node)\b/;
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
         if (inst.type === 'RUN' && unsafePipe.test(inst.arguments)) {

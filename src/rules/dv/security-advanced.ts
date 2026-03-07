@@ -356,9 +356,9 @@ export const DV3015: Rule = {
   id: 'DV3015', severity: 'warning',
   description: 'Avoid piping curl/wget output to shell without checksum verification.',
   check(ctx) {
-    const pipeToShell = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|dash|ash)/;
-    // DV1003 covers sh|bash|zsh|ksh|dash|source as an error; avoid double-reporting on same line
-    const dv1003Pattern = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source)\b/;
+    const pipeToShell = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|dash|ash|python3?|perl|ruby|node)/;
+    // DV1003 covers sh|bash|zsh|ksh|dash|source|python3?|perl|ruby|node as an error; avoid double-reporting on same line
+    const dv1003Pattern = /(?:curl|wget)\s+[^|]*\|\s*(?:sh|bash|zsh|ksh|dash|source|python3?|perl|ruby|node)\b/;
     const violations: Violation[] = [];
     for (const stage of ctx.ast.stages) {
       for (const inst of stage.instructions) {
