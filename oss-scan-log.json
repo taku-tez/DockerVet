@@ -15318,5 +15318,145 @@
       "Fixed DV3033: strip echo/printf string content before HTTP URL detection",
       "Fixed DV3033: add .svc.cluster.local to internal URL whitelist (Kubernetes internal DNS)"
     ]
+  },
+  {
+    "repo": "langflow-ai/langflow",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 18,
+    "totalIssues": 268,
+    "severities": {
+      "error": 3,
+      "warning": 143,
+      "info": 121,
+      "style": 1
+    },
+    "notableFindings": "DV3031 correctly flags NOPASSWD sudoers modification. DV1003 curl|sh in build/cdk Dockerfiles. DL3008 apt pinning dominant (110x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "pterodactyl/panel",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 31,
+    "severities": {
+      "error": 0,
+      "warning": 20,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (13x), DV1008 COPY . broad context, DV1006 root. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "juanfont/headscale",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 49,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 26,
+      "style": 1
+    },
+    "notableFindings": "DL3018 apk pinning, DV3008 git clone in derper Dockerfile, DV6013 curl without --fail. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/opendal",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 12,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 9,
+      "style": 0
+    },
+    "notableFindings": "DV7007 s6-overlay detected (2x), DL3018 apk, DL4006 pipefail. Clean single Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "miniflux/v2",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 53,
+    "severities": {
+      "error": 4,
+      "warning": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notableFindings": "DL3020 ADD vs COPY (4x), DV1004 no multi-stage in deb builder. DL3008 apt pinning. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "rocketchat/Rocket.Chat",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 252,
+    "severities": {
+      "error": 15,
+      "warning": 114,
+      "info": 100,
+      "style": 23
+    },
+    "notableFindings": "DV1003 curl|sh in devcontainer (3x). DV3024 tarball extraction without checksum. DL3017 apk upgrade (8x). DL3008 apt pinning dominant. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "laurent22/joplin",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 46,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 24,
+      "style": 8
+    },
+    "notableFindings": "DV4028 yarn install without --frozen-lockfile. DV4012 consecutive COPY (8x style). DL3008 apt pinning. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "rustdesk/rustdesk",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 51,
+    "severities": {
+      "error": 4,
+      "warning": 34,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV3024 tarball without checksum, DV3031 NOPASSWD sudoers, DL3004 sudo, DL3008 apt pinning (28x). Single-stage build with heavy deps. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "mattermost/mattermost-docker",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 41,
+    "severities": {
+      "error": 1,
+      "warning": 26,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DV2003 /var/run as VOLUME (legitimate), DL3018 apk pinning (13x), DV6003 netcat install flagged. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "crowdsecurity/hub",
+    "scannedAt": "2026-03-08T05:03:19+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 32,
+    "severities": {
+      "error": 0,
+      "warning": 17,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "DV1004 no multi-stage, DL3008 apt pinning (8x), DV5003 suggests distroless. Single-stage Ubuntu build. All findings legitimate.",
+    "improvements": []
   }
 ]
