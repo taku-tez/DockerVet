@@ -14589,5 +14589,147 @@
     },
     "notableFindings": "DL3057(1), DV1006(1), DV4003(1), DL3032(1), DL3033(1)",
     "improvements": []
+  },
+  {
+    "repo": "dependabot/dependabot-core",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 35,
+    "totalIssues": 411,
+    "severities": {
+      "error": 7,
+      "warning": 196,
+      "info": 205,
+      "style": 3
+    },
+    "notableFindings": "DL3008 unpinned apt (86x), DV1009 no digest (54x), DV4003 no WORKDIR (39x), DV9004 no LABELs (34x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "juspay/hyperswitch",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 97,
+    "severities": {
+      "error": 1,
+      "warning": 40,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (18x), DV1009 no digest (9x), DV5003 distroless suggestion (4x), DV1003 curl|sh. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openobserve/openobserve",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 373,
+    "severities": {
+      "error": 0,
+      "warning": 182,
+      "info": 183,
+      "style": 8
+    },
+    "notableFindings": "DL3008 unpinned apt (108x), DV1009 no digest (34x), DV4003 no WORKDIR (15x), DV9004 no LABELs (15x), DV4022 npm ci recommendation. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 1
+    },
+    "notableFindings": "DL3057 no HEALTHCHECK, DV4003, DV6012 WORKDIR at root. Very clean operator Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "sonatype-nexus-community/docker-nexus3",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 116,
+    "severities": {
+      "error": 0,
+      "warning": 41,
+      "info": 75,
+      "style": 0
+    },
+    "notableFindings": "DV3023 unquoted ARG in URL (10x), DV3028/DV7003 useradd --no-log-init (10x each), DV4010 recursive chown (10x), DL3018 apk pinning (14x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gogs/gogs",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 41,
+    "severities": {
+      "error": 0,
+      "warning": 30,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (23x), DV3009 EXPOSE 22 SSH (2x), DV6013 curl without --fail. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "rundeck/rundeck",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 274,
+    "severities": {
+      "error": 42,
+      "warning": 85,
+      "info": 146,
+      "style": 1
+    },
+    "notableFindings": "DL3020 ADD vs COPY (34x), DL3044 self-referencing ENV (16x), DV2005 deprecated MAINTAINER (4x), DV3011 sudo (8x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "kong/docker-kong",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 5,
+    "totalIssues": 58,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 32,
+      "style": 3
+    },
+    "notableFindings": "FP fixed: DV1011 flagged LUA_PATH as AWS secret (path with many slashes matched base64 pattern). DL3008 apt (12x), DV4003 no WORKDIR (5x). All remaining findings legitimate.",
+    "improvements": [
+      "Fixed DV1011: exclude path-like values (>3 slashes or semicolons) and _PATH/_CPATH vars from AWS secret key detection"
+    ]
+  },
+  {
+    "repo": "wikimedia/mediawiki-docker",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 156,
+    "severities": {
+      "error": 0,
+      "warning": 75,
+      "info": 81,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (42x), DL3018 apk pinning (24x), DV4001 multi-pkg RUN (18x), DV4002 consecutive RUN (9x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "penpot/penpot",
+    "scannedAt": "2026-03-07T14:00:00+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 125,
+    "severities": {
+      "error": 4,
+      "warning": 27,
+      "info": 92,
+      "style": 2
+    },
+    "notableFindings": "DV3019 downloaded script without checksum (16x), DL3003 cd instead of WORKDIR (16x), DV4003 no WORKDIR (11x), DV9001 COPY selfsigned.key. All findings legitimate.",
+    "improvements": []
   }
 ]

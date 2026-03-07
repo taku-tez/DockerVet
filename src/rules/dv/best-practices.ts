@@ -456,6 +456,8 @@ export const DV4019: Rule = {
         const dir = w.path || inst.arguments.trim();
         // Skip variable references like $HOME or ${APP_DIR}
         if (/^\$/.test(dir)) continue;
+        // Skip Windows absolute paths (e.g., C:\app, D:\workspace)
+        if (/^[A-Za-z]:[\\\/]/.test(dir)) continue;
         // Flag relative paths (not starting with /)
         if (dir && !dir.startsWith('/')) {
           violations.push({ rule: 'DV4019', severity: 'warning', message: `WORKDIR "${dir}" uses a relative path. Use an absolute path for clarity and predictability.`, line: inst.line });
