@@ -401,3 +401,116 @@ describe('DV4025 - apt-get install without -y', () => {
     expect(hasRule(lintDockerfile(df), 'DV4025')).toBe(false);
   });
 });
+
+describe('DV4027 - COPY node_modules from build stage', () => {
+  it('flags COPY --from=build node_modules in multi-stage', () => {
+    const df = `FROM node:20 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-slim
+WORKDIR /app
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+CMD ["node", "dist/index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4027')).toBe(true);
+  });
+
+  it('does not flag COPY without --from', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY node_modules ./node_modules
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4027')).toBe(false);
+  });
+
+  it('does not flag single-stage builds', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY . .
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4027')).toBe(false);
+  });
+
+  it('does not flag COPY --from without node_modules', () => {
+    const df = `FROM node:20 AS build
+WORKDIR /app
+RUN npm ci && npm run build
+
+FROM node:20-slim
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+CMD ["node", "dist/index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4027')).toBe(false);
+  });
+
+  it('flags partial path containing node_modules', () => {
+    const df = `FROM node:20 AS build
+WORKDIR /app
+RUN npm ci && npm run build
+
+FROM node:20-slim
+WORKDIR /app
+COPY --from=build /app/node_modules/some-package ./vendor
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4027')).toBe(true);
+  });
+});
+
+describe('DV4028 - yarn install without --frozen-lockfile', () => {
+  it('flags yarn install without lockfile flag', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY . .
+RUN yarn install
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4028')).toBe(true);
+  });
+
+  it('passes with --frozen-lockfile', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY . .
+RUN yarn install --frozen-lockfile
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4028')).toBe(false);
+  });
+
+  it('passes with --immutable (yarn v2+)', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY . .
+RUN yarn install --immutable
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4028')).toBe(false);
+  });
+
+  it('passes with --production', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY . .
+RUN yarn install --production
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4028')).toBe(false);
+  });
+
+  it('does not flag yarn add', () => {
+    const df = `FROM node:20
+WORKDIR /app
+RUN yarn add express
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4028')).toBe(false);
+  });
+
+  it('flags yarn install in chained commands', () => {
+    const df = `FROM node:20
+WORKDIR /app
+COPY . .
+RUN cd /app && yarn install && yarn build
+CMD ["node", "index.js"]`;
+    expect(hasRule(lintDockerfile(df), 'DV4028')).toBe(true);
+  });
+});

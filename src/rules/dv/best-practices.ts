@@ -641,3 +641,65 @@ export const DV4026: Rule = {
     return violations;
   },
 };
+
+// DV4027: COPY node_modules from build stage includes devDependencies
+export const DV4027: Rule = {
+  id: 'DV4027', severity: 'info',
+  description: 'Copying node_modules from a build stage includes devDependencies. Use a separate production install instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    if (ctx.ast.stages.length < 2) return violations;
+    for (let i = 1; i < ctx.ast.stages.length; i++) {
+      const stage = ctx.ast.stages[i];
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY') continue;
+        const copy = inst as CopyInstruction;
+        if (!copy.flags['from']) continue;
+        // Check if any source references node_modules
+        for (const src of copy.sources) {
+          if (/node_modules/.test(src)) {
+            violations.push({
+              rule: 'DV4027', severity: 'info',
+              message: 'Copying node_modules from a build stage includes devDependencies, increasing image size. Consider running `npm ci --omit=dev` (or `yarn install --production`) in the production stage instead.',
+              line: inst.line,
+            });
+            break;
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
+// DV4028: yarn install without --frozen-lockfile / --immutable
+export const DV4028: Rule = {
+  id: 'DV4028', severity: 'info',
+  description: 'Prefer `yarn install --frozen-lockfile` (v1) or `yarn install --immutable` (v2+) for deterministic builds.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // Split on shell operators to find individual commands
+        const cmds = args.split(/[;&|\n]+/);
+        for (const cmd of cmds) {
+          const trimmed = cmd.trim();
+          // Match yarn install (with or without packages)
+          if (!/\byarn\s+install\b/.test(trimmed)) continue;
+          // Skip if --frozen-lockfile or --immutable is present
+          if (/--frozen-lockfile|--immutable/.test(trimmed)) continue;
+          // Skip if --production is present (already a production flag)
+          if (/--production/.test(trimmed)) continue;
+          violations.push({
+            rule: 'DV4028', severity: 'info',
+            message: 'Use `yarn install --frozen-lockfile` (Yarn v1) or `yarn install --immutable` (Yarn v2+) for deterministic, reproducible builds.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
