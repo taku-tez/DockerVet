@@ -3,16 +3,13 @@ export GITHUB_TOKEN=$(gh auth token)
 cd ~/clawd/dockervet-dev
 
 REPOS=(
-    "denoland/deno_docker"
-    "elixir-lang/docker-elixir"
-    "kubeshark/kubeshark"
-    "pocketbase/pocketbase"
-    "zammad/zammad-docker-compose"
-    "mattermost/docker"
-    "gleam-lang/gleam"
-    "hadolint/language-docker"
-    "kasmtech/workspaces-core-images"
-    "unifi-poller/unpoller"
+    "teamhanko/hanko"
+    "paralus/paralus"
+    "imgproxy/imgproxy"
+    "MaterializeInc/materialize"
+    "cloudnative-pg/cloudnative-pg"
+    "apache/openwhisk"
+    "flomesh-io/pipy"
 )
 
 for repo in "${REPOS[@]}"; do
@@ -30,10 +27,8 @@ import json
 try:
     with open("/tmp/dv-out.json") as f:
         data=json.load(f)
-    if not isinstance(data, list):
-        print("  Unexpected format:", type(data))
-    elif len(data)==0:
-        print("  No findings (0 issues)")
+    if not isinstance(data, list) or len(data)==0:
+        print("  No findings")
     else:
         sev={"error":0,"warning":0,"info":0,"style":0}
         files=set()
@@ -45,14 +40,14 @@ try:
             r=item.get("rule","?")
             rules[r]=rules.get(r,0)+1
         print("  Files: %d, Total: %d (E:%d W:%d I:%d S:%d)" % (len(files),len(data),sev["error"],sev["warning"],sev["info"],sev["style"]))
-        top=sorted(rules.items(),key=lambda x:-x[1])[:8]
+        top=sorted(rules.items(),key=lambda x:-x[1])[:10]
         print("  Top rules:", ", ".join("%s(%d)" % (r,c) for r,c in top))
         seen=set()
         for item in data:
             r=item.get("rule","?")
-            if r not in seen and len(seen)<12:
+            if r not in seen and len(seen)<15:
                 seen.add(r)
-                msg=item.get("message","")[:120]
+                msg=item.get("message","")[:130]
                 print("  [%s] %s: %s" % (item.get("severity","?"), r, msg))
 except Exception as ex:
     print("  Parse error:", ex)

@@ -12,7 +12,7 @@ export const DV9001: Rule = {
   check(ctx) {
     const violations: Violation[] = [];
     const sensitivePatterns = [
-      { pattern: /(?:^|\/)\.env(?:\.|$)/i, name: '.env file' },
+      { pattern: /(?:^|\/)\.env(?:\.[^/]*)?$/i, name: '.env file' },
       { pattern: /(?:^|\/)\.git(?:\/|$)/i, name: '.git directory' },
       { pattern: /(?:id_rsa|id_ed25519|id_ecdsa|id_dsa)(?!\.pub\b)/i, name: 'SSH private key' },
       { pattern: /(?<!\.crt|\.cert|\.ca|\.pub)\.pem$|(?<!public)\.key$/i, name: 'private key file' },
@@ -35,6 +35,10 @@ export const DV9001: Rule = {
           if (src === '.' || src === './') continue;
           for (const { pattern, name } of sensitivePatterns) {
             if (pattern.test(src)) {
+              // Skip .env template/sample files — they contain placeholders, not real secrets
+              if (name === '.env file' && /\.(?:sample|example|template|dist|defaults)$/i.test(src)) {
+                continue;
+              }
               violations.push({
                 rule: 'DV9001', severity: 'error',
                 message: `Copying ${name} ("${src}") into the image exposes sensitive data. Use .dockerignore to exclude it, or use BuildKit secrets (--mount=type=secret).`,

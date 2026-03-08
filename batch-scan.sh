@@ -1,55 +1,59 @@
 #!/bin/bash
+# Batch scan script for DockerVet OSS scan
 cd ~/clawd/dockervet-dev
 
 REPOS=(
-  "goauthentik/authentik"
-  "NginxProxyManager/nginx-proxy-manager"
-  "miniflux/v2"
-  "dgtlmoon/changedetection.io"
-  "louislam/dockge"
-  "usememos/memos"
-  "overleaf/overleaf"
-  "jellyfin/jellyfin"
-  "teable-group/teable"
-  "pocketbase/pocketbase"
+    "denoland/deno_docker"
+    "elixir-lang/docker-elixir"
+    "kubeshark/kubeshark"
+    "pocketbase/pocketbase"
+    "zammad/zammad-docker-compose"
+    "mattermost/docker"
+    "gleam-lang/gleam"
+    "hadolint/language-docker"
+    "kasmtech/workspaces-core-images"
+    "unifi-poller/unpoller"
 )
 
 for repo in "${REPOS[@]}"; do
-  echo "=== Scanning: $repo ==="
-  node dist/index.js --github "$repo" --format json 2>/dev/null | python3 -c "
+    echo "=== SCANNING: $repo ==="
+    output=$(node dist/index.js --github "$repo" --format json 2>/dev/null)
+    if [ -z "$output" ]; then
+        echo "  No output (no Dockerfiles or error)"
+        echo "---"
+        continue
+    fi
+    echo "$output" | python3 << 'PYEOF'
 import json,sys
-data=json.load(sys.stdin)
-if not isinstance(data, list):
-    data = [data]
-sev = {'error':0,'warning':0,'info':0,'style':0}
-rules = {}
-files_set = set()
-for item in data:
-    if isinstance(item, dict) and 'file' in item:
-        # flat array of findings
-        s = item.get('severity','unknown')
-        sev[s] = sev.get(s,0)+1
-        r = item.get('rule','')
-        files_set.add(item.get('file',''))
-        if r not in rules:
-            rules[r] = {'count':0, 'msg': item.get('message','')[:100]}
-        rules[r]['count'] += 1
-    elif isinstance(item, dict) and 'findings' in item:
-        files_set.add(item.get('file',''))
-        for f in item.get('findings',[]):
-            s = f.get('severity','unknown')
-            sev[s] = sev.get(s,0)+1
-            r = f.get('ruleId','')
-            if r not in rules:
-                rules[r] = {'count':0, 'msg': f.get('message','')[:100]}
-            rules[r]['count'] += 1
-
-total = sum(sev.values())
-print(f'Files: {len(files_set)}, Total findings: {total}')
-print(f'  error={sev[\"error\"]}, warning={sev[\"warning\"]}, info={sev[\"info\"]}, style={sev[\"style\"]}')
-print('Top rules:')
-for r in sorted(rules, key=lambda x:-rules[x]['count'])[:8]:
-    print(f'  {r}: {rules[r][\"count\"]}x - {rules[r][\"msg\"]}')
-" 2>&1
-  echo ""
+try:
+    data=json.load(sys.stdin)
+    if not isinstance(data, list):
+        print("  Unexpected format")
+        sys.exit(0)
+    # Count by severity
+    sev={"error":0,"warning":0,"info":0,"style":0}
+    files=set()
+    rules={}
+    for item in data:
+        files.add(item.get("file",""))
+        s=item.get("severity","info")
+        sev[s]=sev.get(s,0)+1
+        r=item.get("rule","?")
+        rules[r]=rules.get(r,0)+1
+    print("  Files: %d, Total: %d (E:%d W:%d I:%d S:%d)" % (len(files),len(data),sev["error"],sev["warning"],sev["info"],sev["style"]))
+    # Top rules
+    top=sorted(rules.items(),key=lambda x:-x[1])[:8]
+    print("  Top rules:", ", ".join("%s(%d)" % (r,c) for r,c in top))
+    # Show some findings for FP analysis
+    seen=set()
+    for item in data:
+        r=item.get("rule","?")
+        if r not in seen and len(seen)<10:
+            seen.add(r)
+            msg=item.get("message","")[:100]
+            print("  [%s] %s: %s" % (item.get("severity","?"), r, msg))
+except Exception as ex:
+    print("  Parse error:", ex)
+PYEOF
+    echo "---"
 done

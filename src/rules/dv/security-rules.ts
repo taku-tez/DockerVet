@@ -5,6 +5,8 @@ import { EnvInstruction, ArgInstruction, CopyInstruction, UserInstruction } from
 // as a compound syllable (e.g. TIKTOKEN, BITTOKEN) don't trigger false positives.
 // auth_token / access_token are kept as explicit patterns for clarity.
 const SECRET_PATTERNS = /(password|passwd|secret|api_key|apikey|api_secret|access_key|access_token|auth_token|(?<![a-zA-Z])token(?![a-zA-Z])|private_key|encryption_key|signing_key|credentials?)/i;
+// Names with negation/config prefixes (NO_, DISABLE_, WITHOUT_, USE_, etc.) around the secret keyword are config flags, not secrets
+const NEGATED_SECRET_NAME = /(?:^|_)(?:no|disable|without|skip|use|has|need|require|enable|check)_(?:credentials?|password|secret|token|key)/i;
 // Docker secrets convention: ENV vars ending in _FILE point to file paths, not actual secrets.
 // Similarly, _URL / _ENDPOINT / _ADDR / _HOST suffixes indicate configuration endpoints, not secret values.
 // e.g. ANCHORE_FEEDS_TOKEN_URL stores an OAuth endpoint URL, not the token itself.
@@ -82,14 +84,14 @@ export const DV1001: Rule = {
         if (inst.type === 'ENV') {
           const e = inst as EnvInstruction;
           for (const pair of e.pairs) {
-            if (SECRET_PATTERNS.test(pair.key) && !isNonSecretValue(pair.key, pair.value)) {
+            if (SECRET_PATTERNS.test(pair.key) && !NEGATED_SECRET_NAME.test(pair.key) && !isNonSecretValue(pair.key, pair.value)) {
               violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ENV: "${pair.key}". Use build secrets or runtime environment variables instead.`, line: inst.line });
             }
           }
         }
         if (inst.type === 'ARG') {
           const a = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(a.name) && !isNonSecretValue(a.name, a.defaultValue || '')) {
+          if (SECRET_PATTERNS.test(a.name) && !NEGATED_SECRET_NAME.test(a.name) && !isNonSecretValue(a.name, a.defaultValue || '')) {
             violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${a.name}". Use --build-arg at build time without default values.`, line: inst.line });
           }
         }
@@ -97,7 +99,7 @@ export const DV1001: Rule = {
     }
     // Check global args too
     for (const arg of ctx.ast.globalArgs) {
-      if (SECRET_PATTERNS.test(arg.name) && !isNonSecretValue(arg.name, arg.defaultValue || '')) {
+      if (SECRET_PATTERNS.test(arg.name) && !NEGATED_SECRET_NAME.test(arg.name) && !isNonSecretValue(arg.name, arg.defaultValue || '')) {
         violations.push({ rule: 'DV1001', severity: 'error', message: `Possible secret hardcoded in ARG: "${arg.name}". Use --build-arg at build time without default values.`, line: arg.line });
       }
     }
@@ -517,13 +519,13 @@ export const DV1013: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type === 'ARG') {
           const arg = inst as ArgInstruction;
-          if (SECRET_PATTERNS.test(arg.name)) {
+          if (SECRET_PATTERNS.test(arg.name) && !NEGATED_SECRET_NAME.test(arg.name)) {
             secretArgs.add(arg.name);
           }
         }
       }
       for (const arg of ctx.ast.globalArgs) {
-        if (SECRET_PATTERNS.test(arg.name)) {
+        if (SECRET_PATTERNS.test(arg.name) && !NEGATED_SECRET_NAME.test(arg.name)) {
           secretArgs.add(arg.name);
         }
       }
