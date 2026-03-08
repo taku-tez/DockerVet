@@ -15,7 +15,7 @@ export const DV9001: Rule = {
       { pattern: /(?:^|\/)\.env(?:\.[^/]*)?$/i, name: '.env file' },
       { pattern: /(?:^|\/)\.git(?:\/|$)/i, name: '.git directory' },
       { pattern: /(?:id_rsa|id_ed25519|id_ecdsa|id_dsa)(?!\.pub\b)/i, name: 'SSH private key' },
-      { pattern: /(?<!\.crt|\.cert|\.ca|\.pub)\.pem$|(?<!public)\.key$/i, name: 'private key file' },
+      { pattern: /(?<!\.crt|\.cert|\.ca|\.pub)\.pem$|(?<!public|\.gpg|\.asc|\.pub)\.key$/i, name: 'private key file' },
       { pattern: /\.pfx$|\.p12$/i, name: 'certificate bundle' },
       { pattern: /(?:^|\/)\.aws(?:\/|$)/i, name: '.aws credentials directory' },
       { pattern: /(?:^|\/)\.kube(?:\/|$)/i, name: '.kube config directory' },
@@ -37,6 +37,10 @@ export const DV9001: Rule = {
             if (pattern.test(src)) {
               // Skip .env template/sample files — they contain placeholders, not real secrets
               if (name === '.env file' && /\.(?:sample|example|template|dist|defaults)$/i.test(src)) {
+                continue;
+              }
+              // Skip public GPG key URLs (e.g., https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key)
+              if (name === 'private key file' && /gpg(?:key)?/i.test(src)) {
                 continue;
               }
               violations.push({

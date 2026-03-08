@@ -79,6 +79,8 @@ export const DV3004: Rule = {
   description: 'Avoid copying certificates or private keys into the image.',
   check(ctx) {
     const certPatterns = /\.(pem|key|p12|pfx|jks|keystore)$/i;
+    // Public GPG keys (e.g., .gpg.key, gpgkey/) are not private keys
+    const publicKeyExclusion = /\.gpg\.key$|gpg(?:key)?/i;
     const violations: Violation[] = [];
     const lastStageIndex = ctx.ast.stages.length - 1;
     for (const stage of ctx.ast.stages) {
@@ -87,7 +89,7 @@ export const DV3004: Rule = {
       for (const inst of stage.instructions) {
         if (inst.type !== 'COPY' && inst.type !== 'ADD') continue;
         const c = inst as CopyInstruction;
-        if (c.sources.some(s => certPatterns.test(s))) {
+        if (c.sources.some(s => certPatterns.test(s) && !publicKeyExclusion.test(s))) {
           violations.push({ rule: 'DV3004', severity: 'warning', message: 'Avoid copying certificate/private key files into the image. Use secrets management.', line: inst.line });
         }
       }
