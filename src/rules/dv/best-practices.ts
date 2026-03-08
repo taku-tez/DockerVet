@@ -594,7 +594,7 @@ export const DV4025: Rule = {
           const trimmed = cmd.trim();
           if (!/\bapt-get\s+install\b/.test(trimmed)) continue;
           // Check if -y, --yes, or --assume-yes is present anywhere in the apt-get install command
-          if (/-y\b|--yes\b|--assume-yes\b/.test(trimmed)) continue;
+          if (/-[a-zA-Z]*y|--yes\b|--assume-yes\b/.test(trimmed)) continue;
           // Also check DEBIAN_FRONTEND=noninteractive before apt-get
           if (/DEBIAN_FRONTEND=noninteractive/.test(trimmed)) continue;
           // Check if DEBIAN_FRONTEND=noninteractive is set as ENV earlier in the stage
