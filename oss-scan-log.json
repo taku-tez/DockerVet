@@ -16214,5 +16214,161 @@
       "info": 12
     },
     "notes": "Clean scan, no FP. DL3008 apt pinning (5x), DL3003 cd usage."
+  },
+  {
+    "repo": "dbeaver/cloudbeaver",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 29,
+    "severities": {
+      "error": 1,
+      "warning": 17,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (8x), DV2005 MAINTAINER deprecated, DV3026 chmod 777, DL3005 dist-upgrade — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "FreshRSS/FreshRSS",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 74,
+    "severities": {
+      "error": 1,
+      "warning": 58,
+      "info": 15,
+      "style": 0
+    },
+    "notableFindings": "Heavy DL3018 apk pinning (40x), DL3008 apt pinning (14x). DV7007 cron daemon in container. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 1
+    },
+    "notableFindings": "Very clean Dockerfile. DV6012 WORKDIR /, DL3057, DV4012 — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "stashapp/stash",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 99,
+    "severities": {
+      "error": 0,
+      "warning": 70,
+      "info": 25,
+      "style": 4
+    },
+    "notableFindings": "FP found: DV9001/DV3004 flagged 'nodesource-repo.gpg.key' (public GPG key URL) as private key file — fixed. DL3008 apt (29x), DL3018 apk (17x).",
+    "improvements": [
+      "Fixed DV9001/DV3004: exclude .gpg.key and gpgkey/ paths from private key detection (public GPG signing keys)"
+    ]
+  },
+  {
+    "repo": "miniflux/v2",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 53,
+    "severities": {
+      "error": 4,
+      "warning": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notableFindings": "DL3020 ADD vs COPY (4x), DV4007 DEBIAN_FRONTEND as ENV. Multiple packaging Dockerfiles (debian/rpm/alpine). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "casdoor/casdoor",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 37,
+    "severities": {
+      "error": 1,
+      "warning": 16,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DV3031 sudoers NOPASSWD, DV6013 curl without --fail, DL3027 apt vs apt-get. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "juspay/hyperswitch",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 98,
+    "severities": {
+      "error": 1,
+      "warning": 41,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (18x), DV1009 no digest (9x). DV1003 curl|sh in migration-runner. DV3034 npm --force in web. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "rustdesk/rustdesk",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 51,
+    "severities": {
+      "error": 4,
+      "warning": 34,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV3007 TLS verification disabled (--no-check-certificate). DL3004 sudo in container. DV7005 USER switches back to root. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "goauthentik/authentik",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 96,
+    "severities": {
+      "error": 1,
+      "warning": 57,
+      "info": 27,
+      "style": 11
+    },
+    "notableFindings": "DL3008 unpinned apt (34x), DL3052 unused ARGs (10x), DV3034 npm --force. DV7007 runit process supervisor. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apitable/apitable",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 12,
+    "totalIssues": 122,
+    "severities": {
+      "error": 12,
+      "warning": 20,
+      "info": 86,
+      "style": 4
+    },
+    "notableFindings": "DV1001 correctly flags MINIO_ACCESS_KEY, MYSQL_PASSWORD, REDIS_PASSWORD, AWS_ACCESS_KEY in all-in-one Dockerfile (8 secrets). DV4027 node_modules copy (22x). All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "sonarr/Sonarr",
+    "scannedAt": "2026-03-09T02:02:34.353564+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 72,
+    "severities": {
+      "error": 0,
+      "warning": 36,
+      "info": 36,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (22x), DV3038 HTTP package repo, DV6007 deprecated apt-key. All legitimate.",
+    "improvements": []
   }
 ]
