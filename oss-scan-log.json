@@ -16370,5 +16370,122 @@
     },
     "notableFindings": "DL3008 unpinned apt (22x), DV3038 HTTP package repo, DV6007 deprecated apt-key. All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "dockur/macos",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 2,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (3x). Standard Alpine-based image."
+  },
+  {
+    "repo": "anse-app/chatgpt-demo",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 4,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DL3016 npm pinning (2x), standard Next.js build."
+  },
+  {
+    "repo": "acorn-io/runtime",
+    "files": 23,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 65,
+      "info": 78,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DL3007 latest (24x), DV1006 root (23x), DV1009 digest (38x). Large multi-image project."
+  },
+  {
+    "repo": "gradio-app/gradio",
+    "files": 5,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 5,
+      "info": 20
+    },
+    "notes": "Clean scan, no FP. DL3057 HEALTHCHECK (5x), DV1006 root (5x). Minimal Python Dockerfiles."
+  },
+  {
+    "repo": "atuinsh/atuin",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 2,
+      "warnings": 8,
+      "info": 16
+    },
+    "notes": "Clean scan, no FP. DL3000 relative WORKDIR (2x), DL3027 apt vs apt-get (2x). Rust multi-stage build."
+  },
+  {
+    "repo": "mintplex-labs/anything-llm",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 4,
+      "warnings": 3,
+      "info": 23,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh (2x), DV4025 apt-get without -y (2x), DV3003 COPY .env (2x). All legitimate."
+  },
+  {
+    "repo": "HeyPuter/puter",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 11,
+      "info": 11
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (5x), DL3016 npm pinning (2x). Standard Node Alpine build."
+  },
+  {
+    "repo": "getzola/zola",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 1,
+      "warnings": 14,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (8x), DV3024 tarball without checksum. Rust multi-stage build."
+  },
+  {
+    "repo": "SeleniumHQ/docker-selenium",
+    "files": 20,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 8,
+      "warnings": 59,
+      "info": 56,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags SE_SUPERVISORD_UNIX_SERVER_PASSWORD='secret'. DL3044 self-ref ENV (3x), DV3023 unquoted ARG in URL (6x). Large multi-browser test infrastructure."
+  },
+  {
+    "repo": "misskey-dev/misskey",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 16,
+      "info": 22,
+      "style": 2
+    },
+    "notes": "FP found: DV4025 flagged apt-get install -yqq as missing -y flag. Regex /-y\\b/ didn't match combined flags. Fixed to /-[a-zA-Z]*y/.",
+    "improvements": [
+      "Fixed DV4025: recognize combined apt flags like -yqq/-qqy as containing -y"
+    ]
   }
 ]
