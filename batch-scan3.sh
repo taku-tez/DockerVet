@@ -1,32 +1,40 @@
 #!/bin/bash
 cd ~/clawd/dockervet-dev
+export GITHUB_TOKEN=$(gh auth token)
 
 REPOS=(
-  "goauthentik/authentik"
-  "NginxProxyManager/nginx-proxy-manager"
-  "miniflux/v2"
-  "dgtlmoon/changedetection.io"
-  "louislam/dockge"
-  "usememos/memos"
   "overleaf/overleaf"
   "jellyfin/jellyfin"
   "teable-group/teable"
   "pocketbase/pocketbase"
+  "astral-sh/uv"
+  "juspay/hyperswitch"
+  "surrealdb/surrealdb"
+  "leptos-rs/leptos"
 )
 
 for repo in "${REPOS[@]}"; do
   echo "=== Scanning: $repo ==="
-  node dist/index.js --github "$repo" --format json 2>/dev/null | python3 -c "
+  OUTPUT=$(node dist/index.js --github "$repo" --format json 2>/dev/null)
+  if [ -z "$OUTPUT" ]; then
+    echo "NO OUTPUT (no Dockerfiles or error)"
+    echo ""
+    continue
+  fi
+  echo "$OUTPUT" | python3 -c "
 import json,sys
-data=json.load(sys.stdin)
+try:
+    data=json.load(sys.stdin)
+except:
+    print('PARSE ERROR')
+    sys.exit(0)
 if not isinstance(data, list):
     data = [data]
 sev = {'error':0,'warning':0,'info':0,'style':0}
 rules = {}
 files_set = set()
 for item in data:
-    if isinstance(item, dict) and 'file' in item:
-        # flat array of findings
+    if isinstance(item, dict) and 'file' in item and 'rule' in item:
         s = item.get('severity','unknown')
         sev[s] = sev.get(s,0)+1
         r = item.get('rule','')
@@ -34,22 +42,12 @@ for item in data:
         if r not in rules:
             rules[r] = {'count':0, 'msg': item.get('message','')[:100]}
         rules[r]['count'] += 1
-    elif isinstance(item, dict) and 'findings' in item:
-        files_set.add(item.get('file',''))
-        for f in item.get('findings',[]):
-            s = f.get('severity','unknown')
-            sev[s] = sev.get(s,0)+1
-            r = f.get('ruleId','')
-            if r not in rules:
-                rules[r] = {'count':0, 'msg': f.get('message','')[:100]}
-            rules[r]['count'] += 1
-
 total = sum(sev.values())
 print(f'Files: {len(files_set)}, Total findings: {total}')
 print(f'  error={sev[\"error\"]}, warning={sev[\"warning\"]}, info={sev[\"info\"]}, style={sev[\"style\"]}')
 print('Top rules:')
 for r in sorted(rules, key=lambda x:-rules[x]['count'])[:8]:
     print(f'  {r}: {rules[r][\"count\"]}x - {rules[r][\"msg\"]}')
-" 2>&1
+"
   echo ""
 done

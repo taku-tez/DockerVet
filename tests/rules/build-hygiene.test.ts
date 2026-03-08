@@ -53,10 +53,22 @@ describe('DV9001: Sensitive file COPY', () => {
     expect(v.length).toBe(0);
   });
 
-  it('detects COPY of .pem files', () => {
+  it('detects COPY of .pem files (private key)', () => {
     const v = DV9001.check(ctx('FROM node:22\nCOPY server.pem /etc/ssl/'));
     expect(v.length).toBe(1);
     expect(v[0].message).toContain('private key file');
+  });
+
+  it('skips .crt.pem / .cert.pem / .ca.pem (public CA certs, not private keys)', () => {
+    // .crt.pem is a public CA certificate, not a private key
+    const v1 = DV9001.check(ctx('FROM node:22\nCOPY certs/DigiCertGlobalG2.crt.pem /etc/ssl/certs/'));
+    expect(v1.length).toBe(0);
+    const v2 = DV9001.check(ctx('FROM node:22\nCOPY my-ca.cert.pem /usr/local/share/ca-certificates/'));
+    expect(v2.length).toBe(0);
+    const v3 = DV9001.check(ctx('FROM node:22\nCOPY root.ca.pem /etc/ssl/certs/'));
+    expect(v3.length).toBe(0);
+    const v4 = DV9001.check(ctx('FROM node:22\nCOPY signing.pub.pem /etc/ssl/'));
+    expect(v4.length).toBe(0);
   });
 
   it('detects ADD of sensitive files too', () => {

@@ -15,7 +15,7 @@ export const DV9001: Rule = {
       { pattern: /(?:^|\/)\.env(?:\.|$)/i, name: '.env file' },
       { pattern: /(?:^|\/)\.git(?:\/|$)/i, name: '.git directory' },
       { pattern: /(?:id_rsa|id_ed25519|id_ecdsa|id_dsa)(?!\.pub\b)/i, name: 'SSH private key' },
-      { pattern: /\.pem$|\.key$/i, name: 'private key file' },
+      { pattern: /(?<!\.crt|\.cert|\.ca|\.pub)\.pem$|(?<!public)\.key$/i, name: 'private key file' },
       { pattern: /\.pfx$|\.p12$/i, name: 'certificate bundle' },
       { pattern: /(?:^|\/)\.aws(?:\/|$)/i, name: '.aws credentials directory' },
       { pattern: /(?:^|\/)\.kube(?:\/|$)/i, name: '.kube config directory' },
