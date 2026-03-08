@@ -16100,5 +16100,119 @@
     },
     "notableFindings": "DL3018 apk pinning (29x), DL3008 apt pinning (13x), DL3033 yum pinning (6x), DV1009 (5x), DV4003 (5x). Multi-distro builds (Alpine/Ubuntu/CentOS). All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "vercel/next.js",
+    "files": 11,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 4,
+      "warnings": 54,
+      "info": 76,
+      "style": 3
+    },
+    "notes": "FP fixed: DV9001 was flagging .env.development.sample/.env.production.sample as secrets — these are template files. DL3008 apt pinning (26x), DV1009 digest (19x)."
+  },
+  {
+    "repo": "denoland/deno",
+    "files": 1,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 1,
+      "warnings": 4,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh in devcontainer (legitimate)."
+  },
+  {
+    "repo": "langgenius/dify",
+    "files": 4,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 0,
+      "warnings": 15,
+      "info": 27
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning, DV1009 digest, DV4010 chown -R."
+  },
+  {
+    "repo": "vllm-project/vllm",
+    "files": 9,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 25,
+      "warnings": 400,
+      "info": 224,
+      "style": 21
+    },
+    "notes": "FP fixed: DV1013 flagged SCCACHE_S3_NO_CREDENTIALS (boolean config flag with NO_ prefix). Heavy DL3008 apt (139x), DL3013 pip (65x). Large ML build Dockerfiles."
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "files": 6,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 1,
+      "warnings": 57,
+      "info": 58
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh, DL3008/DL3041 package pinning."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 4,
+      "warnings": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (4x), DL3018 apk pinning."
+  },
+  {
+    "repo": "goharbor/harbor-helm",
+    "files": 1,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 0,
+      "warnings": 5,
+      "info": 5
+    },
+    "notes": "Clean scan, no FP. Minimal e2e Dockerfile."
+  },
+  {
+    "repo": "element-hq/synapse",
+    "files": 3,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 3,
+      "warnings": 33,
+      "info": 23,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh, DV4025 apt without -y, DL3008 apt pinning."
+  },
+  {
+    "repo": "juspay/hyperswitch",
+    "files": 7,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 1,
+      "warnings": 41,
+      "info": 56
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh, DL3008 apt pinning (18x), DV1009 digest (9x)."
+  },
+  {
+    "repo": "tinygo-org/tinygo",
+    "files": 1,
+    "date": "2026-03-08",
+    "findings": {
+      "errors": 0,
+      "warnings": 10,
+      "info": 12
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (5x), DL3003 cd usage."
   }
 ]
