@@ -195,6 +195,59 @@ export const DV7006: Rule = {
   },
 };
 
+// DV7008: useradd/groupadd without explicit UID/GID
+// Creating users or groups without specifying a numeric UID/GID leads to:
+// - Non-reproducible builds (assigned ID depends on base image state)
+// - File ownership mismatches when sharing volumes between containers
+// - Potential UID collisions with host system users
+export const DV7008: Rule = {
+  id: 'DV7008', severity: 'warning',
+  description: 'useradd/groupadd without explicit --uid/--gid produces non-deterministic IDs.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+
+        // Check useradd without --uid / -u
+        // Split on && / ; / || to check each command independently
+        const commands = args.split(/&&|\|\||;/);
+        for (const cmd of commands) {
+          const trimmed = cmd.trim();
+
+          // useradd (but not useradd --system / useradd -r which intentionally gets system UID)
+          if (/\buseradd\b/.test(trimmed) && !/\buseradd\s+--help\b/.test(trimmed)) {
+            const hasUid = /\s(?:--uid|-u)\s/.test(trimmed) || /\s(?:--uid|-u)=/.test(trimmed);
+            const isSystem = /\s(?:--system|-r)\b/.test(trimmed);
+            if (!hasUid && !isSystem) {
+              violations.push({
+                rule: 'DV7008', severity: 'warning',
+                message: 'useradd without --uid (-u) assigns a non-deterministic UID. Specify an explicit UID for reproducible builds and consistent file ownership across containers.',
+                line: inst.line,
+              });
+            }
+          }
+
+          // groupadd without --gid / -g
+          if (/\bgroupadd\b/.test(trimmed) && !/\bgroupadd\s+--help\b/.test(trimmed)) {
+            const hasGid = /\s(?:--gid|-g)\s/.test(trimmed) || /\s(?:--gid|-g)=/.test(trimmed);
+            const isSystem = /\s(?:--system|-r)\b/.test(trimmed);
+            if (!hasGid && !isSystem) {
+              violations.push({
+                rule: 'DV7008', severity: 'warning',
+                message: 'groupadd without --gid (-g) assigns a non-deterministic GID. Specify an explicit GID for reproducible builds.',
+                line: inst.line,
+              });
+            }
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};
+
 // DV7007: Process supervisor / multi-service container anti-pattern
 // Running multiple services in a single container violates the one-process-per-container principle.
 // Process supervisors (supervisord, s6-overlay, runit, monit) indicate multi-service design

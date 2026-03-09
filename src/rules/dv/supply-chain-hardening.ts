@@ -511,3 +511,54 @@ export const DV6022: Rule = {
     return violations;
   },
 };
+
+// DV6023: COPY --from referencing external image without digest pin
+// When COPY --from=<image> references an external image (not a build stage alias),
+// using a mutable tag like :latest or no tag at all means the source content can change
+// between builds, breaking supply chain integrity and reproducibility.
+export const DV6023: Rule = {
+  id: 'DV6023', severity: 'warning',
+  description: 'COPY --from references external image without digest pin.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Collect all stage aliases and numeric indices
+    const stageAliases = new Set<string>();
+    ctx.ast.stages.forEach((stage, idx) => {
+      stageAliases.add(String(idx));
+      if (stage.from.alias) {
+        stageAliases.add(stage.from.alias.toLowerCase());
+      }
+    });
+
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'COPY') continue;
+        const copy = inst as import('../../parser/types').CopyInstruction;
+        if (!copy.from) continue;
+
+        const fromRef = copy.from.trim();
+
+        // Skip numeric indices and stage aliases — those reference build stages, not external images
+        if (stageAliases.has(fromRef.toLowerCase())) continue;
+        // Pure numeric references are stage indices
+        if (/^\d+$/.test(fromRef)) continue;
+
+        // This is an external image reference (e.g., COPY --from=nginx:latest /etc/nginx .)
+        // Check if it has a digest pin (@sha256:...)
+        if (fromRef.includes('@sha256:') || fromRef.includes('@sha384:') || fromRef.includes('@sha512:')) {
+          continue; // Properly pinned by digest
+        }
+
+        // Flag: external image without digest
+        const hasTag = /:/.test(fromRef) && !fromRef.startsWith('localhost');
+        const tagPart = hasTag ? fromRef.split(':').pop() : 'latest (implicit)';
+        violations.push({
+          rule: 'DV6023', severity: 'warning',
+          message: `COPY --from=${fromRef} references an external image with mutable tag "${tagPart}". Pin to a digest (@sha256:...) for reproducible builds and supply chain security.`,
+          line: inst.line,
+        });
+      }
+    }
+    return violations;
+  },
+};
