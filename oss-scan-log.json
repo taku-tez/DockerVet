@@ -17116,5 +17116,115 @@
     },
     "notableFindings": "DV1009 digest pinning (7x), DL3018 apk (5x), DL3020 ADD vs COPY (4x). All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "langgenius/dify",
+    "files": 4,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 15,
+      "info": 27
+    },
+    "notes": "Clean scan, no FP. DV3028 external COPY, DV9002/DV9004/DV9005 advanced checks. Standard Python/Node multi-stage builds."
+  },
+  {
+    "repo": "Stirling-Tools/Stirling-PDF",
+    "files": 6,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 6,
+      "warnings": 213,
+      "info": 72
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh (3x), DL3017 apk upgrade (3x). Heavy DL3018 apk pinning across unified/embedded Dockerfiles."
+  },
+  {
+    "repo": "louislam/dockge",
+    "files": 3,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 13,
+      "info": 18
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning, DV1009 digest recommendations."
+  },
+  {
+    "repo": "actualbudget/actual",
+    "files": 4,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 1,
+      "warnings": 19,
+      "info": 44
+    },
+    "notes": "Clean scan, no FP. DV4025 correctly flags apt-get install without -y in ubuntu.Dockerfile."
+  },
+  {
+    "repo": "zammad/zammad",
+    "files": 7,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 10,
+      "warnings": 16,
+      "info": 46
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags LDAP_ADMIN_PASSWORD/LDAP_PASSWORDS in dev docs Dockerfile. DL3020 ADD vs COPY in packager.io Dockerfiles."
+  },
+  {
+    "repo": "minio/operator",
+    "files": 8,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 48,
+      "info": 45
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning heavy, DL3020 ADD in test Dockerfiles."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 4,
+      "warnings": 18,
+      "info": 28
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (4x), DV1009 digest, DL3057 HEALTHCHECK."
+  },
+  {
+    "repo": "gitpod-io/openvscode-server",
+    "files": 11,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 8,
+      "warnings": 188,
+      "info": 118
+    },
+    "notes": "Clean scan, no FP. Large repo. DL3008 apt pinning dominant. DV1003 curl|sh patterns in build Dockerfiles."
+  },
+  {
+    "repo": "containous/traefik-library-image",
+    "files": 9,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 2,
+      "warnings": 21,
+      "info": 24
+    },
+    "notes": "Clean scan, no FP. Official Traefik Docker images. DL3018 apk pinning, DL3020 ADD."
+  },
+  {
+    "repo": "sonatype/docker-nexus3",
+    "files": 5,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 22,
+      "info": 33
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning, DL3033 yum pinning, DV4009 chmod 777."
   }
 ]
