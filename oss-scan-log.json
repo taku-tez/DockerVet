@@ -17366,5 +17366,145 @@
     },
     "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal clean Dockerfile.",
     "improvements": []
+  },
+  {
+    "repo": "rust-lang/rust",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 111,
+    "totalIssues": 2132,
+    "severities": {
+      "error": 0,
+      "warning": 1414,
+      "info": 688,
+      "style": 30
+    },
+    "notableFindings": "Massive CI Docker collection (111 Dockerfiles). Heavy DL3008 apt pinning (1039x), DV4023 consecutive ENV (30x style). DV3033 HTTP download URLs to vault.centos.org mirrors, DV7001 LD_LIBRARY_PATH/LD_PRELOAD in cross-compilation images. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "paradigmxyz/reth",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 67,
+    "severities": {
+      "error": 0,
+      "warning": 26,
+      "info": 41,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (10x), DV1009 no digest (8x). Clean Rust multi-stage builds. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "foundry-rs/foundry",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 64,
+    "severities": {
+      "error": 4,
+      "warning": 32,
+      "info": 28,
+      "style": 0
+    },
+    "notableFindings": "DV3031 NOPASSWD sudoers in devcontainer (legitimate dev image). DV1003 curl|sh for rustup/foundry installers (3x). DL3008 apt pinning (21x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "fluid-cloudnative/fluid",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 27,
+    "totalIssues": 479,
+    "severities": {
+      "error": 10,
+      "warning": 284,
+      "info": 185,
+      "style": 0
+    },
+    "notableFindings": "DL3008/DL3018 unpinned packages (173x). DV3024 tarball without checksum (10x error). DV3023 unquoted ARG in URLs (8x). Heavy addon/runtime Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "SurrealDB/surrealdb",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 119,
+    "severities": {
+      "error": 1,
+      "warning": 60,
+      "info": 58,
+      "style": 0
+    },
+    "notableFindings": "DV9007 VOLUME in non-final stages (3x, correctly detected). DV4009 chmod 777 (2x). DV1003 curl|sh for rustup. DL3041 dnf pinning (7x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "eclipse-mosquitto/mosquitto",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 102,
+    "severities": {
+      "error": 1,
+      "warning": 67,
+      "info": 34,
+      "style": 0
+    },
+    "notableFindings": "DV4025 apt-get without -y flag in Ubuntu Dockerfile (1x error). DL3018 apk pinning (43x). DV3023 unquoted ARG in download URL. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "kubeedge/kubeedge",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 177,
+    "severities": {
+      "error": 4,
+      "warning": 61,
+      "info": 112,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (23x), DV3024 tarball without checksum, DL3020 ADD vs COPY, DL3017 apk upgrade (2x), DV6022 GOPROXY=direct. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openkruise/kruise",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 27,
+    "severities": {
+      "error": 5,
+      "warning": 10,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3020 ADD vs COPY (4x) in guestbook example. DL3017 apk upgrade. DV8003 direct /etc/passwd manipulation. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "cloudnative-pg/cloudnative-pg",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 5,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 3,
+      "style": 1
+    },
+    "notableFindings": "Very clean single Dockerfile. DV4003 no WORKDIR, DL3057 no HEALTHCHECK, DV4012 consecutive COPY. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "spiffe/spire",
+    "scannedAt": "2026-03-10T05:02:04.762157+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 73,
+    "severities": {
+      "error": 0,
+      "warning": 34,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (17x), DV1009 no digest (11x). DV7007 supervisord in test integration Dockerfiles. DV2001 apt-get update separation in dev Dockerfile. All findings legitimate.",
+    "improvements": []
   }
 ]
