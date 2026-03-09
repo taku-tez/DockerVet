@@ -1417,3 +1417,56 @@ export const DV3042: Rule = {
     return violations;
   },
 };
+
+// DV3043: ENV/ARG values with embedded credentials in URLs
+// Detects patterns like https://user:token@registry.example.com in ENV/ARG values.
+// These persist in image layers and are visible via `docker history` / `docker inspect`.
+const EMBEDDED_CRED_URL = /https?:\/\/[^:@\s]+:[^@\s]+@[^/\s]+/;
+// Exclude common false positives: proxy placeholders, Docker Hub auth examples, localhost
+const EMBEDDED_CRED_FP = /(?:username:password|user:pass(?:word)?|YOUR_|CHANGE_ME|@(?:[a-z0-9-]+\.)*example\.com|@localhost|@127\.0\.0\.1|@::1)/i;
+// Variable references like $VAR or ${VAR} are not actual credentials
+const VARIABLE_REF_IN_CRED = /https?:\/\/[^:@\s]*\$[\{(]?\w+[\})]?:[^@\s]*@|https?:\/\/[^:@\s]+:\$[\{(]?\w+[\})]?@/;
+export const DV3043: Rule = {
+  id: 'DV3043', severity: 'warning',
+  description: 'ENV or ARG contains a URL with embedded credentials (user:password@host). These persist in image history.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV') {
+          const env = inst as import('../../parser/types').EnvInstruction;
+          for (const pair of env.pairs) {
+            if (EMBEDDED_CRED_URL.test(pair.value) && !EMBEDDED_CRED_FP.test(pair.value) && !VARIABLE_REF_IN_CRED.test(pair.value)) {
+              violations.push({
+                rule: 'DV3043', severity: 'warning',
+                message: `ENV "${pair.key}" contains a URL with embedded credentials. These are visible in image history via \`docker history\`. Use --mount=type=secret or runtime environment variables instead.`,
+                line: inst.line,
+              });
+            }
+          }
+        }
+        if (inst.type === 'ARG') {
+          const arg = inst as import('../../parser/types').ArgInstruction;
+          if (arg.defaultValue && EMBEDDED_CRED_URL.test(arg.defaultValue) && !EMBEDDED_CRED_FP.test(arg.defaultValue) && !VARIABLE_REF_IN_CRED.test(arg.defaultValue)) {
+            violations.push({
+              rule: 'DV3043', severity: 'warning',
+              message: `ARG "${arg.name}" default value contains a URL with embedded credentials. ARG values are visible in image history via \`docker history\`. Use --mount=type=secret instead.`,
+              line: inst.line,
+            });
+          }
+        }
+      }
+    }
+    // Also check global args
+    for (const arg of ctx.ast.globalArgs) {
+      if (arg.defaultValue && EMBEDDED_CRED_URL.test(arg.defaultValue) && !EMBEDDED_CRED_FP.test(arg.defaultValue) && !VARIABLE_REF_IN_CRED.test(arg.defaultValue)) {
+        violations.push({
+          rule: 'DV3043', severity: 'warning',
+          message: `Global ARG "${arg.name}" default value contains a URL with embedded credentials. ARG values are visible in image history. Use --mount=type=secret instead.`,
+          line: arg.line,
+        });
+      }
+    }
+    return violations;
+  },
+};

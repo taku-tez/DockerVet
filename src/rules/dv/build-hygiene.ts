@@ -220,3 +220,28 @@ export const DV9006: Rule = {
     return violations;
   },
 };
+
+// DV9007: VOLUME in non-final build stage (silently ignored)
+export const DV9007: Rule = {
+  id: 'DV9007', severity: 'warning',
+  description: 'VOLUME instruction in a non-final build stage has no effect on the final image.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    if (ctx.ast.stages.length < 2) return violations;
+
+    // Check all stages except the last one
+    for (let i = 0; i < ctx.ast.stages.length - 1; i++) {
+      const stage = ctx.ast.stages[i];
+      for (const inst of stage.instructions) {
+        if (inst.type === 'VOLUME') {
+          violations.push({
+            rule: 'DV9007', severity: 'warning',
+            message: `VOLUME instruction in build stage ${i} (${stage.from.alias || stage.from.image}) has no effect on the final image. VOLUME in non-final stages is silently ignored. Move it to the final stage if needed.`,
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
