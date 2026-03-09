@@ -16627,5 +16627,125 @@
     },
     "notableFindings": "DL3008 apt pinning (28x), DL3009 apt lists cleanup (11x), DV2004 no --no-install-recommends (11x), DV1007 apt cache (9x), DL3027 apt vs apt-get (4x). Heavy build deps for Java/Maven project. All legitimate.",
     "improvements": []
+  },
+  {
+    "repo": "RocketChat/Rocket.Chat",
+    "files": 12,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 15,
+      "warnings": 114,
+      "info": 100,
+      "style": 23
+    },
+    "notes": "Clean scan, no FP. DV1003 curl|sh (3x), DL3020 ADD vs COPY, DL3017 apk upgrade, DV3024 tarball without checksum — all legitimate."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 4,
+      "warnings": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (4x), DV1009 no digest (7x). Simple Go multi-stage builds."
+  },
+  {
+    "repo": "Stirling-Tools/Stirling-PDF",
+    "files": 6,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 6,
+      "warnings": 209,
+      "info": 72,
+      "style": 7
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (95x), DL3018 apk pinning (44x). DV1003 curl|sh and DL3017 apk upgrade — all legitimate."
+  },
+  {
+    "repo": "overleaf/overleaf",
+    "files": 91,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 36,
+      "warnings": 289,
+      "info": 362,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Large test fixture collection. DL3020 ADD (36x), DV9004 no labels (91x), DL3045 COPY without WORKDIR (83x). All legitimate."
+  },
+  {
+    "repo": "gogs/gogs",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 30,
+      "info": 11,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning (23x). Standard Go Alpine multi-stage builds."
+  },
+  {
+    "repo": "zammad/zammad",
+    "files": 7,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 10,
+      "warnings": 16,
+      "info": 46,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags LDAP_ADMIN_PASSWORD/LDAP_PASSWORDS in dev LDAP Dockerfile. DL3020 ADD (8x). All legitimate."
+  },
+  {
+    "repo": "wekan/wekan",
+    "files": 5,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "info": 32,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3006 untagged gitpod/workspace-mongodb. Standard Node.js builds."
+  },
+  {
+    "repo": "drakkan/sftpgo",
+    "files": 3,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 23,
+      "info": 32,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3006 distroless without tag. DL3008/DL3018 version pinning. All legitimate."
+  },
+  {
+    "repo": "BookStackApp/BookStack",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 29,
+      "info": 13,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (24x). PHP/Apache-based builds."
+  },
+  {
+    "repo": "ArchiveBox/ArchiveBox",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 48,
+      "info": 26,
+      "style": 0
+    },
+    "notes": "Clean scan, no FP. Very heavy DL3008 apt pinning (38x). Large single Dockerfile with many apt packages."
   }
 ]
