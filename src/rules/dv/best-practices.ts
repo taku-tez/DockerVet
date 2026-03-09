@@ -703,3 +703,54 @@ export const DV4028: Rule = {
     return violations;
   },
 };
+
+// DV4029: ARG defined before FROM is not available in build stages unless re-declared
+export const DV4029: Rule = {
+  id: 'DV4029', severity: 'warning',
+  description: 'ARG defined before FROM is not available in build stages unless re-declared after FROM.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const globalArgNames = new Set(ctx.ast.globalArgs.map(a => a.name));
+    if (globalArgNames.size === 0) return violations;
+
+    for (const stage of ctx.ast.stages) {
+      // Collect ARGs re-declared in this stage
+      const stageArgNames = new Set<string>();
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG') {
+          stageArgNames.add((inst as any).name);
+        }
+      }
+
+      // Check if any instruction references a global ARG that wasn't re-declared
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ARG' || inst.type === 'COMMENT') continue;
+        const args = inst.arguments || '';
+        // Find $VAR or ${VAR} references
+        const varRefs = args.matchAll(/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/g);
+        for (const match of varRefs) {
+          const varName = match[1];
+          if (globalArgNames.has(varName) && !stageArgNames.has(varName)) {
+            // Check it's not a well-known Docker automatic ARG (TARGETARCH etc.)
+            const autoArgs = new Set(['TARGETARCH', 'TARGETOS', 'TARGETPLATFORM', 'TARGETVARIANT', 'BUILDARCH', 'BUILDOS', 'BUILDPLATFORM']);
+            if (autoArgs.has(varName)) continue;
+            // Check it's not set as ENV in this stage
+            const isEnv = stage.instructions.some(i =>
+              i.type === 'ENV' && (i as any).pairs?.some((p: any) => p.key === varName)
+            );
+            if (isEnv) continue;
+
+            violations.push({
+              rule: 'DV4029', severity: 'warning',
+              message: `\$${varName} is defined as ARG before FROM but not re-declared in this stage. ARGs before FROM are only available in FROM instructions. Add \`ARG ${varName}\` after FROM to use it.`,
+              line: inst.line,
+            });
+            // Only report once per stage per variable
+            stageArgNames.add(varName);
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};

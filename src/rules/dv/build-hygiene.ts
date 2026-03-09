@@ -249,3 +249,27 @@ export const DV9007: Rule = {
     return violations;
   },
 };
+
+// DV9008: RUN cd <dir> instead of WORKDIR
+export const DV9008: Rule = {
+  id: 'DV9008', severity: 'warning',
+  description: 'RUN cd <dir> does not persist across layers. Use WORKDIR instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        // Detect "cd <dir> &&" at the start of RUN or after && / ; / ||
+        if (/(?:^|&&|\|\|?|;|\n)\s*cd\s+\S+\s*&&/.test(args)) {
+          violations.push({
+            rule: 'DV9008', severity: 'warning',
+            message: '`RUN cd <dir> && ...` does not persist the directory change across layers. Use `WORKDIR <dir>` before the RUN instruction for clarity and persistence.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
