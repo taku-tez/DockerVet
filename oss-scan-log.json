@@ -17226,5 +17226,145 @@
       "info": 33
     },
     "notes": "Clean scan, no FP. DV1009 digest pinning, DL3033 yum pinning, DV4009 chmod 777."
+  },
+  {
+    "repo": "k8sgpt-ai/k8sgpt",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 8,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 5,
+      "style": 0
+    },
+    "notableFindings": "DL3006 distroless untagged, DV6012 WORKDIR at /, DV1008 COPY . — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "Kong/insomnia",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 15,
+    "severities": {
+      "error": 0,
+      "warning": 3,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (2x), DV1006 root, DL3057 no HEALTHCHECK — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "charmbracelet/glow",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 4,
+    "severities": {
+      "error": 0,
+      "warning": 2,
+      "info": 2,
+      "style": 0
+    },
+    "notableFindings": "DL3006 distroless untagged, DV1006 root — clean minimal Dockerfile.",
+    "improvements": []
+  },
+  {
+    "repo": "miniflux/v2",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 53,
+    "severities": {
+      "error": 4,
+      "warning": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notableFindings": "DL3018 apk pinning (5x), DL3020 ADD vs COPY (4x), DV1009 no digest (7x). Packaging Dockerfiles for debian/rpm/alpine/distroless — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "juicedata/juicefs",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 99,
+    "severities": {
+      "error": 2,
+      "warning": 52,
+      "info": 45,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (15x), DV1009 no digest (8x), DV1006 root (6x), DV1003 curl|sh, DV3042 pip cache, DL3002 last USER root — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "SeleniumHQ/docker-selenium",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 20,
+    "totalIssues": 130,
+    "severities": {
+      "error": 8,
+      "warning": 64,
+      "info": 56,
+      "style": 2
+    },
+    "notableFindings": "DV3019 downloaded scripts without checksum (9x), DV3023 sudoers NOPASSWD (6x), DV3021 chmod 777 (7x), DV4003 no WORKDIR (15x), DL4006 set -o pipefail (12x). DV1001 correctly flags SE_SUPERVISORD_UNIX_SERVER_PASSWORD. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "gravitl/netmaker",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 13,
+    "severities": {
+      "error": 1,
+      "warning": 5,
+      "info": 7,
+      "style": 0
+    },
+    "notableFindings": "DV2010 apk upgrade, DV1008 COPY ., DL3017 apt update standalone — all legitimate. Simple Alpine Go build.",
+    "improvements": []
+  },
+  {
+    "repo": "loft-sh/devpod",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 98,
+    "severities": {
+      "error": 7,
+      "warning": 42,
+      "info": 49,
+      "style": 0
+    },
+    "notableFindings": "DL3008 apt pinning (14x), DV1009 no digest (12x), DV1006 root (11x), DV1003 curl|sh (5x), DL4006 pipefail (5x), DV4001 multiple CMD (5x). Dev image Dockerfiles — all legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "open-telemetry/opentelemetry-java-instrumentation",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 16,
+    "totalIssues": 113,
+    "severities": {
+      "error": 3,
+      "warning": 42,
+      "info": 67,
+      "style": 1
+    },
+    "notableFindings": "DV1006 root (15x), DL3057 no HEALTHCHECK (14x), DV4003 no WORKDIR (12x), DV3020 ADD remote URL (8x), DL3025 CMD notation (8x), DV6019 CMD shell form (8x). DV1001 correctly flags ADMIN_PASSWORD in payara smoke-test. DV3033 correctly flags HTTP git clone. All legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "prometheus/mysqld_exporter",
+    "scannedAt": "2026-03-10T02:02:17.183911+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 2,
+    "severities": {
+      "error": 0,
+      "warning": 1,
+      "info": 1,
+      "style": 0
+    },
+    "notableFindings": "DL3007 latest tag, DL3057 no HEALTHCHECK — minimal clean Dockerfile.",
+    "improvements": []
   }
 ]
