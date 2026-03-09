@@ -43,6 +43,10 @@ export const DV9001: Rule = {
               if (name === 'private key file' && /gpg(?:key)?/i.test(src)) {
                 continue;
               }
+              // Skip DH parameter files (e.g., ffdhe2048.pem, ffdhe4096.pem, dhparam.pem) — these are public parameters, not private keys
+              if (name === 'private key file' && /(?:ffdhe\d+|dhparam|dh\d+)\.pem$/i.test(src)) {
+                continue;
+              }
               violations.push({
                 rule: 'DV9001', severity: 'error',
                 message: `Copying ${name} ("${src}") into the image exposes sensitive data. Use .dockerignore to exclude it, or use BuildKit secrets (--mount=type=secret).`,

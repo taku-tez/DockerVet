@@ -16747,5 +16747,232 @@
       "style": 0
     },
     "notes": "Clean scan, no FP. Very heavy DL3008 apt pinning (38x). Large single Dockerfile with many apt packages."
+  },
+  {
+    "repo": "fleetdm/fleet",
+    "files": 18,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 108,
+      "info": 88,
+      "style": 6
+    },
+    "notes": "Clean scan, no FP. DV5001 outdated node:20 base (4x), DL3008 apt pinning (24x), DV4003 no WORKDIR (16x). All legitimate."
+  },
+  {
+    "repo": "groundcover-com/caretta",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 3,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. Minimal eBPF builder Dockerfile. DV1009 digest pinning, DV1008 broad COPY."
+  },
+  {
+    "repo": "traefik/mesh",
+    "files": 4,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 53,
+      "info": 23
+    },
+    "notes": "Clean scan, no FP. Heavy DL3018 apk pinning across integration test Dockerfiles. All legitimate."
+  },
+  {
+    "repo": "haproxytech/kubernetes-ingress",
+    "files": 5,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 2,
+      "warnings": 49,
+      "info": 37,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning, DV4012 consecutive COPY, DL3020 ADD vs COPY. All legitimate."
+  },
+  {
+    "repo": "projectcapsule/capsule",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 3,
+      "info": 3
+    },
+    "notes": "Clean scan, no FP. DL3007 latest tag, DV6012 WORKDIR set to /. Minimal clean Dockerfile."
+  },
+  {
+    "repo": "aquasecurity/starboard",
+    "files": 9,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 27,
+      "info": 36
+    },
+    "notes": "Clean scan, no FP. DL3013 pip pinning, DL3042 pip cache, DV1006 root. All legitimate."
+  },
+  {
+    "repo": "grafana/tanka",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 23,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (13x), DV6013 curl without --fail (4x), DV3023 unquoted ARG in URL, DV3019 downloaded script without checksum. All legitimate."
+  },
+  {
+    "repo": "metallb/frr-k8s",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 2,
+      "info": 2
+    },
+    "notes": "Clean scan, no FP. Minimal Go Alpine multi-stage build. DL3007 latest tag, DV1009 digest pinning."
+  },
+  {
+    "repo": "apache/incubator-devlake",
+    "files": 6,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 111,
+      "info": 88,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (51x), DV1009 digest pinning (12x), DV2004 no --no-install-recommends (10x). DV4023 consecutive ENV. All legitimate."
+  },
+  {
+    "repo": "getredash/redash",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 1,
+      "warnings": 28,
+      "info": 19
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (19x), DV3028 exposed port documentation, DV7003/DV7008 HEALTHCHECK recommendations. All legitimate."
+  },
+  {
+    "repo": "zulip/zulip",
+    "files": 3,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 5,
+      "warnings": 18,
+      "info": 18
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (7x), DL4006 missing pipefail, DV3028 useradd --no-log-init, DV3031 sudoers NOPASSWD."
+  },
+  {
+    "repo": "hedgedoc/hedgedoc",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (6x), DV4027 node_modules from build stage. Minimal well-maintained Node.js Dockerfiles."
+  },
+  {
+    "repo": "huginn/huginn",
+    "files": 3,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 6,
+      "info": 23
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning (3x), DV4004 ARG after ENV (3x), DV3028 useradd --no-log-init. Ruby-based image."
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "files": 5,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 3,
+      "warnings": 46,
+      "info": 41,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (18x), DL3018 apk pinning (8x). Multi-arch build/test Dockerfiles."
+  },
+  {
+    "repo": "distribution/distribution",
+    "files": 7,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 2,
+      "warnings": 28,
+      "info": 39
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning (13x), DL3018 apk pinning (13x). Container registry reference implementation."
+  },
+  {
+    "repo": "saleor/saleor",
+    "files": 2,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 30,
+      "info": 20
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (23x), DV6023 COPY --from with mutable tag (uv:0.8). Python e-commerce platform."
+  },
+  {
+    "repo": "matrix-org/dendrite",
+    "files": 7,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 42,
+      "info": 50
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning (12x), DL3018 apk pinning (10x), DL3006 untagged nginx. Go Matrix homeserver."
+  },
+  {
+    "repo": "element-hq/synapse",
+    "files": 3,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 2,
+      "warnings": 33,
+      "info": 23,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (18x), DV1009 digest (6x), DL4006 pipefail (6x), DV1003 curl|sh (2x). Python Matrix server."
+  },
+  {
+    "repo": "forem/forem",
+    "files": 1,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 1,
+      "warnings": 46,
+      "info": 25,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (35x), DV7001 LD_PRELOAD jemalloc (legitimate Ruby perf pattern), DV4021 gem --no-document."
+  },
+  {
+    "repo": "elastic/apm-server",
+    "files": 5,
+    "date": "2026-03-09",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 22,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV1009 digest pinning (3x), DV4023 consecutive ENV (3x). Clean Go multi-stage builds."
   }
 ]
