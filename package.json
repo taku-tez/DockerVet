@@ -1,6 +1,6 @@
 {
   "name": "dockervet",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Dockerfile security linter - Hadolint-compatible + security-focused rules",
   "main": "dist/lib.js",
   "exports": {
