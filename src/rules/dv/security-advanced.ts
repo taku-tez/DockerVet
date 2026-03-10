@@ -1470,3 +1470,55 @@ export const DV3043: Rule = {
     return violations;
   },
 };
+
+// DV3044: CI/CD token in ENV/ARG
+// Detects well-known CI/CD token variable names with non-empty values in ENV or ARG instructions.
+const CICD_TOKEN_NAMES = /^(GITHUB_TOKEN|GH_TOKEN|GITLAB_TOKEN|GL_TOKEN|BITBUCKET_APP_PASSWORD|NPM_TOKEN|PYPI_TOKEN|CI_JOB_TOKEN|ACCESS_TOKEN|DOCKER_PASSWORD|DOCKER_TOKEN|AWS_SECRET_ACCESS_KEY|CODECOV_TOKEN|SONAR_TOKEN|SNYK_TOKEN|CIRCLE_TOKEN|TRAVIS_TOKEN|HEROKU_API_KEY|NETLIFY_AUTH_TOKEN|VERCEL_TOKEN|NUGET_API_KEY|RUBYGEMS_API_KEY)$/i;
+export const DV3044: Rule = {
+  id: 'DV3044', severity: 'error',
+  description: 'ENV or ARG sets a well-known CI/CD token variable with a non-empty value, leaking credentials into image layers.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type === 'ENV') {
+          const env = inst as import('../../parser/types').EnvInstruction;
+          for (const pair of env.pairs) {
+            if (CICD_TOKEN_NAMES.test(pair.key) && pair.value.trim() !== '') {
+              // Skip if value is just a variable reference like $VAR or ${VAR}
+              if (/^\$\{?\w+\}?$/.test(pair.value.trim())) continue;
+              violations.push({
+                rule: 'DV3044', severity: 'error',
+                message: `ENV "${pair.key}" sets a CI/CD token with a literal value. This is baked into the image and visible via \`docker history\`. Use --mount=type=secret or pass at runtime with \`docker run -e ${pair.key}\`.`,
+                line: inst.line,
+              });
+            }
+          }
+        }
+        if (inst.type === 'ARG') {
+          const arg = inst as import('../../parser/types').ArgInstruction;
+          if (arg.defaultValue && CICD_TOKEN_NAMES.test(arg.name) && arg.defaultValue.trim() !== '') {
+            if (/^\$\{?\w+\}?$/.test(arg.defaultValue.trim())) continue;
+            violations.push({
+              rule: 'DV3044', severity: 'error',
+              message: `ARG "${arg.name}" has a default value for a CI/CD token. ARG values are visible in image history via \`docker history\`. Use --mount=type=secret or pass at build time with \`--build-arg\` without a default.`,
+              line: inst.line,
+            });
+          }
+        }
+      }
+    }
+    // Also check global args
+    for (const arg of ctx.ast.globalArgs) {
+      if (arg.defaultValue && CICD_TOKEN_NAMES.test(arg.name) && arg.defaultValue.trim() !== '') {
+        if (/^\$\{?\w+\}?$/.test(arg.defaultValue.trim())) continue;
+        violations.push({
+          rule: 'DV3044', severity: 'error',
+          message: `Global ARG "${arg.name}" has a default value for a CI/CD token. ARG values are visible in image history. Use --mount=type=secret instead.`,
+          line: arg.line,
+        });
+      }
+    }
+    return violations;
+  },
+};

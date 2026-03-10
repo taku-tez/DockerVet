@@ -754,3 +754,31 @@ export const DV4029: Rule = {
     return violations;
   },
 };
+
+// DV4014: ONBUILD with dangerous instructions (RUN, ADD, COPY)
+// ONBUILD triggers are silently executed when a derived image is built from this base image.
+// Wrapping RUN/ADD/COPY in ONBUILD can cause unexpected side effects for downstream users.
+const ONBUILD_DANGEROUS = /^(RUN|ADD|COPY)\b/i;
+export const DV4014: Rule = {
+  id: 'DV4014', severity: 'warning',
+  description: 'ONBUILD with RUN/ADD/COPY silently executes in derived images, which may surprise downstream users.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'ONBUILD') continue;
+        const args = inst.arguments.trim();
+        const match = args.match(ONBUILD_DANGEROUS);
+        if (match) {
+          const innerCmd = match[1].toUpperCase();
+          violations.push({
+            rule: 'DV4014', severity: 'warning',
+            message: `ONBUILD ${innerCmd} silently executes in derived images. Prefer explicit instructions in child Dockerfiles.`,
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};

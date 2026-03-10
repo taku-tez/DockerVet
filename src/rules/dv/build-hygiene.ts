@@ -273,3 +273,27 @@ export const DV9008: Rule = {
     return violations;
   },
 };
+
+// DV9009: chmod 777 or world-writable permissions in RUN
+// Detects chmod 777, chmod 0777, chmod a+w, chmod o+w, chmod a=rwx, chmod ugo+w in RUN instructions.
+const CHMOD_WORLD_WRITABLE = /chmod\s+(?:-[A-Za-z]+\s+)*(?:777|0777|a\+w|o\+w|a=rwx|ugo\+w)\b/;
+export const DV9009: Rule = {
+  id: 'DV9009', severity: 'warning',
+  description: 'World-writable permissions (chmod 777 etc.) are a security risk in container images.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (CHMOD_WORLD_WRITABLE.test(inst.arguments)) {
+          violations.push({
+            rule: 'DV9009', severity: 'warning',
+            message: 'World-writable permissions (chmod 777 / a+w / o+w) detected. This allows any user in the container to modify these files, increasing attack surface. Use more restrictive permissions (e.g., 755 or 644).',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
