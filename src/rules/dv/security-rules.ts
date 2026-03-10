@@ -481,6 +481,9 @@ export const DV1011: Rule = {
 
 // DV1012: COPY --from copies sensitive files from privileged stage
 const SENSITIVE_PATHS = /(\/etc\/shadow|\/etc\/passwd|\/etc\/ssl\/private|\/root\/\.ssh|\.env$|\.pem$|\.key$|id_rsa|\.p12$|\.pfx$|\.jks$|credentials|\/var\/run\/secrets)/i;
+// /etc/passwd and /etc/group are commonly copied from builder/debug stages to
+// distroless images to set up non-root users. This is NOT a security risk.
+const PASSWD_GROUP_PATHS = /^\/etc\/(passwd|group)$/;
 // Public CA trust bundles and certificate stores are NOT sensitive (public root certs)
 const CA_TRUST_PATHS = /(?:ca-certificates|ca-bundle|tls-ca-bundle|ca-trust|ssl\/certs|pki\/tls\/certs|update-ca-certificates|trusted)/i;
 export const DV1012: Rule = {
@@ -494,7 +497,7 @@ export const DV1012: Rule = {
         const copy = inst as CopyInstruction;
         if (!copy.from) continue;
         for (const src of copy.sources) {
-          if (SENSITIVE_PATHS.test(src) && !CA_TRUST_PATHS.test(src)) {
+          if (SENSITIVE_PATHS.test(src) && !CA_TRUST_PATHS.test(src) && !PASSWD_GROUP_PATHS.test(src)) {
             violations.push({
               rule: 'DV1012', severity: 'warning',
               message: `COPY --from=${copy.from} copies potentially sensitive path "${src}". Avoid copying credentials, keys, or shadow files between stages.`,

@@ -372,6 +372,19 @@ CMD ["cat", "/tmp/shadow"]
 `);
     expect(v.some(v => v.rule === 'DV1012')).toBe(false);
   });
+
+  it('does not flag COPY --from with /etc/passwd (distroless user setup pattern)', () => {
+    const v = lintContent(`FROM golang:1.22 AS builder
+RUN addgroup --gid 10001 app && adduser --uid 10001 --gid 10001 app
+
+FROM gcr.io/distroless/static:nonroot
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+USER 10001
+CMD ["/app"]
+`);
+    expect(v.some(v => v.rule === 'DV1012')).toBe(false);
+  });
 });
 
 // ── DV1013: ARG secret leaks to ENV ────────────────────────────────────
@@ -6170,7 +6183,7 @@ ENTRYPOINT [ "/usr/bin/loki-canary" ]
     expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
   });
 
-  it('cmd/loki/Dockerfile: 6 rules (DV1005, DV1008, DV1009, DV1012, DV4003, DV4010)', () => {
+  it('cmd/loki/Dockerfile: 5 rules (DV1005, DV1008, DV1009, DV4003, DV4010)', () => {
     const v = lintContent(`ARG GO_VERSION=1.26
 
 # Go build stage
@@ -6207,12 +6220,11 @@ CMD ["-config.file=/etc/loki/local-config.yaml"]
     expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
     expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
     expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
-    expect(v.some(v => v.rule === 'DV1012')).toBe(true);    // COPY --from=filesystem copies potentially sensitiv
     expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
     expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
   });
 
-  it('cmd/loki/Dockerfile.cross: 6 rules (DV1005, DV1008, DV1009, DV1012, DV4003, DV4010)', () => {
+  it('cmd/loki/Dockerfile.cross: 5 rules (DV1005, DV1008, DV1009, DV4003, DV4010)', () => {
     const v = lintContent(`ARG GO_VERSION=1.26
 # Directories in this file are referenced from the root of the project not this folder
 # This file is intended to be called from the root like so:
@@ -6251,7 +6263,6 @@ CMD ["-config.file=/etc/loki/local-config.yaml"]
     expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
     expect(v.some(v => v.rule === 'DV1008')).toBe(true);    // COPY . copies the entire build context. Consider c
     expect(v.some(v => v.rule === 'DV1009')).toBe(true);    // Consider pinning "golang" with a digest (e.g., ima
-    expect(v.some(v => v.rule === 'DV1012')).toBe(true);    // COPY --from=filesystem copies potentially sensitiv
     expect(v.some(v => v.rule === 'DV4003')).toBe(true);    // No WORKDIR set. Use WORKDIR to define the working 
     expect(v.some(v => v.rule === 'DV4010')).toBe(true);    // Recursive chown -R increases layer size. Consider 
   });
