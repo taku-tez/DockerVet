@@ -178,3 +178,30 @@ describe('DV2012: silent error suppression with || true', () => {
     expect(hasRule(lintDockerfile('FROM alpine\nRUN find /tmp -type d -empty -delete || true'), 'DV2012')).toBe(false);
   });
 });
+
+describe('DV2013: curl/wget piped to shell', () => {
+  it('should flag curl piped to bash', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -fsSL https://example.com/install.sh | bash'), 'DV2013')).toBe(true);
+  });
+  it('should flag wget piped to sh', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN wget -qO- https://example.com/install.sh | sh'), 'DV2013')).toBe(true);
+  });
+  it('should flag curl piped to ash', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -sSL https://example.com/setup | ash'), 'DV2013')).toBe(true);
+  });
+  it('should flag curl piped to zsh', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl https://example.com/install | zsh'), 'DV2013')).toBe(true);
+  });
+  it('should flag wget piped to dash', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN wget https://example.com/install | dash'), 'DV2013')).toBe(true);
+  });
+  it('should not flag curl without pipe to shell', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl -o /tmp/install.sh https://example.com/install.sh'), 'DV2013')).toBe(false);
+  });
+  it('should not flag wget without pipe to shell', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN wget -O /tmp/install.sh https://example.com/install.sh'), 'DV2013')).toBe(false);
+  });
+  it('should not flag piping to grep', () => {
+    expect(hasRule(lintDockerfile('FROM alpine\nRUN curl https://example.com/list | grep pattern'), 'DV2013')).toBe(false);
+  });
+});

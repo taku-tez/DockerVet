@@ -562,3 +562,25 @@ export const DV6023: Rule = {
     return violations;
   },
 };
+
+// DV6024: sudo usage in RUN
+export const DV6024: Rule = {
+  id: 'DV6024', severity: 'warning',
+  description: 'Avoid using sudo in RUN instructions. Use USER instruction instead.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (/\bsudo\b/.test(inst.arguments)) {
+          violations.push({
+            rule: 'DV6024', severity: 'warning',
+            message: 'Avoid using sudo in containers. If you need root privileges, use the USER instruction to switch users explicitly. sudo implies unnecessary privilege escalation.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};

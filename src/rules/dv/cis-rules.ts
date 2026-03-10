@@ -246,3 +246,26 @@ export const DV2012: Rule = {
     return violations;
   },
 };
+
+// DV2013: curl/wget piped to shell (pipe-to-shell)
+export const DV2013: Rule = {
+  id: 'DV2013', severity: 'error',
+  description: 'Avoid piping curl/wget output to shell. Download first, verify integrity, then execute.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const pipeToShell = /(curl|wget)\s+.*\|\s*(bash|sh|ash|zsh|dash|ksh)/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        if (pipeToShell.test(inst.arguments)) {
+          violations.push({
+            rule: 'DV2013', severity: 'error',
+            message: 'Piping curl/wget output directly to a shell is dangerous. Download the script first, verify its integrity (e.g., checksum), then execute.',
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};

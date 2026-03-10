@@ -553,3 +553,40 @@ export const DV1013: Rule = {
     return violations;
   },
 };
+
+// DV1014: Use of :latest or no tag (mutable tag) in FROM
+export const DV1014: Rule = {
+  id: 'DV1014', severity: 'warning',
+  description: 'Avoid using :latest or untagged images in FROM. Pin to a specific version or digest for reproducible builds.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    // Collect stage aliases to skip
+    const stageAliases = new Set<string>();
+    for (const stage of ctx.ast.stages) {
+      if (stage.from.alias) stageAliases.add(stage.from.alias.toLowerCase());
+    }
+    for (const stage of ctx.ast.stages) {
+      const f = stage.from;
+      // Skip scratch
+      if (f.image === 'scratch') continue;
+      // Skip stage aliases (e.g., FROM builder)
+      if (stageAliases.has(f.image.toLowerCase())) continue;
+      // Skip ARG variable references (e.g., ${GOLANG_IMAGE})
+      if (/\$\{?[A-Za-z_]/.test(f.image)) continue;
+      // Skip Jinja2/template variables
+      if (/\{\{/.test(f.image)) continue;
+      // Skip digest-pinned images
+      if (f.digest) continue;
+      // Flag: no tag (implicit :latest) or explicit :latest
+      if (!f.tag || f.tag === 'latest') {
+        const tagDesc = f.tag === 'latest' ? ':latest' : 'no tag (implicit :latest)';
+        violations.push({
+          rule: 'DV1014', severity: 'warning',
+          message: `FROM ${f.image} uses ${tagDesc}. Pin to a specific version tag or digest (@sha256:...) for reproducible builds and supply chain security.`,
+          line: f.line,
+        });
+      }
+    }
+    return violations;
+  },
+};
