@@ -584,3 +584,31 @@ export const DV6024: Rule = {
     return violations;
   },
 };
+
+// DV6025: go build without -trimpath leaks host filesystem paths
+// When Go compiles binaries, it embeds absolute source paths in the binary by default.
+// These paths reveal directory structure and usernames from the build environment.
+// Using -trimpath removes this information.
+export const DV6025: Rule = {
+  id: 'DV6025', severity: 'info',
+  description: 'go build without -trimpath embeds host filesystem paths in the binary.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const goBuildPattern = /\bgo\s+(?:build|install)\b/;
+    const trimPathFlag = /-trimpath\b/;
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (inst.type !== 'RUN') continue;
+        const args = inst.arguments;
+        if (!goBuildPattern.test(args)) continue;
+        if (trimPathFlag.test(args)) continue;
+        violations.push({
+          rule: 'DV6025', severity: 'info',
+          message: 'go build/install without -trimpath embeds host filesystem paths (including usernames and directory structure) in the compiled binary. Add -trimpath to strip build paths: `go build -trimpath ...`',
+          line: inst.line,
+        });
+      }
+    }
+    return violations;
+  },
+};

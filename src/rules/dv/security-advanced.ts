@@ -1522,3 +1522,44 @@ export const DV3044: Rule = {
     return violations;
   },
 };
+
+// DV3045: Azure-specific credential value patterns in ENV/ARG/RUN
+// Detects Azure connection strings, storage account keys, and Azure AD client secrets
+// that are hardcoded rather than injected via secrets management.
+const AZURE_CREDENTIAL_PATTERNS = [
+  // Azure Storage connection string (contains AccountKey=...)
+  /DefaultEndpointsProtocol=https?;AccountName=[^;]+;AccountKey=[A-Za-z0-9+/=]{20,}/,
+  // Azure Storage Account Key (base64, typically 88 chars)
+  /AccountKey=[A-Za-z0-9+/=]{44,}/,
+  // Azure AD / Service Principal patterns with actual values
+  // SharedAccessSignature with inline sig= (different from URL SAS caught by DV3036)
+  /SharedAccessSignature=sv=[^;]+;sig=[A-Za-z0-9%+/=]+/,
+  // Azure Cosmos DB connection string
+  /AccountEndpoint=https:\/\/[^;]+\.documents\.azure\.com[^;]*;AccountKey=[A-Za-z0-9+/=]{20,}/,
+  // Azure Service Bus / Event Hub connection string
+  /Endpoint=sb:\/\/[^;]+\.servicebus\.windows\.net[^;]*;SharedAccessKey(?:Name)?=[^;]+/,
+];
+export const DV3045: Rule = {
+  id: 'DV3045', severity: 'error',
+  description: 'Azure credential pattern detected (connection string, storage key, service bus key).',
+  check(ctx) {
+    const violations: Violation[] = [];
+    for (const stage of ctx.ast.stages) {
+      for (const inst of stage.instructions) {
+        if (!['ENV', 'ARG', 'RUN', 'LABEL'].includes(inst.type)) continue;
+        const text = inst.raw || inst.arguments;
+        for (const pat of AZURE_CREDENTIAL_PATTERNS) {
+          if (pat.test(text)) {
+            violations.push({
+              rule: 'DV3045', severity: 'error',
+              message: 'Azure credential pattern detected (connection string, storage key, or service bus key). Use Azure Key Vault references, managed identities, or BuildKit --mount=type=secret instead of hardcoding credentials.',
+              line: inst.line,
+            });
+            break;
+          }
+        }
+      }
+    }
+    return violations;
+  },
+};

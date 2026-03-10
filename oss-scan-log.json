@@ -17986,5 +17986,115 @@
     },
     "notableFindings": "DL3018 apk pinning (4x), DL3057 no HEALTHCHECK (2x), DV1006 root (2x). Clean minimal Dockerfiles.",
     "improvements": []
+  },
+  {
+    "repo": "oxc-project/oxc",
+    "files": 1,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 0,
+      "warnings": 3,
+      "info": 4
+    },
+    "notes": "Clean scan, no FP. Dev container with DV6023 COPY --from mutable tag, DV2001 apt update separation, DV1006 root — all legitimate."
+  },
+  {
+    "repo": "qdm12/gluetun",
+    "files": 2,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 0,
+      "warnings": 14,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. VPN container with DL3018 apk pinning (8x), DV1009 digest pinning (6x). DV6003 tcpdump in dev container (legitimate)."
+  },
+  {
+    "repo": "thelounge/thelounge-docker",
+    "files": 1,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 0,
+      "warnings": 0,
+      "info": 4
+    },
+    "notes": "Clean scan, no FP. Minimal Node.js IRC client Dockerfile. DL3057 HEALTHCHECK, DV5003 distroless suggestion."
+  },
+  {
+    "repo": "hashicorp/nomad",
+    "files": 5,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 3,
+      "warnings": 48,
+      "info": 41
+    },
+    "notes": "Clean scan, no FP. DV3031 sudoers NOPASSWD in test Dockerfile (legitimate). DL3020 ADD (2x). Heavy DL3008 apt pinning across build/dev/test images."
+  },
+  {
+    "repo": "milvus-io/milvus-operator",
+    "files": 3,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 1,
+      "warnings": 3,
+      "info": 9
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY. DV6012 WORKDIR / in distroless operator images (legitimate for single-binary containers)."
+  },
+  {
+    "repo": "apache/dubbo",
+    "files": 1,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 1,
+      "warnings": 6,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. DV3024 tarball without checksum. DL3008 apt pinning. DV1006 root. Maven-based Java build."
+  },
+  {
+    "repo": "apache/dubbo-admin",
+    "files": 1,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 0,
+      "warnings": 2,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DV6022 GOPROXY=direct (Chinese network config). Uses Huawei Cloud registry mirrors."
+  },
+  {
+    "repo": "elastic/cloud-on-k8s",
+    "files": 6,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 4,
+      "warnings": 13,
+      "info": 24
+    },
+    "notes": "DV9001 flags test/e2e/license.key — this is an Elastic license file, not a crypto private key, but flagging is still appropriate (credential-like file in image). DL3020, DV3024 tarball integrity. All legitimate."
+  },
+  {
+    "repo": "keptn/lifecycle-toolkit",
+    "files": 5,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 0,
+      "warnings": 21,
+      "info": 24
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (15x), DV1009 digest pinning (16x distroless/golang/python). DV4004 ARG after ENV. Clean distroless operator images."
+  },
+  {
+    "repo": "hashicorp/levant",
+    "files": 1,
+    "date": "2026-03-10",
+    "findings": {
+      "errors": 0,
+      "warnings": 2,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. Minimal Go Alpine multi-stage build. DV1008 COPY ., DV1006 root, DV4005 no CMD in final stage."
   }
 ]

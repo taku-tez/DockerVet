@@ -156,3 +156,42 @@ export const DV8004: Rule = {
     return violations;
   },
 };
+
+// DV8006: Multi-stage build - final stage copies build tool directories
+// Detects when the final stage copies broad directories from a builder stage
+// that likely contain compilers, build tools, and development headers.
+// These bloat the final image and increase attack surface.
+import { CopyInstruction } from '../../parser/types';
+const BUILD_TOOL_PATHS = /^(?:\/usr\/(?:local\/)?(?:include|src|share\/(?:man|doc|info|gcc))|\/usr\/lib\/gcc|\/opt\/(?:gcc|build)|\/root\/\.cache\/(?:go-build|pip))(?:\/|$)/;
+const BUILD_TOOL_BROAD = /^(?:\/usr\/local\/?|\/usr\/?)$/;
+export const DV8006: Rule = {
+  id: 'DV8006', severity: 'warning',
+  description: 'Final stage copies build tool directories from builder stage, increasing image size and attack surface.',
+  check(ctx) {
+    const violations: Violation[] = [];
+    const stages = ctx.ast.stages;
+    if (stages.length < 2) return violations;
+    const finalStage = stages[stages.length - 1];
+    for (const inst of finalStage.instructions) {
+      if (inst.type !== 'COPY') continue;
+      const c = inst as CopyInstruction;
+      if (!c.from) continue;
+      for (const src of c.sources) {
+        if (BUILD_TOOL_PATHS.test(src)) {
+          violations.push({
+            rule: 'DV8006', severity: 'warning',
+            message: `COPY --from=${c.from} copies build tool path "${src}" into the final stage. This likely includes compilers, headers, and dev files that increase image size and attack surface. Copy only the specific build artifacts you need.`,
+            line: inst.line,
+          });
+        } else if (BUILD_TOOL_BROAD.test(src)) {
+          violations.push({
+            rule: 'DV8006', severity: 'warning',
+            message: `COPY --from=${c.from} copies broad directory "${src}" into the final stage. This likely includes build tools, compilers, and development files. Copy only specific artifacts (e.g., compiled binaries) instead.`,
+            line: inst.line,
+          });
+        }
+      }
+    }
+    return violations;
+  },
+};
