@@ -18486,5 +18486,121 @@
       "style": 0
     },
     "notes": "Clean scan, no FP. DV1009 no digest (12x), DL3018 apk pinning (10x), DV6025 go build without -trimpath (5x), DV1014 FROM alpine/:latest (4x). Multiple demo/complement test Dockerfiles."
+  },
+  {
+    "repo": "vllm-project/vllm",
+    "files": 9,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 28,
+      "warnings": 453,
+      "info": 224,
+      "style": 21
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning (139x), DL3013 pip pinning (65x). DV1003 curl|sh (9x), DV3024 DL3020 ADD vs COPY — all legitimate. Large ML Docker images."
+  },
+  {
+    "repo": "langgenius/dify",
+    "files": 4,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 0,
+      "warnings": 16,
+      "info": 27
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (6x), DV1009 no digest (4x). Well-maintained multi-stage Python builds."
+  },
+  {
+    "repo": "labring/sealos",
+    "files": 44,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 0,
+      "warnings": 147,
+      "info": 258
+    },
+    "notes": "Clean scan, no FP. Large repo with 44 Dockerfiles. DV1009 no digest (76x), DL3018 apk pinning (60x), DV9004 (43x). Kubernetes platform project."
+  },
+  {
+    "repo": "RocketChat/Rocket.Chat",
+    "files": 12,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 18,
+      "warnings": 117,
+      "info": 100,
+      "style": 23
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (32x), DV4012 consecutive COPY (23x). DL3017 apk upgrade (8x), DV1003 curl|sh — all legitimate."
+  },
+  {
+    "repo": "zammad/zammad",
+    "files": 7,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 10,
+      "warnings": 17,
+      "info": 46,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags LDAP_ADMIN_PASSWORD=test and LDAP_PASSWORDS=custompassword in doc/ldap Dockerfile. DL3020 ADD (8x), DV9003 (8x)."
+  },
+  {
+    "repo": "overleaf/overleaf",
+    "files": 91,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 38,
+      "warnings": 333,
+      "info": 363,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Huge repo with 91 Dockerfiles. DV1009 (91x), DV9004 (91x), DL3045 COPY without WORKDIR (83x), DV1006 root (79x). DL3020 ADD (34x) — all legitimate."
+  },
+  {
+    "repo": "element-hq/synapse",
+    "files": 3,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 4,
+      "warnings": 35,
+      "info": 23,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (18x), DL4006 pipefail (6x), DV1003 curl|sh (2x) — all legitimate. Matrix homeserver."
+  },
+  {
+    "repo": "woodpecker-ci/plugin-git",
+    "files": 1,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. Simple Alpine-based plugin image. DL3018 apk pinning (5x), DV1009 (2x)."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 4,
+      "warnings": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DV1009 no digest (7x), DL3018 apk pinning (5x), DL3020 ADD (4x). Clean multi-stage Go builds."
+  },
+  {
+    "repo": "knadh/listmonk",
+    "files": 2,
+    "date": "2026-03-11",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 8
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (4x), DL3057 no HEALTHCHECK (2x), DV1006 root (2x). Clean Go Alpine Dockerfiles."
   }
 ]
