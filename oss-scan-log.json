@@ -19142,5 +19142,159 @@
     },
     "falsePositives": [],
     "notes": "Batch 2026-03-12: All findings legitimate"
+  },
+  {
+    "repo": "dolthub/dolt",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 174,
+    "severities": {
+      "error": 4,
+      "warning": 88,
+      "info": 80,
+      "style": 2
+    },
+    "notableFindings": "DL3057: HEALTHCHECK instruction missing; DV1006: No USER instruction found. Container will run as root by default.; DV1009: Consider pinning \"ubuntu\" with a digest (e.g., image@sha256:...) for reproducible builds.",
+    "improvements": []
+  },
+  {
+    "repo": "jellyfin/jellyfin-web",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo",
+    "improvements": []
+  },
+  {
+    "repo": "invoiceninja/dockerfiles",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 21,
+    "severities": {
+      "error": 0,
+      "warning": 13,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV1009: Consider pinning \"php\" with a digest (e.g., image@sha256:...) for reproducible builds.; DV4003: No WORKDIR set. Use WORKDIR to define the working directory explicitly.; DV3020: ADD with remote URL lacks integrity verification. Use ADD --checksum=<digest> (Docker 24+) or downlo",
+    "improvements": []
+  },
+  {
+    "repo": "BookStackApp/BookStack",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 43,
+    "severities": {
+      "error": 0,
+      "warning": 30,
+      "info": 13,
+      "style": 0
+    },
+    "notableFindings": "DV1004: Consider using multi-stage builds to reduce final image size. Build tools detected but only one stag; DV1006: No USER instruction found. Container will run as root by default.; DV1009: Consider pinning \"php\" with a digest (e.g., image@sha256:...) for reproducible builds.",
+    "improvements": []
+  },
+  {
+    "repo": "Jackett/Jackett",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo",
+    "improvements": []
+  },
+  {
+    "repo": "immich-app/base-images",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 115,
+    "severities": {
+      "error": 0,
+      "warning": 103,
+      "info": 12,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV1009: Consider pinning \"pgvector/pgvector\" with a digest (e.g., image@sha256:...) for reproducible builds.; DV4003: No WORKDIR set. Use WORKDIR to define the working directory explicitly.",
+    "improvements": []
+  },
+  {
+    "repo": "lidarr/Lidarr",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 0,
+    "totalIssues": 0,
+    "severities": {
+      "error": 0,
+      "warning": 0,
+      "info": 0,
+      "style": 0
+    },
+    "notableFindings": "No Dockerfiles found in repo",
+    "improvements": []
+  },
+  {
+    "repo": "casdoor/casdoor",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 40,
+    "severities": {
+      "error": 1,
+      "warning": 19,
+      "info": 20,
+      "style": 0
+    },
+    "notableFindings": "DV1009: Consider pinning \"node\" with a digest (e.g., image@sha256:...) for reproducible builds.; DV1009: Consider pinning \"golang\" with a digest (e.g., image@sha256:...) for reproducible builds.; DV1005: When using COPY with broad sources, ensure a .dockerignore file exists to exclude unnecessary files.",
+    "improvements": []
+  },
+  {
+    "repo": "traefik/traefik-library-image",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 42,
+    "totalIssues": 211,
+    "severities": {
+      "error": 10,
+      "warning": 96,
+      "info": 105,
+      "style": 0
+    },
+    "notableFindings": "DL3057: HEALTHCHECK instruction missing; DV1006: No USER instruction found. Container will run as root by default.; DV1009: Consider pinning \"alpine\" with a digest (e.g., image@sha256:...) for reproducible builds.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/ozone",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 128,
+    "severities": {
+      "error": 35,
+      "warning": 79,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DV1006: No USER instruction found. Container will run as root by default.; DV4003: No WORKDIR set. Use WORKDIR to define the working directory explicitly.; DV4005: No CMD or ENTRYPOINT instruction found in the final stage.",
+    "improvements": []
+  },
+  {
+    "repo": "mattermost/mattermost-docker",
+    "scannedAt": "2026-03-12T05:02:32.495636+09:00",
+    "dockerfiles": 3,
+    "totalIssues": 41,
+    "severities": {
+      "error": 1,
+      "warning": 26,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DV1009: Consider pinning \"alpine\" with a digest (e.g., image@sha256:...) for reproducible builds.; DV9004: No LABEL instructions found. Consider adding OCI-standard labels (org.opencontainers.image.authors, ; DV4004: ARG defined after ENV. Define ARG before ENV for better build cache utilization.",
+    "improvements": []
   }
 ]
