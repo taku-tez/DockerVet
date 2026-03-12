@@ -198,7 +198,8 @@ export const DL3018: Rule = {
         pkgs.push(tokens[i]);
       }
       for (const pkg of pkgs) {
-        if (!pkg.includes('=')) {
+        // APK supports version constraints: =, >, <, >=, <=, ~
+        if (!pkg.includes('=') && !pkg.includes('>') && !pkg.includes('<') && !pkg.includes('~')) {
           violations.push({ rule: 'DL3018', severity: 'warning', message: `Pin versions in apk add. Instead of \`apk add ${pkg}\` use \`apk add ${pkg}=<version>\``, line: inst.line });
         }
       }

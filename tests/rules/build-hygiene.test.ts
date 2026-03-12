@@ -71,6 +71,16 @@ describe('DV9001: Sensitive file COPY', () => {
     expect(v4.length).toBe(0);
   });
 
+  it('skips .key files with "public" in the name (e.g., nginx_public_keys.key)', () => {
+    const v1 = DV9001.check(ctx('FROM node:22\nCOPY nginx_public_keys.key /etc/nginx/'));
+    expect(v1.length).toBe(0);
+    const v2 = DV9001.check(ctx('FROM node:22\nCOPY files/public_key.key /app/'));
+    expect(v2.length).toBe(0);
+    // But actual private keys should still be flagged
+    const v3 = DV9001.check(ctx('FROM node:22\nCOPY server.key /etc/ssl/'));
+    expect(v3.length).toBe(1);
+  });
+
   it('detects ADD of sensitive files too', () => {
     const v = DV9001.check(ctx('FROM node:22\nADD .aws/ /root/.aws/'));
     expect(v.length).toBe(1);

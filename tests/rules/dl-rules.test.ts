@@ -406,6 +406,18 @@ describe('DL3018 - Pin apk versions', () => {
     expect(results.some(v => v.message.includes('mydeps'))).toBe(false);
     expect(results.some(v => v.message.includes('curl'))).toBe(true);
   });
+  it('skips packages with > version constraint', () => {
+    expect(hasRule(lintDockerfile("FROM alpine:3\nRUN apk add 'c-ares>1.34.5'"), 'DL3018')).toBe(false);
+  });
+  it('skips packages with >= version constraint', () => {
+    expect(hasRule(lintDockerfile("FROM alpine:3\nRUN apk add 'curl>=8.17.0'"), 'DL3018')).toBe(false);
+  });
+  it('skips packages with < version constraint', () => {
+    expect(hasRule(lintDockerfile("FROM alpine:3\nRUN apk add 'openssl<4.0'"), 'DL3018')).toBe(false);
+  });
+  it('skips packages with ~ version constraint', () => {
+    expect(hasRule(lintDockerfile("FROM alpine:3\nRUN apk add 'bash~5.2'"), 'DL3018')).toBe(false);
+  });
 });
 
 describe('DL3019 - apk --no-cache', () => {

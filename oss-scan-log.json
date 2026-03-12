@@ -19296,5 +19296,272 @@
     },
     "notableFindings": "DV1009: Consider pinning \"alpine\" with a digest (e.g., image@sha256:...) for reproducible builds.; DV9004: No LABEL instructions found. Consider adding OCI-standard labels (org.opencontainers.image.authors, ; DV4004: ARG defined after ENV. Define ARG before ENV for better build cache utilization.",
     "improvements": []
+  },
+  {
+    "repo": "zulip/zulip",
+    "files": 3,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 6,
+      "warnings": 21,
+      "info": 18
+    },
+    "notes": "Clean scan, no FP. DV3031 sudoers NOPASSWD (2x), DV2013 curl|sh, DL3020, DV3024 — all legitimate."
+  },
+  {
+    "repo": "miniflux/v2",
+    "files": 4,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 4,
+      "warnings": 18,
+      "info": 28,
+      "style": 3
+    },
+    "notes": "Clean scan, no FP. DL3020 ADD vs COPY (4x), DL3018 apk pinning — all legitimate."
+  },
+  {
+    "repo": "baserow/baserow",
+    "files": 12,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 5,
+      "warnings": 63,
+      "info": 100
+    },
+    "notes": "Clean scan, no FP. DV3031 sudoers NOPASSWD (2x), DV2013 curl|sh, DV3021 EXPOSE 2376. Heavy DL3008 apt (17x), DL3018 apk (12x)."
+  },
+  {
+    "repo": "frappe/frappe_docker",
+    "files": 1,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 3,
+      "warnings": 62,
+      "info": 11
+    },
+    "notes": "Clean scan, no FP. DV3031 sudoers, DV1003/DV2013 curl|sh. Heavy DL3008 apt pinning (55x+)."
+  },
+  {
+    "repo": "forem/forem",
+    "files": 1,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 1,
+      "warnings": 46,
+      "info": 25,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. DV3024 tarball without checksum, heavy DL3008 apt (40x+), DV7001 LD_PRELOAD (2x) — all legitimate."
+  },
+  {
+    "repo": "getlago/lago",
+    "files": 4,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 3,
+      "warnings": 33,
+      "info": 36
+    },
+    "notes": "Clean scan, no FP. DV1003/DV2013 curl|sh, DV9001 COPY .env.sh. All legitimate."
+  },
+  {
+    "repo": "dbeaver/cloudbeaver",
+    "files": 2,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 1,
+      "warnings": 18,
+      "info": 11
+    },
+    "notes": "Clean scan, no FP. DL3005 dist-upgrade, DV2005 MAINTAINER deprecated, DV6023 COPY --from mutable tag — all legitimate."
+  },
+  {
+    "repo": "mage-ai/mage-ai",
+    "files": 12,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 2,
+      "warnings": 113,
+      "info": 85,
+      "style": 2
+    },
+    "notes": "Clean scan, no FP. Heavy DV6018 (20x), DL3008 (18x), DL3013 pip (13x). Large mono-repo with many service Dockerfiles."
+  },
+  {
+    "repo": "benphelps/homepage",
+    "files": 2,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DV1006 root, DL3016 npm pinning, DL3018 apk — all legitimate. Clean Next.js app."
+  },
+  {
+    "repo": "rustdesk/rustdesk",
+    "files": 1,
+    "date": "2026-03-12",
+    "findings": {
+      "errors": 4,
+      "warnings": 37,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. DV3031 sudoers NOPASSWD, DV3024 tarball without checksum, DV3007 --no-check-certificate. Heavy DL3008 apt (30x+). Single large Dockerfile."
+  },
+  {
+    "repo": "vercel/next.js",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 11,
+    "totalIssues": 136,
+    "severities": {
+      "error": 2,
+      "warning": 55,
+      "info": 76,
+      "style": 3
+    },
+    "notableFindings": "Legitimate: DL3008, DV1009, DV4027, DV3003, DV6019 all correct",
+    "improvements": []
+  },
+  {
+    "repo": "astral-sh/uv",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 27,
+    "severities": {
+      "error": 3,
+      "warning": 16,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DV6023 COPY --from=latest, DV4008 TODO comment detected correctly",
+    "improvements": []
+  },
+  {
+    "repo": "surrealdb/surrealdb",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 127,
+    "severities": {
+      "error": 2,
+      "warning": 67,
+      "info": 58,
+      "style": 0
+    },
+    "notableFindings": "DV3026/DV9009 chmod 777, DV9007 VOLUME in non-final stage all correct",
+    "improvements": []
+  },
+  {
+    "repo": "zed-industries/zed",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 43,
+    "severities": {
+      "error": 3,
+      "warning": 29,
+      "info": 11,
+      "style": 0
+    },
+    "notableFindings": "DV3011/DV6024 sudo detection, DV3008 git clone warning correct",
+    "improvements": []
+  },
+  {
+    "repo": "juspay/hyperswitch",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 7,
+    "totalIssues": 103,
+    "severities": {
+      "error": 2,
+      "warning": 45,
+      "info": 56,
+      "style": 0
+    },
+    "notableFindings": "DV4005 no CMD/ENTRYPOINT, DV3008 git clone, DV4017 PATH pollution all correct",
+    "improvements": []
+  },
+  {
+    "repo": "gitbutlerapp/gitbutler",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 69,
+    "severities": {
+      "error": 5,
+      "warning": 39,
+      "info": 25,
+      "style": 0
+    },
+    "notableFindings": "DV3042 openssh-server, DV4017 PATH writable /tmp/.pnpm correct",
+    "improvements": []
+  },
+  {
+    "repo": "vllm-project/vllm",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 9,
+    "totalIssues": 726,
+    "severities": {
+      "error": 28,
+      "warning": 453,
+      "info": 224,
+      "style": 21
+    },
+    "notableFindings": "DV6021 --extra-index-url dep confusion (7x), DV8002 add-apt-repository, DV2007 multiple CMD correct",
+    "improvements": []
+  },
+  {
+    "repo": "neondatabase/neon",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 608,
+    "severities": {
+      "error": 51,
+      "warning": 370,
+      "info": 163,
+      "style": 24
+    },
+    "notableFindings": "DV3018 chpasswd plaintext, DV3031 NOPASSWD sudoers, DV6007 apt-key deprecated, DV3038 HTTP repos all correct",
+    "improvements": []
+  },
+  {
+    "repo": "wireapp/wire-server",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 28,
+    "severities": {
+      "error": 0,
+      "warning": 14,
+      "info": 14,
+      "style": 0
+    },
+    "notableFindings": "DV3028/DV7003 useradd --no-log-init, DV9008 RUN cd correct",
+    "improvements": []
+  },
+  {
+    "repo": "quickwit-oss/quickwit",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 67,
+    "severities": {
+      "error": 6,
+      "warning": 31,
+      "info": 30,
+      "style": 0
+    },
+    "notableFindings": "DV3023 unquoted ARG injection, DV3019 checksum verification correct",
+    "improvements": []
+  },
+  {
+    "repo": "risingwavelabs/risingwave",
+    "scannedAt": "2026-03-12T14:00:00+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 361,
+    "severities": {
+      "error": 28,
+      "warning": 169,
+      "info": 160,
+      "style": 4
+    },
+    "notableFindings": "DV2001 apt-get update split, DV6025 go build -trimpath, DV3033 HTTP URL, DV4021 gem --no-document all correct",
+    "improvements": []
   }
 ]
