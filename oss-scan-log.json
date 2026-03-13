@@ -20698,5 +20698,258 @@
     },
     "notableFindings": "DV1009 x4: Consider pinning \"gcr.io/distroless/static\" with a digest (e.g., image@sha256:..; DV1006 x3: No USER instruction found. Container will run as root by default.; DL3006 x2: Always tag the version of an image explicitly. Tag \"registry.access.redhat.com/u",
     "improvements": []
+  },
+  {
+    "repo": "microsoft/garnet",
+    "files": 6,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 23,
+      "info": 39
+    },
+    "notes": "Clean scan, no FP. .NET/Redis-compatible in-memory store. DV3021 EXPOSE 6379 (Redis port), DV1009 digest pinning, DL3008 apt pinning."
+  },
+  {
+    "repo": "apache/guacamole-server",
+    "files": 1,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 33,
+      "info": 17,
+      "style": 42
+    },
+    "notes": "Clean scan, no FP. Single Alpine Dockerfile with heavy apk pinning (DL3018), many unused ARG declarations (DL3052 x42 style)."
+  },
+  {
+    "repo": "karmada-io/karmada",
+    "files": 2,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 6,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. Minimal Alpine-based Dockerfiles. DV1006 root, DV4005 no CMD/ENTRYPOINT."
+  },
+  {
+    "repo": "mongodb/mongodb-kubernetes-operator",
+    "files": 8,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 1,
+      "warnings": 22,
+      "info": 26
+    },
+    "notes": "Clean scan, no FP. DL3006 untagged busybox (6x). DV9004 no labels. Test/init container Dockerfiles."
+  },
+  {
+    "repo": "stashed/stash",
+    "files": 2,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (8x), DV4007 DEBIAN_FRONTEND as ENV. Standard Debian builder patterns."
+  },
+  {
+    "repo": "argoproj/applicationset",
+    "files": 1,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 1,
+      "warnings": 9,
+      "info": 10,
+      "style": 1
+    },
+    "notes": "Clean scan, no FP. Single Go builder Dockerfile with DL3008 apt pinning, DV1009 digest pinning."
+  },
+  {
+    "repo": "traefik/hub",
+    "files": 1,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 7,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. Minimal Go Alpine builder. DV1009, DL3018, DV9002."
+  },
+  {
+    "repo": "cubefs/cubefs",
+    "files": 2,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 27,
+      "info": 22
+    },
+    "notes": "Clean scan, no FP. DL3008 apt pinning (15x). DV5001 correctly flags outdated Go 1.18.10 base image."
+  },
+  {
+    "repo": "jfrog/jfrog-cli",
+    "files": 6,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 0,
+      "warnings": 18,
+      "info": 20
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (6x), DV1006 root (6x), DV9004 no labels (6x). Multiple CI Dockerfiles."
+  },
+  {
+    "repo": "temporalio/docker-builds",
+    "files": 7,
+    "date": "2026-03-13",
+    "findings": {
+      "errors": 4,
+      "warnings": 54,
+      "info": 26,
+      "style": 5
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (32x), DL3020 ADD (4x). Docker images for Temporal server distribution."
+  },
+  {
+    "repo": "materializeinc/materialize",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 23,
+    "totalIssues": 348,
+    "severities": {
+      "error": 22,
+      "warning": 210,
+      "info": 112,
+      "style": 4
+    },
+    "notableFindings": "DL3008 unpinned apt (122x), DV1009 no digest (22x), DL4006 pipe without set -o pipefail (21x), DV3023 (20x), DV2013 (16x). DV1001 correctly flags POSTGRES_PASSWORD in test Dockerfile. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "knadh/listmonk",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 2,
+    "totalIssues": 16,
+    "severities": {
+      "error": 0,
+      "warning": 8,
+      "info": 8,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (4x), DL3057 no HEALTHCHECK (2x), DV1006 root (2x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openobserve/openobserve",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 376,
+    "severities": {
+      "error": 0,
+      "warning": 185,
+      "info": 183,
+      "style": 8
+    },
+    "notableFindings": "DL3008 unpinned apt (108x), DV1009 no digest (34x), DL3009 apt cleanup (18x), DV1007 apt cache (18x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "apache/answer",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 1,
+    "totalIssues": 33,
+    "severities": {
+      "error": 0,
+      "warning": 22,
+      "info": 10,
+      "style": 1
+    },
+    "notableFindings": "DL3018 apk pinning (14x), DV1009 no digest (2x). Single well-structured Dockerfile. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "penpot/penpot",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 8,
+    "totalIssues": 149,
+    "severities": {
+      "error": 7,
+      "warning": 48,
+      "info": 92,
+      "style": 2
+    },
+    "notableFindings": "DL3003 cd instead of WORKDIR (16x), DV3019 downloaded script without checksum (16x), DL4006 pipe without pipefail (14x), DV4003 no WORKDIR (11x). All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "langgenius/dify",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 4,
+    "totalIssues": 43,
+    "severities": {
+      "error": 0,
+      "warning": 16,
+      "info": 27,
+      "style": 0
+    },
+    "notableFindings": "DL3008 unpinned apt (6x), DV1009 no digest (4x), DV4003 no WORKDIR (3x). Clean multi-service Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "openbao/openbao",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 92,
+    "severities": {
+      "error": 2,
+      "warning": 51,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DL3018 apk pinning (14x), DL3008 apt pinning (14x), DV1009 no digest (9x), DV1006 root (5x). HashiCorp Vault fork. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "microsoft/garnet",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 6,
+    "totalIssues": 62,
+    "severities": {
+      "error": 0,
+      "warning": 23,
+      "info": 39,
+      "style": 0
+    },
+    "notableFindings": "DV1009 no digest (14x), DL3057 no HEALTHCHECK (6x), DL3008 apt pinning (6x), DV3021 (6x). .NET/Redis-compatible cache server. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "neondatabase/neon",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 13,
+    "totalIssues": 608,
+    "severities": {
+      "error": 51,
+      "warning": 370,
+      "info": 163,
+      "style": 24
+    },
+    "notableFindings": "DL3008 unpinned apt (138x), DL3003 cd instead of WORKDIR (60x), DV9008 (60x), DL4006 pipe without pipefail (45x), DV2013 (43x). Heavy build Dockerfiles. All findings legitimate.",
+    "improvements": []
+  },
+  {
+    "repo": "risingwavelabs/risingwave",
+    "scannedAt": "2026-03-14T02:06:03.307216+09:00",
+    "dockerfiles": 15,
+    "totalIssues": 361,
+    "severities": {
+      "error": 28,
+      "warning": 169,
+      "info": 160,
+      "style": 4
+    },
+    "notableFindings": "DL3008 unpinned apt (38x), DV1009 no digest (19x), DV6013 (19x), DV4003 no WORKDIR (16x), DV1006 root (13x). Streaming database. All findings legitimate.",
+    "improvements": []
   }
 ]
