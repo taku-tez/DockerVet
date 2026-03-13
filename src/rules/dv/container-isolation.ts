@@ -162,7 +162,10 @@ export const DV8004: Rule = {
 // that likely contain compilers, build tools, and development headers.
 // These bloat the final image and increase attack surface.
 import { CopyInstruction } from '../../parser/types';
-const BUILD_TOOL_PATHS = /^(?:\/usr\/(?:local\/)?(?:include|src|share\/(?:man|doc|info|gcc))|\/usr\/lib\/gcc|\/opt\/(?:gcc|build)|\/root\/\.cache\/(?:go-build|pip))(?:\/|$)/;
+// Match broad build-tool directories but NOT specific file paths under /usr/src/
+// e.g. /usr/src/ (broad) is flagged, but /usr/src/app/target/release/mybinary (specific artifact) is not
+const BUILD_TOOL_PATHS = /^(?:\/usr\/(?:local\/)?(?:include|share\/(?:man|doc|info|gcc))|\/usr\/lib\/gcc|\/opt\/(?:gcc|build)|\/root\/\.cache\/(?:go-build|pip))(?:\/|$)/;
+const BUILD_TOOL_SRC_BROAD = /^\/usr\/(?:local\/)?src\/?$/;  // Only flag /usr/src/ itself, not specific paths under it
 const BUILD_TOOL_BROAD = /^(?:\/usr\/local\/?|\/usr\/?)$/;
 export const DV8006: Rule = {
   id: 'DV8006', severity: 'warning',
@@ -181,6 +184,12 @@ export const DV8006: Rule = {
           violations.push({
             rule: 'DV8006', severity: 'warning',
             message: `COPY --from=${c.from} copies build tool path "${src}" into the final stage. This likely includes compilers, headers, and dev files that increase image size and attack surface. Copy only the specific build artifacts you need.`,
+            line: inst.line,
+          });
+        } else if (BUILD_TOOL_SRC_BROAD.test(src)) {
+          violations.push({
+            rule: 'DV8006', severity: 'warning',
+            message: `COPY --from=${c.from} copies broad source directory "${src}" into the final stage. This likely includes source code, build artifacts, and intermediate files. Copy only specific build artifacts you need.`,
             line: inst.line,
           });
         } else if (BUILD_TOOL_BROAD.test(src)) {
