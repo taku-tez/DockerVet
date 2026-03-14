@@ -21233,5 +21233,116 @@
     },
     "notableFindings": "Repo redirected (301). Skipped.",
     "improvements": []
+  },
+  {
+    "repo": "discourse/discourse_docker",
+    "files": 4,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 27,
+      "warnings": 57,
+      "info": 60,
+      "style": 1
+    },
+    "notes": "FP found: DL3052 flagged ARG RUBY_VERSION as unreferenced, but it was used in ARG FROM_DOCKER_IMAGE_TAG=${RUBY_VERSION}-${DEBIAN_RELEASE}-slim. Fixed by including global ARG defaults in variable reference search. DL3020 ADD (9x), DL3004 sudo (5x), DV3038 HTTP repo URL."
+  },
+  {
+    "repo": "hedgedoc/hedgedoc",
+    "files": 2,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (3x), DV1005 broad COPY. Standard Node.js Alpine multi-stage builds."
+  },
+  {
+    "repo": "theonedev/onedev",
+    "files": 3,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 4,
+      "warnings": 20,
+      "info": 29
+    },
+    "notes": "Clean scan, no FP. DV1006 root (3x), DV5003 distroless recommendations, DV4022 npm ci suggestions. Multi-stage Java/Node builds."
+  },
+  {
+    "repo": "TandoorRecipes/recipes",
+    "files": 2,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 0,
+      "warnings": 77,
+      "info": 15
+    },
+    "notes": "Clean scan, no FP. Heavy DL3008 apt pinning, DV1004 no multi-stage for devcontainer, DV4022 npm ci. Python/Node build."
+  },
+  {
+    "repo": "lissy93/dashy",
+    "files": 1,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 0,
+      "warnings": 6,
+      "info": 6
+    },
+    "notes": "Clean scan, no FP. DL3018 apk pinning (3x), DV1009 digest pinning. Simple Node.js Alpine multi-stage."
+  },
+  {
+    "repo": "gethomepage/homepage",
+    "files": 2,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 0,
+      "warnings": 8,
+      "info": 10
+    },
+    "notes": "Clean scan, no FP. DV1006 root (2x), DL3016 npm pinning, DV4003 no WORKDIR."
+  },
+  {
+    "repo": "netbox-community/netbox-docker",
+    "files": 1,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 0,
+      "warnings": 31,
+      "info": 7
+    },
+    "notes": "Clean scan, no FP. DV6023 COPY --from with mutable tag (uv:0.10), DL3008 apt pinning (22x). Well-maintained NetBox container."
+  },
+  {
+    "repo": "BookStackApp/BookStack",
+    "files": 2,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 0,
+      "warnings": 30,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. DV1004 no multi-stage, DL3008 apt pinning (20x). PHP single-stage build."
+  },
+  {
+    "repo": "docusealco/docuseal",
+    "files": 1,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 1,
+      "warnings": 22,
+      "info": 13
+    },
+    "notes": "Clean scan, no FP. DV3019 downloaded script without checksum (1x), DL3018 apk pinning (14x). Ruby Alpine multi-stage build."
+  },
+  {
+    "repo": "pawelmalak/flame",
+    "files": 3,
+    "date": "2026-03-14",
+    "findings": {
+      "errors": 2,
+      "warnings": 12,
+      "info": 26
+    },
+    "notes": "Clean scan, no FP. DV1001 correctly flags ENV PASSWORD=flame_password (2x hardcoded default). DV4022 npm ci (5x), DV9008 cd instead of WORKDIR. Multiple Dockerfile variants."
   }
 ]
