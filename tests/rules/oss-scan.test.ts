@@ -6050,7 +6050,7 @@ ENTRYPOINT ["/usr/bin/dlv", "--listen=:40000", "--headless=true", "--continue", 
 CMD ["-config.file=/etc/promtail/config.yml"]
 `);
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add ca-ce
-    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG GOARCH is declared but never referenced in the
+    // DL3052 for GOARCH no longer fires — GOOS/GOARCH added to implicit Go env vars list
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
     expect(v.some(v => v.rule === 'DV1005')).toBe(true);    // When using COPY with broad sources, ensure a .dock
     expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r

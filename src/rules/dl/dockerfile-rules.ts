@@ -476,6 +476,7 @@ const IMPLICIT_ARGS = new Set([
   'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY',
   'http_proxy', 'https_proxy', 'no_proxy', 'FTP_PROXY', 'ALL_PROXY',
   // Go env vars consumed implicitly by go build/install
+  'GOOS', 'GOARCH', 'GOARM', 'GOAMD64', 'CGO_ENABLED', 'CGO_CFLAGS', 'CGO_LDFLAGS',
   'GOFLAGS', 'GOPROXY', 'GONOSUMCHECK', 'GONOSUMDB', 'GOPRIVATE',
   // npm/yarn env vars
   'NPM_CONFIG_REGISTRY', 'NPM_TOKEN', 'YARN_CACHE_FOLDER',
