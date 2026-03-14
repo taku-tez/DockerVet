@@ -6516,7 +6516,7 @@ ENTRYPOINT ["/build.sh"]
     expect(v.some(v => v.rule === 'DL3014')).toBe(true);    // Use the -y switch to avoid manual input `apt-get -
     expect(v.some(v => v.rule === 'DL3015')).toBe(true);    // Avoid additional packages by specifying --no-insta
     expect(v.some(v => v.rule === 'DL3018')).toBe(true);    // Pin versions in apk add. Instead of `apk add curl`
-    expect(v.some(v => v.rule === 'DL3052')).toBe(true);    // ARG GO_VERSION is declared but never referenced in
+    expect(v.some(v => v.rule === 'DL3052')).toBe(false);   // ARG GO_VERSION is used in another global ARG default (no longer FP)VERSION is declared but never referenced in
     expect(v.some(v => v.rule === 'DL3057')).toBe(true);    // HEALTHCHECK instruction missing
     expect(v.some(v => v.rule === 'DV1003')).toBe(true);    // Avoid piping curl/wget output directly to a shell.
     expect(v.some(v => v.rule === 'DV1006')).toBe(true);    // No USER instruction found. Container will run as r

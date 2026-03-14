@@ -515,8 +515,12 @@ export const DL3052: Rule = {
   description: 'ARG is declared but never referenced',
   check(ctx) {
     const violations: Violation[] = [];
-    // Collect all text where variables can be referenced (including FROM directives)
+    // Collect all text where variables can be referenced (including FROM directives and other global ARG defaults)
     const allText: string[] = [];
+    // Include global ARG declarations (ARG-to-ARG references like ARG FOO=${BAR})
+    for (const garg of ctx.ast.globalArgs) {
+      allText.push(garg.raw || garg.arguments || '');
+    }
     for (const stage of ctx.ast.stages) {
       allText.push(stage.from.raw || stage.from.arguments);
       for (const inst of stage.instructions) {
