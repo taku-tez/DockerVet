@@ -58,7 +58,7 @@ export function formatSARIF(violations: Violation[], filename: string): string {
         driver: {
           name: 'dockervet',
           version: '0.1.0',
-          informationUri: 'https://github.com/taku-tez/DockerVet',
+          informationUri: 'https://github.com/3-shake/DockerVet',
           rules,
         },
       },
@@ -116,7 +116,7 @@ export function formatSARIFBatch(results: ProcessResult[]): string {
         driver: {
           name: 'dockervet',
           version: '0.1.0',
-          informationUri: 'https://github.com/taku-tez/DockerVet',
+          informationUri: 'https://github.com/3-shake/DockerVet',
           rules,
         },
       },
