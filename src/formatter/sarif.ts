@@ -15,7 +15,7 @@ const PRECISION_MAP: Record<string, string> = {
   style: 'low',
 };
 
-const DOCS_BASE = 'https://github.com/taku-tez/DockerVet#rules';
+const DOCS_BASE = 'https://github.com/3-shake/DockerVet#rules';
 
 interface ProcessResult {
   filename: string;
